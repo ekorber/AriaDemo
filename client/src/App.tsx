@@ -16,14 +16,28 @@ export default function App() {
     activeChatId.current = startChat();
   }, [startChat]);
 
+  const qualifiedRef = useRef(false);
+
   const onScoreUpdate = useCallback(
-    (update: { score: number; name?: string | null; project_type?: string; timeline?: string; budget_signal?: "low" | "medium" | "high" }) => {
+    (update: { score: number; phase?: string; name?: string | null; project_type?: string; timeline?: string; budget_signal?: "low" | "medium" | "high" }) => {
       if (activeChatId.current) {
         const fields: Record<string, unknown> = { intent_score: update.score };
         if (update.name !== undefined) fields.name = update.name;
         if (update.project_type) fields.project_type = update.project_type;
         if (update.timeline) fields.timeline = update.timeline;
         if (update.budget_signal) fields.budget_signal = update.budget_signal;
+
+        // Auto-promote to Qualified when score >= 40 and phase is at least "qualify"
+        if (
+          !qualifiedRef.current &&
+          update.score >= 40 &&
+          update.phase &&
+          update.phase !== "open"
+        ) {
+          qualifiedRef.current = true;
+          fields.status = "qualified";
+        }
+
         updateLead(activeChatId.current, fields);
       }
     },
