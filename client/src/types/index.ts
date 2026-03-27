@@ -26,4 +26,8 @@ export type IntentPhase = "open" | "qualify" | "build" | "handoff";
 export interface ScoreUpdate {
   score: number;
   phase: IntentPhase;
+  name?: string | null;
+  project_type?: string;
+  timeline?: string;
+  budget_signal?: "low" | "medium" | "high";
 }

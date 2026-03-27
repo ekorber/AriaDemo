@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Message, Lead, IntentPhase, ScoreUpdate } from "../types";
 import { streamMessage } from "../services/anthropic";
 
@@ -15,6 +15,39 @@ export function useAgent(callbacks?: AgentCallbacks) {
   const [handoffLead, setHandoffLead] = useState<Lead | null>(null);
   const [isStreaming, setIsStreaming] = useState(false);
   const [chatStarted, setChatStarted] = useState(false);
+  const initRan = useRef(false);
+
+  useEffect(() => {
+    if (initRan.current) return;
+    initRan.current = true;
+
+    const greeting: Message = {
+      id: crypto.randomUUID(),
+      role: "assistant",
+      content: "",
+      createdAt: new Date(),
+    };
+    setMessages([greeting]);
+    setIsStreaming(true);
+
+    const onChunk = (text: string) => {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === greeting.id ? { ...m, content: text } : m
+        )
+      );
+    };
+
+    const onScoreUpdate = (update: ScoreUpdate) => {
+      setIntentScore(update.score);
+      setPhase(update.phase);
+      callbacks?.onScoreUpdate?.(update);
+    };
+
+    streamMessage([], onChunk, onScoreUpdate, () => {}).then(() => {
+      setIsStreaming(false);
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const sendMessage = useCallback(
     async (content: string) => {
