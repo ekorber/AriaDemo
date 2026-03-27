@@ -1,39 +1,96 @@
+import { useState, useCallback, useRef } from "react";
 import { useAgent } from "./hooks/useAgent";
+import { useLeads } from "./hooks/useLeads";
 import { ChatPanel } from "./components/ChatPanel";
 import { IntentPanel } from "./components/IntentPanel";
+import { PipelineView } from "./components/PipelineView";
+
+type Tab = "chat" | "pipeline";
 
 export default function App() {
+  const [activeTab, setActiveTab] = useState<Tab>("chat");
+  const { leads, startChat, updateLead, promoteToHandoff, moveLead } = useLeads();
+  const activeChatId = useRef<string | null>(null);
+
+  const onChatStart = useCallback(() => {
+    activeChatId.current = startChat();
+  }, [startChat]);
+
+  const onScoreUpdate = useCallback(
+    (update: { score: number }) => {
+      if (activeChatId.current) {
+        updateLead(activeChatId.current, { intent_score: update.score });
+      }
+    },
+    [updateLead]
+  );
+
+  const onHandoff = useCallback(
+    (lead: Parameters<typeof promoteToHandoff>[1]) => {
+      if (activeChatId.current) {
+        promoteToHandoff(activeChatId.current, lead);
+        activeChatId.current = null;
+      }
+      setTimeout(() => setActiveTab("pipeline"), 2000);
+    },
+    [promoteToHandoff]
+  );
+
   const { messages, intentScore, phase, handoffLead, isStreaming, sendMessage } =
-    useAgent();
+    useAgent({ onChatStart, onScoreUpdate, onHandoff });
 
   return (
     <div className="h-screen flex flex-col bg-zinc-950 text-zinc-100">
       {/* Top Bar */}
-      <header className="flex items-center justify-between px-6 py-3 border-b border-zinc-800">
+      <header className="flex items-center px-6 py-3 border-b border-zinc-800">
         <span className="text-sm font-semibold tracking-widest text-zinc-400">
           ARIA
         </span>
-        <span className="text-sm text-zinc-500">
-          Sales Agent
-        </span>
+        <nav className="flex gap-6 ml-8">
+          <button
+            onClick={() => setActiveTab("chat")}
+            className={`text-sm pb-0.5 border-b transition-colors ${
+              activeTab === "chat"
+                ? "text-white border-white"
+                : "text-zinc-500 border-transparent hover:text-zinc-300"
+            }`}
+          >
+            Chat
+          </button>
+          <button
+            onClick={() => setActiveTab("pipeline")}
+            className={`text-sm pb-0.5 border-b transition-colors ${
+              activeTab === "pipeline"
+                ? "text-white border-white"
+                : "text-zinc-500 border-transparent hover:text-zinc-300"
+            }`}
+          >
+            Pipeline
+          </button>
+        </nav>
+        <span className="ml-auto text-sm text-zinc-500">Sales Agent</span>
       </header>
 
       {/* Main Content */}
-      <main className="flex flex-1 overflow-hidden">
-        <div className="flex-1 border-r border-zinc-800">
-          <ChatPanel
-            messages={messages}
-            isStreaming={isStreaming}
+      {activeTab === "chat" ? (
+        <main className="flex flex-1 overflow-hidden">
+          <div className="flex-1 border-r border-zinc-800">
+            <ChatPanel
+              messages={messages}
+              isStreaming={isStreaming}
+              phase={phase}
+              sendMessage={sendMessage}
+            />
+          </div>
+          <IntentPanel
+            intentScore={intentScore}
             phase={phase}
-            sendMessage={sendMessage}
+            handoffLead={handoffLead}
           />
-        </div>
-        <IntentPanel
-          intentScore={intentScore}
-          phase={phase}
-          handoffLead={handoffLead}
-        />
-      </main>
+        </main>
+      ) : (
+        <PipelineView leads={leads} onMove={moveLead} />
+      )}
     </div>
   );
 }
