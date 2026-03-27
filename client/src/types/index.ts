@@ -5,7 +5,7 @@ export interface Message {
   createdAt: Date;
 }
 
-export type LeadStatus = "active" | "qualified" | "handed_off" | "closed";
+export type LeadStatus = "active" | "qualified" | "unqualified" | "handed_off" | "closed";
 
 export interface Lead {
   id: string;
@@ -21,7 +21,7 @@ export interface Lead {
   createdAt: Date;
 }
 
-export type IntentPhase = "open" | "qualify" | "build" | "handoff";
+export type IntentPhase = "open" | "qualify" | "build" | "handoff" | "disqualified";
 
 export interface ScoreUpdate {
   score: number;

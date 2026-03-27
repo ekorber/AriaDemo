@@ -12,6 +12,7 @@ const phaseLabels: Record<IntentPhase, string> = {
   qualify: "Qualifying...",
   build: "Building rapport...",
   handoff: "Handoff triggered",
+  disqualified: "Not a fit",
 };
 
 function getScoreColor(score: number): string {

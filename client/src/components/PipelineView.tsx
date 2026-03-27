@@ -4,6 +4,7 @@ import { LeadCard } from "./LeadCard";
 const COLUMNS: { status: LeadStatus; label: string }[] = [
   { status: "active", label: "Current Chats" },
   { status: "qualified", label: "Current Chats - Qualified" },
+  { status: "unqualified", label: "Unqualified" },
   { status: "handed_off", label: "Handed Off" },
   { status: "closed", label: "Closed" },
 ];

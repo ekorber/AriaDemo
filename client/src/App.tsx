@@ -27,8 +27,13 @@ export default function App() {
         if (update.timeline) fields.timeline = update.timeline;
         if (update.budget_signal) fields.budget_signal = update.budget_signal;
 
+        // Auto-move to Unqualified when agent signals disqualification
+        if (update.phase === "disqualified") {
+          fields.status = "unqualified";
+          qualifiedRef.current = false;
+        }
         // Auto-promote to Qualified when score >= 40 and phase is at least "qualify"
-        if (
+        else if (
           !qualifiedRef.current &&
           update.score >= 40 &&
           update.phase &&

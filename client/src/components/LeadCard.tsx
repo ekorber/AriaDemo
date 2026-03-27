@@ -1,16 +1,13 @@
 import { Lead, LeadStatus } from "../types";
 
-const NEXT_STATUS: Partial<Record<LeadStatus, LeadStatus>> = {
-  active: "qualified",
-  qualified: "handed_off",
-  handed_off: "closed",
-};
-
-const STATUS_LABELS: Record<LeadStatus, string> = {
-  active: "Qualified",
-  qualified: "Handed Off",
-  handed_off: "Closed",
-  closed: "",
+const MOVE_OPTIONS: Partial<Record<LeadStatus, { status: LeadStatus; label: string }[]>> = {
+  active: [{ status: "qualified", label: "Qualified" }],
+  qualified: [{ status: "handed_off", label: "Handed Off" }],
+  unqualified: [
+    { status: "active", label: "Current Chats" },
+    { status: "qualified", label: "Qualified" },
+  ],
+  handed_off: [{ status: "closed", label: "Closed" }],
 };
 
 const BUDGET_COLORS: Record<string, string> = {
@@ -37,7 +34,7 @@ interface LeadCardProps {
 }
 
 export function LeadCard({ lead, onMove }: LeadCardProps) {
-  const next = NEXT_STATUS[lead.status];
+  const options = MOVE_OPTIONS[lead.status] ?? [];
   const level = scoreLevel(lead.intent_score);
 
   return (
@@ -90,14 +87,19 @@ export function LeadCard({ lead, onMove }: LeadCardProps) {
         </div>
       )}
 
-      {/* Move action */}
-      {next && (
-        <button
-          onClick={() => onMove(lead.id, next)}
-          className="w-full text-xs text-zinc-400 hover:text-zinc-200 bg-zinc-800 hover:bg-zinc-750 rounded-lg py-1.5 transition-colors"
-        >
-          Move to → {STATUS_LABELS[lead.status]}
-        </button>
+      {/* Move actions */}
+      {options.length > 0 && (
+        <div className="flex gap-1">
+          {options.map((opt) => (
+            <button
+              key={opt.status}
+              onClick={() => onMove(lead.id, opt.status)}
+              className="flex-1 text-xs text-zinc-400 hover:text-zinc-200 bg-zinc-800 hover:bg-zinc-750 rounded-lg py-1.5 transition-colors"
+            >
+              Move to → {opt.label}
+            </button>
+          ))}
+        </div>
       )}
     </div>
   );
