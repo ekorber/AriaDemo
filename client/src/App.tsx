@@ -36,7 +36,6 @@ export default function App() {
         promoteToHandoff(activeChatId.current, lead);
         activeChatId.current = null;
       }
-      setTimeout(() => setActiveTab("pipeline"), 2000);
     },
     [promoteToHandoff]
   );
