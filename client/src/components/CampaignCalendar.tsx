@@ -67,7 +67,7 @@ export function CampaignCalendar({ posts, selectedDate, onSelectDate }: Campaign
     <div className="w-[280px] min-w-[280px] border-r border-zinc-800 p-4 bg-zinc-950 flex flex-col">
       <div className="text-[11px] uppercase tracking-widest text-zinc-500 mb-3">Schedule</div>
 
-      <div className="bg-zinc-900 rounded-lg p-3.5 flex-1">
+      <div className="bg-zinc-900 rounded-lg p-3.5">
         {/* Month header with navigation */}
         <div className="flex items-center justify-between mb-3">
           <button
