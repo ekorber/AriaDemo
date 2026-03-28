@@ -14,9 +14,10 @@ const COLUMNS: { status: LeadStatus; label: string }[] = [
 interface PipelineViewProps {
   leads: Lead[];
   onMove: (id: string, status: LeadStatus) => void;
+  onCreateCampaign?: (leadId: string) => void;
 }
 
-export function PipelineView({ leads, onMove }: PipelineViewProps) {
+export function PipelineView({ leads, onMove, onCreateCampaign }: PipelineViewProps) {
   const [dragOver, setDragOver] = useState<LeadStatus | null>(null);
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [closing, setClosing] = useState(false);
@@ -74,6 +75,7 @@ export function PipelineView({ leads, onMove }: PipelineViewProps) {
       {COLUMNS.map((col, i) => {
         const columnLeads = leads.filter((l) => l.status === col.status);
         const isOver = dragOver === col.status;
+        const showCampaignAction = col.status === "handed_off" || col.status === "closed";
         return (
           <div
             key={col.status}
@@ -94,12 +96,24 @@ export function PipelineView({ leads, onMove }: PipelineViewProps) {
             </div>
             <div className={`flex-1 overflow-y-auto p-3 transition-colors ${isOver ? "bg-zinc-800/20" : ""}`}>
               {columnLeads.map((lead) => (
-                <LeadCard
-                  key={lead.id}
-                  lead={lead}
-                  selected={lead.id === selectedLeadId}
-                  onClick={() => handleCardClick(lead.id)}
-                />
+                <div key={lead.id} className="mb-2">
+                  <LeadCard
+                    lead={lead}
+                    selected={lead.id === selectedLeadId}
+                    onClick={() => handleCardClick(lead.id)}
+                  />
+                  {showCampaignAction && onCreateCampaign && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onCreateCampaign(lead.id);
+                      }}
+                      className="w-full mt-1 text-[10px] text-zinc-600 hover:text-zinc-400 hover:bg-zinc-800/50 rounded px-2 py-1 transition-colors text-left"
+                    >
+                      + Create Campaign
+                    </button>
+                  )}
+                </div>
               ))}
             </div>
           </div>

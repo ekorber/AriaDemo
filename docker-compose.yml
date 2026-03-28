@@ -15,6 +15,7 @@ services:
     env_file: .env
     volumes:
       - ./chat:/app/chat
+      - ./content:/app/content
       - ./AriaDemo:/app/AriaDemo
 
   frontend:

@@ -1,16 +1,34 @@
 import { useState, useCallback, useRef } from "react";
 import { useAgent } from "./hooks/useAgent";
 import { useLeads } from "./hooks/useLeads";
+import { useCampaigns } from "./hooks/useCampaigns";
 import { ChatPanel } from "./components/ChatPanel";
 import { IntentPanel } from "./components/IntentPanel";
 import { PipelineView } from "./components/PipelineView";
+import { ContentView } from "./components/ContentView";
 
-type Tab = "chat" | "pipeline";
+type Tab = "chat" | "pipeline" | "content";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>("chat");
   const { leads, startChat, updateLead, promoteToHandoff, moveLead } = useLeads();
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
+
+  // Campaign state
+  const campaignHook = useCampaigns(leads);
+  const [initialCampaignId, setInitialCampaignId] = useState<string | null>(null);
+  const [initialLeadId, setInitialLeadId] = useState<string | null>(null);
+
+  const handleCreateCampaignFromPipeline = useCallback((leadId: string) => {
+    setInitialLeadId(leadId);
+    setInitialCampaignId(null);
+    setActiveTab("content");
+  }, []);
+
+  const consumeInitial = useCallback(() => {
+    setInitialCampaignId(null);
+    setInitialLeadId(null);
+  }, []);
 
   const onChatStart = useCallback(async () => {
     const id = await startChat();
@@ -90,6 +108,16 @@ export default function App() {
           >
             Pipeline
           </button>
+          <button
+            onClick={() => setActiveTab("content")}
+            className={`text-sm pb-0.5 border-b transition-colors ${
+              activeTab === "content"
+                ? "text-white border-white"
+                : "text-zinc-500 border-transparent hover:text-zinc-300"
+            }`}
+          >
+            Content
+          </button>
         </nav>
         <span className="ml-auto text-sm text-zinc-500">Sales Agent</span>
       </header>
@@ -113,8 +141,30 @@ export default function App() {
             handoffLead={handoffLead}
           />
         </main>
+      ) : activeTab === "pipeline" ? (
+        <PipelineView
+          leads={leads}
+          onMove={moveLead}
+          onCreateCampaign={handleCreateCampaignFromPipeline}
+        />
       ) : (
-        <PipelineView leads={leads} onMove={moveLead} />
+        <ContentView
+          leads={leads}
+          campaigns={campaignHook.campaigns}
+          getCampaign={campaignHook.getCampaign}
+          createCampaign={campaignHook.createCampaign}
+          updateCampaignBrief={campaignHook.updateCampaignBrief}
+          generateContent={campaignHook.generateContent}
+          updatePost={campaignHook.updatePost}
+          approvePost={campaignHook.approvePost}
+          approveAll={campaignHook.approveAll}
+          deleteCampaign={campaignHook.deleteCampaign}
+          duplicateCampaign={campaignHook.duplicateCampaign}
+          markExported={campaignHook.markExported}
+          initialCampaignId={initialCampaignId}
+          initialLeadId={initialLeadId}
+          onConsumeInitial={consumeInitial}
+        />
       )}
     </div>
   );
