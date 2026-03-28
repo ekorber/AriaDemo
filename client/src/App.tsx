@@ -122,32 +122,32 @@ export default function App() {
         <span className="ml-auto text-sm text-zinc-500">Sales Agent</span>
       </header>
 
-      {/* Main Content */}
-      {activeTab === "chat" ? (
-        <main className="flex flex-1 overflow-hidden">
-          <div className="flex-1 border-r border-zinc-800">
-            <ChatPanel
-              messages={messages}
-              isStreaming={isStreaming}
-              phase={phase}
-              sendMessage={sendMessage}
-              inputValue={chatInput}
-              onInputChange={setChatInput}
-            />
-          </div>
-          <IntentPanel
-            intentScore={intentScore}
+      {/* Main Content — all tabs stay mounted to preserve state */}
+      <main className={`flex flex-1 overflow-hidden ${activeTab !== "chat" ? "hidden" : ""}`}>
+        <div className="flex-1 border-r border-zinc-800">
+          <ChatPanel
+            messages={messages}
+            isStreaming={isStreaming}
             phase={phase}
-            handoffLead={handoffLead}
+            sendMessage={sendMessage}
+            inputValue={chatInput}
+            onInputChange={setChatInput}
           />
-        </main>
-      ) : activeTab === "pipeline" ? (
+        </div>
+        <IntentPanel
+          intentScore={intentScore}
+          phase={phase}
+          handoffLead={handoffLead}
+        />
+      </main>
+      <div className={`flex-1 overflow-hidden ${activeTab !== "pipeline" ? "hidden" : ""}`}>
         <PipelineView
           leads={leads}
           onMove={moveLead}
           onCreateCampaign={handleCreateCampaignFromPipeline}
         />
-      ) : (
+      </div>
+      <div className={`flex-1 overflow-hidden ${activeTab !== "content" ? "hidden" : ""}`}>
         <ContentView
           leads={leads}
           campaigns={campaignHook.campaigns}
@@ -165,7 +165,7 @@ export default function App() {
           initialLeadId={initialLeadId}
           onConsumeInitial={consumeInitial}
         />
-      )}
+      </div>
     </div>
   );
 }
