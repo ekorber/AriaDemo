@@ -232,6 +232,35 @@ export function useCampaigns(leads: Lead[]) {
     []
   );
 
+  const updateSchedule = useCallback(
+    async (campaignId: string, postId: string, date: string | null, time: string | null) => {
+      setCampaigns((prev) => {
+        const next = new Map(prev);
+        const c = next.get(campaignId);
+        if (c) {
+          const updatedPosts = c.socialPosts.map((p) =>
+            p.id === postId ? { ...p, scheduledDate: date, scheduledTime: time } : p
+          );
+          next.set(campaignId, { ...c, socialPosts: updatedPosts });
+          patchCampaignApi(campaignId, {
+            social_posts: updatedPosts.map((p) => ({
+              id: p.id,
+              platform: p.platform,
+              hook: p.hook,
+              caption: p.caption,
+              edited: p.edited,
+              approved: p.approved,
+              scheduled_date: p.scheduledDate,
+              scheduled_time: p.scheduledTime,
+            })),
+          });
+        }
+        return next;
+      });
+    },
+    []
+  );
+
   return {
     campaigns: campaignList,
     getCampaign: (id: string) => campaigns.get(id) ?? null,
@@ -245,5 +274,6 @@ export function useCampaigns(leads: Lead[]) {
     duplicateCampaign,
     markExported,
     assignPlatform,
+    updateSchedule,
   };
 }
