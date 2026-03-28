@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { SocialPost } from "../types";
 import { PLATFORM_COLORS, PLATFORM_ABBREVS, ALL_PLATFORMS } from "../constants/platformColors";
 
@@ -9,9 +9,8 @@ interface CampaignCalendarProps {
 }
 
 export function CampaignCalendar({ posts, selectedDate, onSelectDate }: CampaignCalendarProps) {
-  // Determine which month to show based on posts or current date
-  const today = new Date();
-  const viewMonth = useMemo(() => {
+  // Determine initial month from posts or current date
+  const initialMonth = useMemo(() => {
     const scheduledDates = posts
       .map((p) => p.scheduledDate)
       .filter(Boolean) as string[];
@@ -20,8 +19,18 @@ export function CampaignCalendar({ posts, selectedDate, onSelectDate }: Campaign
       const d = new Date(earliest + "T00:00:00");
       return { year: d.getFullYear(), month: d.getMonth() };
     }
+    const today = new Date();
     return { year: today.getFullYear(), month: today.getMonth() };
-  }, [posts, today.getFullYear(), today.getMonth()]);
+  }, [posts]);
+
+  const [viewMonth, setViewMonth] = useState(initialMonth);
+
+  const navigateMonth = (delta: number) => {
+    setViewMonth((prev) => {
+      const d = new Date(prev.year, prev.month + delta, 1);
+      return { year: d.getFullYear(), month: d.getMonth() };
+    });
+  };
 
   // Build a map of date -> platforms
   const dateMap = useMemo(() => {
@@ -59,8 +68,22 @@ export function CampaignCalendar({ posts, selectedDate, onSelectDate }: Campaign
       <div className="text-[11px] uppercase tracking-widest text-zinc-500 mb-3">Schedule</div>
 
       <div className="bg-zinc-900 rounded-lg p-3.5 flex-1">
-        {/* Month header */}
-        <div className="text-center text-sm text-zinc-300 font-medium mb-3">{monthName}</div>
+        {/* Month header with navigation */}
+        <div className="flex items-center justify-between mb-3">
+          <button
+            onClick={() => navigateMonth(-1)}
+            className="text-zinc-500 hover:text-zinc-300 px-1.5 py-0.5 rounded hover:bg-zinc-800 transition-colors text-sm"
+          >
+            ‹
+          </button>
+          <span className="text-sm text-zinc-300 font-medium">{monthName}</span>
+          <button
+            onClick={() => navigateMonth(1)}
+            className="text-zinc-500 hover:text-zinc-300 px-1.5 py-0.5 rounded hover:bg-zinc-800 transition-colors text-sm"
+          >
+            ›
+          </button>
+        </div>
 
         {/* Day headers */}
         <div className="grid grid-cols-7 text-center text-[11px] text-zinc-600 mb-1">
