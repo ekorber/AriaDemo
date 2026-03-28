@@ -20,19 +20,24 @@ function scoreLevel(score: number) {
 
 interface LeadCardProps {
   lead: Lead;
+  selected?: boolean;
+  onClick?: () => void;
 }
 
-export function LeadCard({ lead }: LeadCardProps) {
+export function LeadCard({ lead, selected, onClick }: LeadCardProps) {
   const level = scoreLevel(lead.intent_score);
 
   return (
     <div
       draggable
+      onClick={onClick}
       onDragStart={(e) => {
         e.dataTransfer.setData("text/plain", lead.id);
         e.dataTransfer.effectAllowed = "move";
       }}
-      className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 mb-2 hover:border-zinc-700 transition-colors cursor-grab active:cursor-grabbing"
+      className={`bg-zinc-900 border rounded-xl p-3 mb-2 transition-colors cursor-pointer hover:border-zinc-600 hover:bg-zinc-800/50 active:cursor-grabbing ${
+        selected ? "border-zinc-500 bg-zinc-800/40" : "border-zinc-800"
+      }`}
     >
       <div className="flex items-center justify-between mb-1.5">
         <span className="text-sm font-medium text-zinc-100">
