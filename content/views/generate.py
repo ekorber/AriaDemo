@@ -129,6 +129,7 @@ def _save_generated_posts(campaign_id, raw_text, skip_platforms):
             "edited": False,
             "approved": False,
             "scheduled_date": None,
+            "scheduled_time": None,
         })
 
     db.campaigns.update_one(

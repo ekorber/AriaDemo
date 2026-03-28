@@ -43,6 +43,7 @@ def seed_campaigns(db):
                 "edited": False,
                 "approved": True,
                 "scheduled_date": "2025-03-29",
+                "scheduled_time": "09:00",
             },
             {
                 "id": "seed_post_2",
@@ -62,6 +63,7 @@ def seed_campaigns(db):
                 "edited": False,
                 "approved": True,
                 "scheduled_date": "2025-03-29",
+                "scheduled_time": "12:00",
             },
             {
                 "id": "seed_post_3",
@@ -74,6 +76,7 @@ def seed_campaigns(db):
                 "edited": False,
                 "approved": True,
                 "scheduled_date": "2025-03-29",
+                "scheduled_time": "15:00",
             },
             {
                 "id": "seed_post_4",
@@ -99,6 +102,7 @@ def seed_campaigns(db):
                 "edited": False,
                 "approved": True,
                 "scheduled_date": "2025-03-31",
+                "scheduled_time": None,
             },
             {
                 "id": "seed_post_5",
@@ -116,6 +120,7 @@ def seed_campaigns(db):
                 "edited": False,
                 "approved": True,
                 "scheduled_date": "2025-03-31",
+                "scheduled_time": "10:00",
             },
             {
                 "id": "seed_post_6",
@@ -129,6 +134,7 @@ def seed_campaigns(db):
                 "edited": False,
                 "approved": True,
                 "scheduled_date": None,
+                "scheduled_time": None,
             },
         ],
     })

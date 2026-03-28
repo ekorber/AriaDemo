@@ -15,6 +15,7 @@ interface RawCampaign {
     edited: boolean;
     approved: boolean;
     scheduled_date: string | null;
+    scheduled_time: string | null;
   }>;
   status: string;
   created_at: string;
@@ -36,6 +37,7 @@ function deserialize(raw: RawCampaign): Campaign {
       edited: p.edited,
       approved: p.approved,
       scheduledDate: p.scheduled_date,
+      scheduledTime: p.scheduled_time ?? null,
     })),
     status: raw.status as Campaign["status"],
     createdAt: new Date(raw.created_at),

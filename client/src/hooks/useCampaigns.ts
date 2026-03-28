@@ -110,6 +110,7 @@ export function useCampaigns(leads: Lead[]) {
               edited: p.edited,
               approved: p.approved,
               scheduled_date: p.scheduledDate,
+              scheduled_time: p.scheduledTime,
             })),
           });
         }
@@ -137,6 +138,7 @@ export function useCampaigns(leads: Lead[]) {
             edited: p.edited,
             approved: p.approved,
             scheduled_date: p.scheduledDate,
+            scheduled_time: p.scheduledTime,
           })),
         });
       }
@@ -160,6 +162,7 @@ export function useCampaigns(leads: Lead[]) {
             edited: p.edited,
             approved: p.approved,
             scheduled_date: p.scheduledDate,
+            scheduled_time: p.scheduledTime,
           })),
         });
       }
@@ -206,6 +209,7 @@ export function useCampaigns(leads: Lead[]) {
             edited: false,
             approved: false,
             scheduledDate,
+            scheduledTime: null,
           };
           const updatedPosts = [...c.socialPosts, newPost];
           next.set(campaignId, { ...c, socialPosts: updatedPosts });
@@ -218,6 +222,7 @@ export function useCampaigns(leads: Lead[]) {
               edited: p.edited,
               approved: p.approved,
               scheduled_date: p.scheduledDate,
+              scheduled_time: p.scheduledTime,
             })),
           });
         }
