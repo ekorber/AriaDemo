@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { SocialPost } from "../types";
 import { PLATFORM_COLORS, PLATFORM_LABELS } from "../constants/platformColors";
+import { ScheduleModal } from "./ScheduleModal";
 
 interface PostEditorProps {
   post: SocialPost;
   campaignId: string;
   onUpdatePost: (campaignId: string, postId: string, fields: { hook?: string; caption?: string }) => void;
   onApprovePost: (campaignId: string, postId: string) => void;
+  onUpdateSchedule: (campaignId: string, postId: string, date: string | null, time: string | null) => void;
   onGenerate: (scope: "single" | "date" | "platform" | "all") => void;
   isGenerating: boolean;
 }
@@ -16,6 +18,7 @@ export function PostEditor({
   campaignId,
   onUpdatePost,
   onApprovePost,
+  onUpdateSchedule,
   onGenerate,
   isGenerating,
 }: PostEditorProps) {
@@ -28,6 +31,8 @@ export function PostEditor({
     setHook(post.hook);
     setCaption(post.caption);
   }, [post.id, post.hook, post.caption]);
+
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
 
   const handleHookBlur = () => {
     if (hook !== post.hook) {
@@ -44,6 +49,19 @@ export function PostEditor({
   const dateLabel = post.scheduledDate
     ? new Date(post.scheduledDate + "T00:00:00").toLocaleDateString("default", { month: "short", day: "numeric" })
     : "Undecided";
+
+  const scheduleLabel = (() => {
+    const datePart = post.scheduledDate
+      ? new Date(post.scheduledDate + "T00:00:00").toLocaleDateString("default", { month: "short", day: "numeric" })
+      : "Undecided";
+    if (!post.scheduledTime) return `${datePart} · No time set`;
+    const [hStr, mStr] = post.scheduledTime.split(":");
+    const h24 = parseInt(hStr, 10);
+    const min = mStr;
+    const isPm = h24 >= 12;
+    const h12 = h24 === 0 ? 12 : h24 > 12 ? h24 - 12 : h24;
+    return `${datePart} · ${h12}:${min} ${isPm ? "PM" : "AM"}`;
+  })();
 
   return (
     <div className="flex-1 p-5 overflow-y-auto">
@@ -68,6 +86,28 @@ export function PostEditor({
           )}
         </div>
       </div>
+
+      {/* Schedule row */}
+      <div
+        onClick={() => setShowScheduleModal(true)}
+        className="mb-4 flex items-center gap-3 px-3 py-2.5 bg-zinc-900 border border-zinc-800 rounded-lg cursor-pointer hover:border-zinc-600 transition-colors"
+      >
+        <span className="text-sm text-zinc-500">📅</span>
+        <span className="text-sm text-zinc-300">{scheduleLabel}</span>
+        <span className="ml-auto text-xs text-blue-400">Edit</span>
+      </div>
+
+      {showScheduleModal && (
+        <ScheduleModal
+          currentDate={post.scheduledDate}
+          currentTime={post.scheduledTime}
+          onSave={(date, time) => {
+            onUpdateSchedule(campaignId, post.id, date, time);
+            setShowScheduleModal(false);
+          }}
+          onClose={() => setShowScheduleModal(false)}
+        />
+      )}
 
       {/* Hook field */}
       <div className="mb-4">
