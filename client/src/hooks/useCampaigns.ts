@@ -198,7 +198,6 @@ export function useCampaigns(leads: Lead[]) {
         const next = new Map(prev);
         const c = next.get(campaignId);
         if (c) {
-          if (c.socialPosts.some((p) => p.platform === platform)) return prev;
           const newPost: SocialPost = {
             id: `post_${campaignId}_${platform}_${Date.now()}`,
             platform,

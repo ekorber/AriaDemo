@@ -72,7 +72,9 @@ export function CampaignDetailView({
 
   const handleAssignPlatform = useCallback((platform: SocialPlatform) => {
     onAssignPlatform(campaign.id, platform, selectedDate);
-  }, [campaign.id, selectedDate, onAssignPlatform]);
+    // Auto-generate content for the new post
+    onGenerate(campaign.id);
+  }, [campaign.id, selectedDate, onAssignPlatform, onGenerate]);
 
   const handleGenerate = useCallback(async (_scope: "single" | "date" | "platform" | "all") => {
     // For now, all generation scopes call the same backend endpoint
@@ -177,7 +179,6 @@ export function CampaignDetailView({
 
         <PlatformSidebar
           posts={datePosts}
-          allPosts={campaign.socialPosts}
           selectedDate={selectedDate}
           selectedPostId={selectedPost?.id ?? null}
           onSelectPost={handleSelectPost}

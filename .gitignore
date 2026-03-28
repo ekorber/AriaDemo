@@ -16,4 +16,7 @@ node_modules/
 # Claude
 .claude/
 
+# Superpowers
+.superpowers/
+
 /prompts
