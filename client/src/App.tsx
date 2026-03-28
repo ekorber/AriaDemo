@@ -10,30 +10,28 @@ type Tab = "chat" | "pipeline";
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>("chat");
   const { leads, startChat, updateLead, promoteToHandoff, moveLead } = useLeads();
-  const activeChatId = useRef<string | null>(null);
+  const [activeChatId, setActiveChatId] = useState<string | null>(null);
 
-  const onChatStart = useCallback(() => {
-    activeChatId.current = startChat();
+  const onChatStart = useCallback(async () => {
+    const id = await startChat();
+    setActiveChatId(id);
   }, [startChat]);
 
   const qualifiedRef = useRef(false);
 
   const onScoreUpdate = useCallback(
     (update: { score: number; phase?: string; name?: string | null; project_type?: string; timeline?: string; budget_signal?: "low" | "medium" | "high" }) => {
-      if (activeChatId.current) {
+      if (activeChatId) {
         const fields: Record<string, unknown> = { intent_score: update.score };
         if (update.name !== undefined) fields.name = update.name;
         if (update.project_type) fields.project_type = update.project_type;
         if (update.timeline) fields.timeline = update.timeline;
         if (update.budget_signal) fields.budget_signal = update.budget_signal;
 
-        // Auto-move to Unqualified when agent signals disqualification
         if (update.phase === "disqualified") {
           fields.status = "unqualified";
           qualifiedRef.current = false;
-        }
-        // Auto-promote to Qualified when score >= 40 and phase is at least "qualify"
-        else if (
+        } else if (
           !qualifiedRef.current &&
           update.score >= 40 &&
           update.phase &&
@@ -43,24 +41,24 @@ export default function App() {
           fields.status = "qualified";
         }
 
-        updateLead(activeChatId.current, fields);
+        updateLead(activeChatId, fields);
       }
     },
-    [updateLead]
+    [updateLead, activeChatId]
   );
 
   const onHandoff = useCallback(
     (lead: Parameters<typeof promoteToHandoff>[1]) => {
-      if (activeChatId.current) {
-        promoteToHandoff(activeChatId.current, lead);
-        activeChatId.current = null;
+      if (activeChatId) {
+        promoteToHandoff(activeChatId, lead);
+        setActiveChatId(null);
       }
     },
-    [promoteToHandoff]
+    [promoteToHandoff, activeChatId]
   );
 
   const { messages, intentScore, phase, handoffLead, isStreaming, sendMessage } =
-    useAgent({ onChatStart, onScoreUpdate, onHandoff });
+    useAgent(activeChatId, { onChatStart, onScoreUpdate, onHandoff });
 
   return (
     <div className="h-screen flex flex-col bg-zinc-950 text-zinc-100">
