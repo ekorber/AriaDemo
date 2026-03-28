@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { Campaign, CampaignTone, Lead, SocialPost } from "../types";
+import { Campaign, CampaignTone, Lead, SocialPost, SocialPlatform } from "../types";
 import { generateCampaignContent } from "../services/contentService";
 import {
   fetchCampaigns,
@@ -190,6 +190,42 @@ export function useCampaigns(leads: Lead[]) {
     await patchCampaignApi(campaignId, { status: "exported" });
   }, []);
 
+  const assignPlatform = useCallback(
+    async (campaignId: string, platform: SocialPlatform, scheduledDate: string | null) => {
+      setCampaigns((prev) => {
+        const next = new Map(prev);
+        const c = next.get(campaignId);
+        if (c) {
+          if (c.socialPosts.some((p) => p.platform === platform)) return prev;
+          const newPost: SocialPost = {
+            id: `post_${campaignId}_${platform}_${Date.now()}`,
+            platform,
+            hook: "",
+            caption: "",
+            edited: false,
+            approved: false,
+            scheduledDate,
+          };
+          const updatedPosts = [...c.socialPosts, newPost];
+          next.set(campaignId, { ...c, socialPosts: updatedPosts });
+          patchCampaignApi(campaignId, {
+            social_posts: updatedPosts.map((p) => ({
+              id: p.id,
+              platform: p.platform,
+              hook: p.hook,
+              caption: p.caption,
+              edited: p.edited,
+              approved: p.approved,
+              scheduled_date: p.scheduledDate,
+            })),
+          });
+        }
+        return next;
+      });
+    },
+    []
+  );
+
   return {
     campaigns: campaignList,
     getCampaign: (id: string) => campaigns.get(id) ?? null,
@@ -202,5 +238,6 @@ export function useCampaigns(leads: Lead[]) {
     deleteCampaign,
     duplicateCampaign,
     markExported,
+    assignPlatform,
   };
 }
