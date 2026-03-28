@@ -35,6 +35,7 @@ export interface SocialPost {
   caption: string;
   edited: boolean;
   approved: boolean;
+  scheduledDate: string | null;
 }
 
 export interface Campaign {

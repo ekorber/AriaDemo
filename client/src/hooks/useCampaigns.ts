@@ -109,6 +109,7 @@ export function useCampaigns(leads: Lead[]) {
               caption: p.caption,
               edited: p.edited,
               approved: p.approved,
+              scheduled_date: p.scheduledDate,
             })),
           });
         }
