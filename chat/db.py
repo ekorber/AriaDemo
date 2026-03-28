@@ -11,4 +11,7 @@ def get_db():
         _client = MongoClient(settings.MONGODB_URI)
         _db = _client.get_default_database()
         _db.messages.create_index("lead_id")
+
+        from content.seed import seed_campaigns
+        seed_campaigns(_db)
     return _db

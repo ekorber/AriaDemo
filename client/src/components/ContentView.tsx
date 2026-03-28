@@ -2,13 +2,6 @@ import { useState, useCallback } from "react";
 import { Campaign, CampaignTone, CampaignStatus, Lead, SocialPlatform } from "../types";
 import { ContentOutputPanel } from "./ContentOutputPanel";
 
-const TONE_OPTIONS: { value: CampaignTone; label: string }[] = [
-  { value: "hype", label: "Hype" },
-  { value: "behind-the-scenes", label: "Behind the Scenes" },
-  { value: "educational", label: "Educational" },
-  { value: "testimonial", label: "Testimonial" },
-];
-
 const STATUS_BADGE: Record<CampaignStatus, string> = {
   draft: "bg-zinc-800 text-zinc-400",
   generating: "bg-amber-950 text-amber-400 animate-pulse",
@@ -29,14 +22,14 @@ interface ContentViewProps {
   leads: Lead[];
   campaigns: Campaign[];
   getCampaign: (id: string) => Campaign | null;
-  createCampaign: (leadId: string, brief: string, tone: CampaignTone) => string;
+  createCampaign: (leadId: string, brief: string, tone: CampaignTone) => Promise<string>;
   updateCampaignBrief: (id: string, brief: string) => void;
   generateContent: (id: string) => Promise<void>;
   updatePost: (campaignId: string, postId: string, fields: { hook?: string; caption?: string }) => void;
   approvePost: (campaignId: string, postId: string) => void;
   approveAll: (campaignId: string) => void;
   deleteCampaign: (campaignId: string) => void;
-  duplicateCampaign: (campaignId: string) => string | null;
+  duplicateCampaign: (campaignId: string) => Promise<string | null>;
   markExported: (campaignId: string) => void;
   initialCampaignId?: string | null;
   initialLeadId?: string | null;
@@ -67,7 +60,7 @@ export function ContentView({
   // New campaign form state
   const [newLeadId, setNewLeadId] = useState(initialLeadId ?? "");
   const [newBrief, setNewBrief] = useState("");
-  const [newTone, setNewTone] = useState<CampaignTone>("hype");
+  const [newTone, setNewTone] = useState<CampaignTone>("");
 
   // Consume initial props after first render
   if ((initialCampaignId || initialLeadId) && onConsumeInitial) {
@@ -80,14 +73,14 @@ export function ContentView({
 
   const selected = selectedId ? getCampaign(selectedId) : null;
 
-  const handleCreate = () => {
-    if (!newLeadId || !newBrief.trim()) return;
-    const id = createCampaign(newLeadId, newBrief.trim(), newTone);
+  const handleCreate = async () => {
+    if (!newLeadId || !newBrief.trim() || !newTone.trim()) return;
+    const id = await createCampaign(newLeadId, newBrief.trim(), newTone.trim());
     setSelectedId(id);
     setShowNewForm(false);
     setNewLeadId("");
     setNewBrief("");
-    setNewTone("hype");
+    setNewTone("");
   };
 
   const handleGenerate = useCallback(async () => {
@@ -211,8 +204,8 @@ export function ContentView({
                 Export
               </button>
               <button
-                onClick={() => {
-                  const newId = duplicateCampaign(selected.id);
+                onClick={async () => {
+                  const newId = await duplicateCampaign(selected.id);
                   if (newId) setSelectedId(newId);
                 }}
                 className="text-xs text-zinc-500 hover:text-zinc-300 px-2 py-1.5 transition-colors"
@@ -312,22 +305,14 @@ export function ContentView({
           </div>
 
           <div>
-            <label className="text-xs text-zinc-500 block mb-1.5">Tone</label>
-            <div className="flex gap-2">
-              {TONE_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  onClick={() => setNewTone(opt.value)}
-                  className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
-                    newTone === opt.value
-                      ? "bg-zinc-100 text-zinc-900 border-zinc-100"
-                      : "border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500"
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
+            <label className="text-xs text-zinc-500 block mb-1">Tone</label>
+            <input
+              type="text"
+              value={newTone}
+              onChange={(e) => setNewTone(e.target.value)}
+              placeholder="e.g. hype, behind-the-scenes, educational, testimonial"
+              className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-sm text-zinc-300 focus:outline-none focus:border-zinc-500"
+            />
           </div>
 
           <div className="flex gap-2 justify-end pt-1">
@@ -339,7 +324,7 @@ export function ContentView({
             </button>
             <button
               onClick={handleCreate}
-              disabled={!newLeadId || !newBrief.trim()}
+              disabled={!newLeadId || !newBrief.trim() || !newTone.trim()}
               className="text-xs bg-zinc-100 text-zinc-900 hover:bg-white px-4 py-1.5 rounded font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Create Draft

@@ -16,6 +16,7 @@ export async function generateCampaignContent(
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        campaignId: campaign.id,
         clientName: campaign.clientName,
         projectType: campaign.projectType,
         tone: campaign.tone,

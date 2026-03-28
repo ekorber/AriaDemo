@@ -25,7 +25,7 @@ export type IntentPhase = "open" | "qualify" | "build" | "handoff" | "disqualifi
 
 export type SocialPlatform = "instagram" | "tiktok" | "x" | "facebook" | "youtube_shorts" | "threads";
 
-export type CampaignTone = "hype" | "behind-the-scenes" | "educational" | "testimonial";
+export type CampaignTone = string;
 export type CampaignStatus = "draft" | "generating" | "ready" | "exported";
 
 export interface SocialPost {

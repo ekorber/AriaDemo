@@ -140,14 +140,14 @@ export default function App() {
           handoffLead={handoffLead}
         />
       </main>
-      <div className={`flex-1 overflow-hidden ${activeTab !== "pipeline" ? "hidden" : ""}`}>
+      <div className={`flex-1 flex flex-col min-h-0 ${activeTab !== "pipeline" ? "hidden" : ""}`}>
         <PipelineView
           leads={leads}
           onMove={moveLead}
           onCreateCampaign={handleCreateCampaignFromPipeline}
         />
       </div>
-      <div className={`flex-1 overflow-hidden ${activeTab !== "content" ? "hidden" : ""}`}>
+      <div className={`flex-1 flex flex-col min-h-0 ${activeTab !== "content" ? "hidden" : ""}`}>
         <ContentView
           leads={leads}
           campaigns={campaignHook.campaigns}
