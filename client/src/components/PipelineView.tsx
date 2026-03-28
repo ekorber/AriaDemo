@@ -1,3 +1,4 @@
+import { useState, DragEvent } from "react";
 import { Lead, LeadStatus } from "../types";
 import { LeadCard } from "./LeadCard";
 
@@ -15,16 +16,41 @@ interface PipelineViewProps {
 }
 
 export function PipelineView({ leads, onMove }: PipelineViewProps) {
+  const [dragOver, setDragOver] = useState<LeadStatus | null>(null);
+
+  const handleDragOver = (e: DragEvent, status: LeadStatus) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDragOver(status);
+  };
+
+  const handleDragLeave = () => {
+    setDragOver(null);
+  };
+
+  const handleDrop = (e: DragEvent, status: LeadStatus) => {
+    e.preventDefault();
+    setDragOver(null);
+    const leadId = e.dataTransfer.getData("text/plain");
+    if (leadId) {
+      onMove(leadId, status);
+    }
+  };
+
   return (
     <div className="flex-1 flex overflow-hidden bg-zinc-950">
       {COLUMNS.map((col, i) => {
         const columnLeads = leads.filter((l) => l.status === col.status);
+        const isOver = dragOver === col.status;
         return (
           <div
             key={col.status}
-            className={`flex-1 flex flex-col overflow-hidden ${
+            onDragOver={(e) => handleDragOver(e, col.status)}
+            onDragLeave={handleDragLeave}
+            onDrop={(e) => handleDrop(e, col.status)}
+            className={`flex-1 flex flex-col overflow-hidden transition-colors ${
               i < COLUMNS.length - 1 ? "border-r border-zinc-800" : ""
-            }`}
+            } ${isOver ? "bg-zinc-900/50" : ""}`}
           >
             <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800">
               <span className="text-sm font-medium text-zinc-300">
@@ -34,9 +60,9 @@ export function PipelineView({ leads, onMove }: PipelineViewProps) {
                 {columnLeads.length}
               </span>
             </div>
-            <div className="flex-1 overflow-y-auto p-3">
+            <div className={`flex-1 overflow-y-auto p-3 transition-colors ${isOver ? "bg-zinc-800/20" : ""}`}>
               {columnLeads.map((lead) => (
-                <LeadCard key={lead.id} lead={lead} onMove={onMove} />
+                <LeadCard key={lead.id} lead={lead} />
               ))}
             </div>
           </div>

@@ -1,14 +1,4 @@
-import { Lead, LeadStatus } from "../types";
-
-const MOVE_OPTIONS: Partial<Record<LeadStatus, { status: LeadStatus; label: string }[]>> = {
-  active: [{ status: "qualified", label: "Qualified" }],
-  qualified: [{ status: "handed_off", label: "Handed Off" }],
-  unqualified: [
-    { status: "active", label: "Current Chats" },
-    { status: "qualified", label: "Qualified" },
-  ],
-  handed_off: [{ status: "closed", label: "Closed" }],
-};
+import { Lead } from "../types";
 
 const BUDGET_COLORS: Record<string, string> = {
   high: "bg-emerald-400",
@@ -30,15 +20,20 @@ function scoreLevel(score: number) {
 
 interface LeadCardProps {
   lead: Lead;
-  onMove: (id: string, status: LeadStatus) => void;
 }
 
-export function LeadCard({ lead, onMove }: LeadCardProps) {
-  const options = MOVE_OPTIONS[lead.status] ?? [];
+export function LeadCard({ lead }: LeadCardProps) {
   const level = scoreLevel(lead.intent_score);
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 mb-2 hover:border-zinc-700 transition-colors">
+    <div
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.setData("text/plain", lead.id);
+        e.dataTransfer.effectAllowed = "move";
+      }}
+      className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 mb-2 hover:border-zinc-700 transition-colors cursor-grab active:cursor-grabbing"
+    >
       <div className="flex items-center justify-between mb-1.5">
         <span className="text-sm font-medium text-zinc-100">
           {lead.name || "Unknown artist"}
@@ -75,7 +70,7 @@ export function LeadCard({ lead, onMove }: LeadCardProps) {
 
       {/* Hot signals */}
       {lead.hot_signals.length > 0 && (
-        <div className="flex flex-wrap gap-1 mb-2">
+        <div className="flex flex-wrap gap-1">
           {lead.hot_signals.map((signal) => (
             <span
               key={signal}
@@ -83,21 +78,6 @@ export function LeadCard({ lead, onMove }: LeadCardProps) {
             >
               {signal}
             </span>
-          ))}
-        </div>
-      )}
-
-      {/* Move actions */}
-      {options.length > 0 && (
-        <div className="flex gap-1">
-          {options.map((opt) => (
-            <button
-              key={opt.status}
-              onClick={() => onMove(lead.id, opt.status)}
-              className="flex-1 text-xs text-zinc-400 hover:text-zinc-200 bg-zinc-800 hover:bg-zinc-750 rounded-lg py-1.5 transition-colors"
-            >
-              Move to → {opt.label}
-            </button>
           ))}
         </div>
       )}
