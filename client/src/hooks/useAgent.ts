@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { Message, Lead, IntentPhase, ScoreUpdate } from "../types";
 import { streamMessage } from "../services/anthropic";
+import * as api from "../services/api";
 
 interface AgentCallbacks {
   onChatStart?: () => void;
@@ -8,7 +9,10 @@ interface AgentCallbacks {
   onHandoff?: (lead: Lead) => void;
 }
 
-export function useAgent(callbacks?: AgentCallbacks) {
+export function useAgent(
+  leadId: string | null,
+  callbacks?: AgentCallbacks
+) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [intentScore, setIntentScore] = useState(0);
   const [phase, setPhase] = useState<IntentPhase>("open");
@@ -16,6 +20,18 @@ export function useAgent(callbacks?: AgentCallbacks) {
   const [isStreaming, setIsStreaming] = useState(false);
   const [chatStarted, setChatStarted] = useState(false);
   const initRan = useRef(false);
+
+  // Load existing messages when leadId changes
+  useEffect(() => {
+    if (!leadId) return;
+    api.fetchMessages(leadId).then((msgs) => {
+      if (msgs.length > 0) {
+        setMessages(msgs);
+        setChatStarted(true);
+        initRan.current = true;
+      }
+    });
+  }, [leadId]);
 
   useEffect(() => {
     if (initRan.current) return;
@@ -44,7 +60,7 @@ export function useAgent(callbacks?: AgentCallbacks) {
       callbacks?.onScoreUpdate?.(update);
     };
 
-    streamMessage([], onChunk, onScoreUpdate, () => {}).then(() => {
+    streamMessage([], onChunk, onScoreUpdate, () => {}, leadId).then(() => {
       setIsStreaming(false);
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -99,10 +115,10 @@ export function useAgent(callbacks?: AgentCallbacks) {
         callbacks?.onHandoff?.(lead);
       };
 
-      await streamMessage(updatedMessages, onChunk, onScoreUpdate, onHandoff);
+      await streamMessage(updatedMessages, onChunk, onScoreUpdate, onHandoff, leadId);
       setIsStreaming(false);
     },
-    [messages, isStreaming, phase]
+    [messages, isStreaming, phase, leadId]
   );
 
   return { messages, intentScore, phase, handoffLead, isStreaming, sendMessage };

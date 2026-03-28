@@ -7,4 +7,5 @@ dependencies = [
     "django>=6.0.3",
     "anthropic>=0.39.0",
     "python-dotenv>=1.1.0",
+    "pymongo>=4.7",
 ]
