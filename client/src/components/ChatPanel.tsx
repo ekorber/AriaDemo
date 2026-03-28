@@ -7,13 +7,17 @@ interface ChatPanelProps {
   isStreaming: boolean;
   phase: IntentPhase;
   sendMessage: (content: string) => void;
+  inputValue: string;
+  onInputChange: (value: string) => void;
 }
 
-export function ChatPanel({ messages, isStreaming, phase, sendMessage }: ChatPanelProps) {
+export function ChatPanel({ messages, isStreaming, phase, sendMessage, inputValue, onInputChange }: ChatPanelProps) {
   return (
     <div className="flex flex-col h-full">
       <MessageList messages={messages} />
       <ChatInput
+        value={inputValue}
+        onChange={onInputChange}
         onSend={sendMessage}
         disabled={phase === "handoff" || isStreaming}
       />
