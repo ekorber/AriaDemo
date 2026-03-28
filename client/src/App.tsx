@@ -161,6 +161,7 @@ export default function App() {
           deleteCampaign={campaignHook.deleteCampaign}
           duplicateCampaign={campaignHook.duplicateCampaign}
           markExported={campaignHook.markExported}
+          assignPlatform={campaignHook.assignPlatform}
           initialCampaignId={initialCampaignId}
           initialLeadId={initialLeadId}
           onConsumeInitial={consumeInitial}

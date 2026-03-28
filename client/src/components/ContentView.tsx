@@ -1,21 +1,12 @@
 import { useState, useCallback } from "react";
 import { Campaign, CampaignTone, CampaignStatus, Lead, SocialPlatform } from "../types";
-import { ContentOutputPanel } from "./ContentOutputPanel";
+import { CampaignDetailView } from "./CampaignDetailView";
 
 const STATUS_BADGE: Record<CampaignStatus, string> = {
   draft: "bg-zinc-800 text-zinc-400",
   generating: "bg-amber-950 text-amber-400 animate-pulse",
   ready: "bg-emerald-950 text-emerald-400",
   exported: "bg-blue-950 text-blue-400",
-};
-
-const PLATFORM_LABELS: Record<SocialPlatform, string> = {
-  instagram: "INSTAGRAM",
-  tiktok: "TIKTOK",
-  x: "X",
-  facebook: "FACEBOOK",
-  youtube_shorts: "YOUTUBE SHORTS",
-  threads: "THREADS",
 };
 
 interface ContentViewProps {
@@ -31,6 +22,7 @@ interface ContentViewProps {
   deleteCampaign: (campaignId: string) => void;
   duplicateCampaign: (campaignId: string) => Promise<string | null>;
   markExported: (campaignId: string) => void;
+  assignPlatform: (campaignId: string, platform: SocialPlatform, date: string | null) => void;
   initialCampaignId?: string | null;
   initialLeadId?: string | null;
   onConsumeInitial?: () => void;
@@ -49,14 +41,13 @@ export function ContentView({
   deleteCampaign,
   duplicateCampaign,
   markExported,
+  assignPlatform,
   initialCampaignId,
   initialLeadId,
   onConsumeInitial,
 }: ContentViewProps) {
   const [selectedId, setSelectedId] = useState<string | null>(initialCampaignId ?? null);
   const [showNewForm, setShowNewForm] = useState(!!initialLeadId);
-  const [confirmRegenerate, setConfirmRegenerate] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
 
   // New campaign form state
   const [newLeadId, setNewLeadId] = useState(initialLeadId ?? "");
@@ -84,200 +75,49 @@ export function ContentView({
     setNewTone("");
   };
 
-  const handleGenerate = useCallback(async () => {
-    if (!selected) return;
-    if (selected.socialPosts.length > 0 && !confirmRegenerate) {
-      setConfirmRegenerate(true);
-      return;
-    }
-    setConfirmRegenerate(false);
-    await generateContent(selected.id);
-  }, [selected, confirmRegenerate, generateContent]);
-
-  const handleExport = useCallback(() => {
-    if (!selected) return;
+  const handleExport = useCallback((campaign: Campaign) => {
     const PLATFORM_ORDER: SocialPlatform[] = ["instagram", "tiktok", "x", "facebook", "youtube_shorts", "threads"];
+    const PLATFORM_LABELS: Record<SocialPlatform, string> = {
+      instagram: "INSTAGRAM", tiktok: "TIKTOK", x: "X",
+      facebook: "FACEBOOK", youtube_shorts: "YOUTUBE SHORTS", threads: "THREADS",
+    };
     const lines = PLATFORM_ORDER.map((platform) => {
-      const post = selected.socialPosts.find((p) => p.platform === platform);
+      const post = campaign.socialPosts.find((p) => p.platform === platform);
       if (!post) return "";
       return `=== ${PLATFORM_LABELS[platform]} ===\n${post.hook}\n${post.caption ? post.caption + "\n" : ""}`;
     }).filter(Boolean);
-
     const text = lines.join("\n");
-
-    // Download as .txt
     const blob = new Blob([text], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${selected.clientName.replace(/\s+/g, "_")}_campaign.txt`;
+    a.download = `${campaign.clientName.replace(/\s+/g, "_")}_campaign.txt`;
     a.click();
     URL.revokeObjectURL(url);
-
-    // Also copy to clipboard
     navigator.clipboard.writeText(text);
-
-    markExported(selected.id);
-  }, [selected, markExported]);
+    markExported(campaign.id);
+  }, [markExported]);
 
   // ─── Campaign Detail View ─────────────────────────────────
   if (selected) {
-    const approvedCount = selected.socialPosts.filter((p) => p.approved).length;
-    const totalCount = selected.socialPosts.length;
-
     return (
-      <div className="flex-1 overflow-y-auto p-6">
-        {/* Back + header */}
-        <div className="mb-6">
-          <button
-            onClick={() => { setSelectedId(null); setConfirmRegenerate(false); setConfirmDelete(false); }}
-            className="text-xs text-zinc-500 hover:text-zinc-300 mb-3 flex items-center gap-1 transition-colors"
-          >
-            <span>&larr;</span> Back to campaigns
-          </button>
-          <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-lg font-semibold text-zinc-100">{selected.clientName}</h1>
-            <span className="text-xs text-zinc-500">{selected.projectType}</span>
-            <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider ${STATUS_BADGE[selected.status]}`}>
-              {selected.status}
-            </span>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 uppercase tracking-wider">
-              {selected.tone}
-            </span>
-          </div>
-        </div>
-
-        {/* Editable brief */}
-        <div className="mb-6">
-          <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1.5">Brief</label>
-          <textarea
-            value={selected.brief}
-            onChange={(e) => updateCampaignBrief(selected.id, e.target.value)}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-zinc-300 resize-none focus:outline-none focus:border-zinc-600"
-            rows={3}
-          />
-        </div>
-
-        {/* Action bar */}
-        <div className="flex items-center gap-3 mb-6 flex-wrap">
-          {confirmRegenerate ? (
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-amber-400">Regenerate will replace unapproved posts. Approved posts will be kept.</span>
-              <button
-                onClick={handleGenerate}
-                className="text-xs bg-amber-600 hover:bg-amber-500 text-white px-3 py-1.5 rounded transition-colors"
-              >
-                Confirm
-              </button>
-              <button
-                onClick={() => setConfirmRegenerate(false)}
-                className="text-xs text-zinc-500 hover:text-zinc-300 px-2 py-1.5"
-              >
-                Cancel
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={handleGenerate}
-              disabled={selected.status === "generating" || !selected.brief.trim()}
-              className="text-xs bg-zinc-100 text-zinc-900 hover:bg-white px-4 py-1.5 rounded font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {selected.status === "generating"
-                ? "Generating..."
-                : selected.socialPosts.length > 0
-                ? "Regenerate"
-                : "Generate"}
-            </button>
-          )}
-
-          {totalCount > 0 && (
-            <>
-              <button
-                onClick={() => approveAll(selected.id)}
-                className="text-xs text-zinc-500 hover:text-zinc-300 px-2 py-1.5 transition-colors"
-              >
-                Approve All ({approvedCount}/{totalCount})
-              </button>
-              <button
-                onClick={handleExport}
-                className="text-xs text-zinc-500 hover:text-zinc-300 px-2 py-1.5 transition-colors"
-              >
-                Export
-              </button>
-              <button
-                onClick={async () => {
-                  const newId = await duplicateCampaign(selected.id);
-                  if (newId) setSelectedId(newId);
-                }}
-                className="text-xs text-zinc-500 hover:text-zinc-300 px-2 py-1.5 transition-colors"
-              >
-                Duplicate
-              </button>
-            </>
-          )}
-
-          <button
-            onClick={() => setConfirmDelete(true)}
-            className="text-xs text-red-500/60 hover:text-red-400 px-2 py-1.5 ml-auto transition-colors"
-          >
-            Delete
-          </button>
-
-          {/* Delete confirmation modal */}
-          {confirmDelete && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-              <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-6 max-w-sm w-full mx-4 space-y-4">
-                <h3 className="text-sm font-medium text-zinc-100">Delete campaign?</h3>
-                <p className="text-xs text-zinc-400">
-                  This will permanently delete the <span className="text-zinc-200">{selected.clientName}</span> campaign and all its posts. This action cannot be undone.
-                </p>
-                <div className="flex gap-2 justify-end">
-                  <button
-                    onClick={() => setConfirmDelete(false)}
-                    className="text-xs text-zinc-500 hover:text-zinc-300 px-3 py-1.5 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => { deleteCampaign(selected.id); setSelectedId(null); setConfirmDelete(false); }}
-                    className="text-xs bg-red-600 hover:bg-red-500 text-white px-4 py-1.5 rounded font-medium transition-colors"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Posts grid or skeleton */}
-        {selected.status === "generating" ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4 space-y-3 animate-pulse">
-                <div className="h-5 w-24 bg-zinc-800 rounded-full" />
-                <div className="h-4 w-3/4 bg-zinc-800 rounded" />
-                <div className="space-y-2">
-                  <div className="h-3 w-full bg-zinc-800/60 rounded" />
-                  <div className="h-3 w-5/6 bg-zinc-800/60 rounded" />
-                  <div className="h-3 w-2/3 bg-zinc-800/60 rounded" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : totalCount > 0 ? (
-          <ContentOutputPanel
-            posts={selected.socialPosts}
-            onUpdatePost={(postId, fields) => updatePost(selected.id, postId, fields)}
-            onApprovePost={(postId) => approvePost(selected.id, postId)}
-            interactive
-          />
-        ) : (
-          <div className="text-center py-16 text-zinc-600 text-sm">
-            Write a brief above, then click Generate to create content for all 6 platforms.
-          </div>
-        )}
-      </div>
+      <CampaignDetailView
+        campaign={selected}
+        onBack={() => { setSelectedId(null); }}
+        onUpdateBrief={updateCampaignBrief}
+        onUpdatePost={updatePost}
+        onApprovePost={approvePost}
+        onApproveAll={approveAll}
+        onDelete={(id) => { deleteCampaign(id); setSelectedId(null); }}
+        onDuplicate={async (id) => {
+          const newId = await duplicateCampaign(id);
+          if (newId) setSelectedId(newId);
+          return newId;
+        }}
+        onExport={handleExport}
+        onGenerate={generateContent}
+        onAssignPlatform={assignPlatform}
+      />
     );
   }
 
