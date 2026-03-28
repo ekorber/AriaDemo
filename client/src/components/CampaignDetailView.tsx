@@ -93,13 +93,13 @@ export function CampaignDetailView({
           <div className="flex items-center gap-3">
             <button
               onClick={onBack}
-              className="text-xs text-zinc-500 hover:text-zinc-300 flex items-center gap-1 transition-colors"
+              className="text-sm text-zinc-500 hover:text-zinc-300 flex items-center gap-1 transition-colors"
             >
               <span>&larr;</span> Back
             </button>
-            <h1 className="text-sm font-semibold text-zinc-100">{campaign.clientName}</h1>
-            <span className="text-xs text-zinc-500">{campaign.projectType}</span>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 uppercase tracking-wider">
+            <h1 className="text-base font-semibold text-zinc-100">{campaign.clientName}</h1>
+            <span className="text-sm text-zinc-500">{campaign.projectType}</span>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 uppercase tracking-wider">
               {campaign.tone}
             </span>
           </div>
@@ -108,13 +108,13 @@ export function CampaignDetailView({
               <>
                 <button
                   onClick={() => onApproveAll(campaign.id)}
-                  className="text-xs text-zinc-500 hover:text-zinc-300 px-2 py-1 transition-colors"
+                  className="text-sm text-zinc-500 hover:text-zinc-300 px-2 py-1 transition-colors"
                 >
                   Approve All ({approvedCount}/{totalCount})
                 </button>
                 <button
                   onClick={() => onExport(campaign)}
-                  className="text-xs text-zinc-500 hover:text-zinc-300 px-2 py-1 transition-colors"
+                  className="text-sm text-zinc-500 hover:text-zinc-300 px-2 py-1 transition-colors"
                 >
                   Export
                 </button>
@@ -123,7 +123,7 @@ export function CampaignDetailView({
                     await onDuplicate(campaign.id);
                     // Parent handles navigation to the new campaign
                   }}
-                  className="text-xs text-zinc-500 hover:text-zinc-300 px-2 py-1 transition-colors"
+                  className="text-sm text-zinc-500 hover:text-zinc-300 px-2 py-1 transition-colors"
                 >
                   Duplicate
                 </button>
@@ -131,7 +131,7 @@ export function CampaignDetailView({
             )}
             <button
               onClick={() => setConfirmDelete(true)}
-              className="text-xs text-red-500/60 hover:text-red-400 px-2 py-1 transition-colors"
+              className="text-sm text-red-500/60 hover:text-red-400 px-2 py-1 transition-colors"
             >
               Delete
             </button>
@@ -143,7 +143,7 @@ export function CampaignDetailView({
           <textarea
             value={campaign.brief}
             onChange={(e) => onUpdateBrief(campaign.id, e.target.value)}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 text-xs text-zinc-400 resize-none focus:outline-none focus:border-zinc-600"
+            className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 text-sm text-zinc-400 resize-none focus:outline-none focus:border-zinc-600"
             rows={2}
             placeholder="Campaign brief..."
           />
@@ -169,7 +169,7 @@ export function CampaignDetailView({
           />
         ) : (
           <div className="flex-1 flex items-center justify-center">
-            <div className="text-center text-zinc-600 text-sm">
+            <div className="text-center text-zinc-600 text-base">
               {campaign.socialPosts.length === 0
                 ? "Assign a platform from the sidebar to get started."
                 : "Select a platform to view its post."}
@@ -190,20 +190,20 @@ export function CampaignDetailView({
       {confirmDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
           <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-6 max-w-sm w-full mx-4 space-y-4">
-            <h3 className="text-sm font-medium text-zinc-100">Delete campaign?</h3>
-            <p className="text-xs text-zinc-400">
+            <h3 className="text-base font-medium text-zinc-100">Delete campaign?</h3>
+            <p className="text-sm text-zinc-400">
               This will permanently delete the <span className="text-zinc-200">{campaign.clientName}</span> campaign and all its posts. This action cannot be undone.
             </p>
             <div className="flex gap-2 justify-end">
               <button
                 onClick={() => setConfirmDelete(false)}
-                className="text-xs text-zinc-500 hover:text-zinc-300 px-3 py-1.5 transition-colors"
+                className="text-sm text-zinc-500 hover:text-zinc-300 px-3 py-1.5 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={() => { onDelete(campaign.id); setConfirmDelete(false); }}
-                className="text-xs bg-red-600 hover:bg-red-500 text-white px-4 py-1.5 rounded font-medium transition-colors"
+                className="text-sm bg-red-600 hover:bg-red-500 text-white px-4 py-1.5 rounded font-medium transition-colors"
               >
                 Delete
               </button>

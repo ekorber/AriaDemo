@@ -65,7 +65,7 @@ export function CampaignCalendar({ posts, selectedDate, onSelectDate }: Campaign
 
   return (
     <div className="w-[280px] min-w-[280px] border-r border-zinc-800 p-4 bg-zinc-950 flex flex-col">
-      <div className="text-[11px] uppercase tracking-widest text-zinc-500 mb-3">Schedule</div>
+      <div className="text-xs uppercase tracking-widest text-zinc-500 mb-3">Schedule</div>
 
       <div className="bg-zinc-900 rounded-lg p-3.5">
         {/* Month header with navigation */}
@@ -76,7 +76,7 @@ export function CampaignCalendar({ posts, selectedDate, onSelectDate }: Campaign
           >
             ‹
           </button>
-          <span className="text-sm text-zinc-300 font-medium">{monthName}</span>
+          <span className="text-base text-zinc-300 font-medium">{monthName}</span>
           <button
             onClick={() => navigateMonth(1)}
             className="text-zinc-500 hover:text-zinc-300 px-1.5 py-0.5 rounded hover:bg-zinc-800 transition-colors text-sm"
@@ -86,14 +86,14 @@ export function CampaignCalendar({ posts, selectedDate, onSelectDate }: Campaign
         </div>
 
         {/* Day headers */}
-        <div className="grid grid-cols-7 text-center text-[11px] text-zinc-600 mb-1">
+        <div className="grid grid-cols-7 text-center text-xs text-zinc-600 mb-1">
           {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => (
             <span key={d} className="py-1">{d}</span>
           ))}
         </div>
 
         {/* Day cells */}
-        <div className="grid grid-cols-7 text-center text-[11px]">
+        <div className="grid grid-cols-7 text-center text-xs">
           {cells.map((day, i) => {
             if (day === null) return <span key={i} />;
             const dateStr = formatDate(day);
@@ -138,7 +138,7 @@ export function CampaignCalendar({ posts, selectedDate, onSelectDate }: Campaign
         {/* Legend */}
         <div className="mt-4 pt-3 border-t border-zinc-800 flex flex-wrap gap-2">
           {ALL_PLATFORMS.map((p) => (
-            <span key={p} className="flex items-center gap-1 text-[9px] text-zinc-500">
+            <span key={p} className="flex items-center gap-1 text-[11px] text-zinc-500">
               <span
                 className="w-1.5 h-1.5 rounded-full"
                 style={{
@@ -156,7 +156,7 @@ export function CampaignCalendar({ posts, selectedDate, onSelectDate }: Campaign
       {/* Undecided button */}
       <button
         onClick={() => onSelectDate(null)}
-        className={`w-full mt-3 px-3 py-2.5 rounded-lg text-xs font-medium flex items-center justify-center gap-2 transition-colors ${
+        className={`w-full mt-3 px-3 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors ${
           selectedDate === null
             ? "bg-amber-950 border border-amber-600 text-amber-300"
             : "bg-zinc-900 border border-zinc-700 text-amber-500 hover:border-zinc-600"
@@ -164,7 +164,7 @@ export function CampaignCalendar({ posts, selectedDate, onSelectDate }: Campaign
       >
         Undecided
         {undecidedCount > 0 && (
-          <span className="ml-auto text-[10px] bg-amber-950 text-amber-400 px-1.5 py-0.5 rounded">
+          <span className="ml-auto text-xs bg-amber-950 text-amber-400 px-1.5 py-0.5 rounded">
             {undecidedCount}
           </span>
         )}
