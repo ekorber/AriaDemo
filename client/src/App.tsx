@@ -15,6 +15,7 @@ export default function App() {
   const onChatStart = useCallback(async () => {
     const id = await startChat();
     setActiveChatId(id);
+    return id;
   }, [startChat]);
 
   const qualifiedRef = useRef(false);
@@ -57,7 +58,7 @@ export default function App() {
     [promoteToHandoff, activeChatId]
   );
 
-  const { messages, intentScore, phase, handoffLead, isStreaming, sendMessage } =
+  const { messages, intentScore, phase, handoffLead, isStreaming, sendMessage, reloadMessages } =
     useAgent(activeChatId, { onChatStart, onScoreUpdate, onHandoff });
   const [chatInput, setChatInput] = useState("");
 
@@ -70,7 +71,7 @@ export default function App() {
         </span>
         <nav className="flex gap-6 ml-8">
           <button
-            onClick={() => setActiveTab("chat")}
+            onClick={() => { setActiveTab("chat"); reloadMessages(); }}
             className={`text-sm pb-0.5 border-b transition-colors ${
               activeTab === "chat"
                 ? "text-white border-white"

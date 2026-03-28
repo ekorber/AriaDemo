@@ -4,7 +4,7 @@ import { streamMessage } from "../services/anthropic";
 import * as api from "../services/api";
 
 interface AgentCallbacks {
-  onChatStart?: () => void;
+  onChatStart?: () => Promise<string | void> | string | void;
   onScoreUpdate?: (update: ScoreUpdate) => void;
   onHandoff?: (lead: Lead) => void;
 }
@@ -69,9 +69,11 @@ export function useAgent(
     async (content: string) => {
       if (isStreaming || phase === "handoff") return;
 
+      let effectiveLeadId = leadId;
       if (!chatStarted) {
         setChatStarted(true);
-        callbacks?.onChatStart?.();
+        const result = await callbacks?.onChatStart?.();
+        if (result) effectiveLeadId = result;
       }
 
       const userMessage: Message = {
@@ -115,11 +117,18 @@ export function useAgent(
         callbacks?.onHandoff?.(lead);
       };
 
-      await streamMessage(updatedMessages, onChunk, onScoreUpdate, onHandoff, leadId);
+      await streamMessage(updatedMessages, onChunk, onScoreUpdate, onHandoff, effectiveLeadId);
       setIsStreaming(false);
     },
     [messages, isStreaming, phase, leadId]
   );
 
-  return { messages, intentScore, phase, handoffLead, isStreaming, sendMessage };
+  const reloadMessages = useCallback(() => {
+    if (!leadId || isStreaming) return;
+    api.fetchMessages(leadId).then((msgs) => {
+      if (msgs.length > 0) setMessages(msgs);
+    });
+  }, [leadId, isStreaming]);
+
+  return { messages, intentScore, phase, handoffLead, isStreaming, sendMessage, reloadMessages };
 }
