@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Message } from "../types";
+import { parseMessageParts } from "../utils/parseMessage";
 
 interface MessageListProps {
   messages: Message[];
@@ -21,27 +22,46 @@ export function MessageList({ messages }: MessageListProps) {
           </p>
         </div>
       )}
-      {messages.map((message) => (
-        <div
-          key={message.id}
-          className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-        >
+      {messages.map((message) => {
+        const parts = parseMessageParts(message.content);
+        return (
           <div
-            className={`max-w-[80%] ${
-              message.role === "user"
-                ? "bg-zinc-800 rounded-2xl px-4 py-2.5 text-zinc-100"
-                : "text-zinc-300 py-1"
-            }`}
+            key={message.id}
+            className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
           >
-            <p className="text-sm leading-relaxed whitespace-pre-wrap">
-              {message.content}
-              {message.role === "assistant" && message.content === "" && (
-                <span className="inline-block w-1.5 h-4 bg-zinc-500 animate-pulse ml-0.5" />
-              )}
-            </p>
+            <div className="max-w-[80%] space-y-1">
+              <div
+                className={
+                  message.role === "user"
+                    ? "bg-zinc-800 rounded-2xl px-4 py-2.5 text-zinc-100"
+                    : "text-zinc-300 py-1"
+                }
+              >
+                <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                  {parts
+                    .filter((p) => p.type === "text")
+                    .map((p, i) => (
+                      <span key={i}>{p.value}</span>
+                    ))}
+                  {message.role === "assistant" && message.content === "" && (
+                    <span className="inline-block w-1.5 h-4 bg-zinc-500 animate-pulse ml-0.5" />
+                  )}
+                </p>
+              </div>
+              {parts
+                .filter((p) => p.type === "info")
+                .map((p, i) => (
+                  <div
+                    key={i}
+                    className="text-xs italic text-zinc-500 border-l-2 border-zinc-700 pl-2 py-0.5"
+                  >
+                    {p.value}
+                  </div>
+                ))}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
       <div ref={bottomRef} />
     </div>
   );

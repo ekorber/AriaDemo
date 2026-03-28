@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Lead, Message } from "../types";
 import { fetchMessages } from "../services/api";
+import { parseMessageParts } from "../utils/parseMessage";
 
 const BUDGET_COLORS: Record<string, string> = {
   high: "text-emerald-400",
@@ -22,12 +23,22 @@ function scoreLevel(score: number) {
 
 interface LeadDetailSidebarProps {
   lead: Lead;
+  closing?: boolean;
   onClose: () => void;
 }
 
-export function LeadDetailSidebar({ lead, onClose }: LeadDetailSidebarProps) {
+export function LeadDetailSidebar({ lead, closing, onClose }: LeadDetailSidebarProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+  const frameRef = useRef(0);
+
+  useEffect(() => {
+    frameRef.current = requestAnimationFrame(() => {
+      frameRef.current = requestAnimationFrame(() => setMounted(true));
+    });
+    return () => cancelAnimationFrame(frameRef.current);
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -40,7 +51,11 @@ export function LeadDetailSidebar({ lead, onClose }: LeadDetailSidebarProps) {
   const level = scoreLevel(lead.intent_score);
 
   return (
-    <div className="w-[420px] flex-shrink-0 border-l border-zinc-800 bg-zinc-950 flex flex-col overflow-hidden animate-slide-in">
+    <div
+      data-sidebar
+      className="w-[420px] absolute right-0 top-0 bottom-0 z-10 border-l border-zinc-800 bg-zinc-950 flex flex-col overflow-hidden shadow-2xl transition-transform duration-200 ease-out"
+      style={{ transform: !mounted || closing ? "translateX(100%)" : "translateX(0)" }}
+    >
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-800">
         <h2 className="text-sm font-semibold text-zinc-100">
@@ -142,21 +157,43 @@ export function LeadDetailSidebar({ lead, onClose }: LeadDetailSidebarProps) {
             <div className="text-xs text-zinc-500 py-4 text-center">No messages yet</div>
           ) : (
             <div className="space-y-3">
-              {messages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`text-sm leading-relaxed rounded-lg px-3 py-2 ${
-                    msg.role === "assistant"
-                      ? "bg-zinc-900 text-zinc-300"
-                      : "bg-zinc-800 text-zinc-200"
-                  }`}
-                >
-                  <span className="text-xs text-zinc-500 block mb-1 capitalize">
-                    {msg.role === "assistant" ? "Aria" : "Visitor"}
-                  </span>
-                  {msg.content}
-                </div>
-              ))}
+              {messages.map((msg) => {
+                const parts = parseMessageParts(msg.content);
+                const senderName =
+                  msg.role === "assistant"
+                    ? "Aria"
+                    : lead.name || "Visitor";
+                return (
+                  <div key={msg.id}>
+                    <div
+                      className={`text-sm leading-relaxed rounded-lg px-3 py-2 ${
+                        msg.role === "assistant"
+                          ? "bg-zinc-900 text-zinc-300"
+                          : "bg-zinc-800 text-zinc-200"
+                      }`}
+                    >
+                      <span className="text-xs text-zinc-500 block mb-1">
+                        {senderName}
+                      </span>
+                      {parts
+                        .filter((p) => p.type === "text")
+                        .map((p, i) => (
+                          <span key={i}>{p.value}</span>
+                        ))}
+                    </div>
+                    {parts
+                      .filter((p) => p.type === "info")
+                      .map((p, i) => (
+                        <div
+                          key={i}
+                          className="mt-1 text-xs italic text-zinc-500 border-l-2 border-zinc-700 pl-2 py-0.5"
+                        >
+                          {p.value}
+                        </div>
+                      ))}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

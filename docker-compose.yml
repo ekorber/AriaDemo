@@ -13,6 +13,9 @@ services:
     depends_on:
       - mongo
     env_file: .env
+    volumes:
+      - ./chat:/app/chat
+      - ./AriaDemo:/app/AriaDemo
 
   frontend:
     build: ./client
@@ -22,6 +25,10 @@ services:
       - backend
     environment:
       - VITE_API_TARGET=http://backend:8000
+    volumes:
+      - ./client/src:/app/src
+      - ./client/index.html:/app/index.html
+      - ./client/tailwind.config.js:/app/tailwind.config.js
 
 volumes:
   mongo_data:

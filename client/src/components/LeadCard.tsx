@@ -29,6 +29,7 @@ export function LeadCard({ lead, selected, onClick }: LeadCardProps) {
 
   return (
     <div
+      data-lead-card
       draggable
       onClick={onClick}
       onDragStart={(e) => {
