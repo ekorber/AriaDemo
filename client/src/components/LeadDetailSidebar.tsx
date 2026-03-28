@@ -186,7 +186,7 @@ export function LeadDetailSidebar({ lead, closing, onClose }: LeadDetailSidebarP
                       .map((p, i) => (
                         <div
                           key={i}
-                          className="mt-1 text-xs italic text-zinc-500 border-l-2 border-zinc-700 pl-2 py-0.5"
+                          className="mt-1 text-xs italic text-zinc-300 border-l-2 border-zinc-600 pl-2 py-0.5"
                         >
                           {p.value}
                         </div>
