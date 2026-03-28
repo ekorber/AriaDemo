@@ -59,6 +59,7 @@ export default function App() {
 
   const { messages, intentScore, phase, handoffLead, isStreaming, sendMessage } =
     useAgent(activeChatId, { onChatStart, onScoreUpdate, onHandoff });
+  const [chatInput, setChatInput] = useState("");
 
   return (
     <div className="h-screen flex flex-col bg-zinc-950 text-zinc-100">
@@ -101,6 +102,8 @@ export default function App() {
               isStreaming={isStreaming}
               phase={phase}
               sendMessage={sendMessage}
+              inputValue={chatInput}
+              onInputChange={setChatInput}
             />
           </div>
           <IntentPanel
