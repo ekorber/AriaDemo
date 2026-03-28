@@ -21,9 +21,11 @@ export function useAgent(
   const [chatStarted, setChatStarted] = useState(false);
   const initRan = useRef(false);
 
-  // Load existing messages when leadId changes
+  // Load existing messages only when resuming a previous session (leadId passed on mount)
+  const isNewSession = useRef(false);
   useEffect(() => {
     if (!leadId) return;
+    if (isNewSession.current) return; // Skip DB fetch for leads we just created
     api.fetchMessages(leadId).then((msgs) => {
       if (msgs.length > 0) {
         setMessages(msgs);
@@ -33,36 +35,18 @@ export function useAgent(
     });
   }, [leadId]);
 
+  const GREETING = "Hey there! Great to connect with you today. I'm Aria from the studio.\n\nWhat kind of music are you working on right now?";
+
   useEffect(() => {
     if (initRan.current) return;
     initRan.current = true;
 
-    const greeting: Message = {
+    setMessages([{
       id: crypto.randomUUID(),
       role: "assistant",
-      content: "",
+      content: GREETING,
       createdAt: new Date(),
-    };
-    setMessages([greeting]);
-    setIsStreaming(true);
-
-    const onChunk = (text: string) => {
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === greeting.id ? { ...m, content: text } : m
-        )
-      );
-    };
-
-    const onScoreUpdate = (update: ScoreUpdate) => {
-      setIntentScore(update.score);
-      setPhase(update.phase);
-      callbacks?.onScoreUpdate?.(update);
-    };
-
-    streamMessage([], onChunk, onScoreUpdate, () => {}, leadId).then(() => {
-      setIsStreaming(false);
-    });
+    }]);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const sendMessage = useCallback(
@@ -73,7 +57,15 @@ export function useAgent(
       if (!chatStarted) {
         setChatStarted(true);
         const result = await callbacks?.onChatStart?.();
-        if (result) effectiveLeadId = result;
+        if (result) {
+          effectiveLeadId = result;
+          isNewSession.current = true;
+          // Persist the greeting message that was streamed before the lead existed
+          const greeting = messages.find((m) => m.role === "assistant" && m.content);
+          if (greeting) {
+            api.createMessage(result, "assistant", greeting.content);
+          }
+        }
       }
 
       const userMessage: Message = {
@@ -123,12 +115,15 @@ export function useAgent(
     [messages, isStreaming, phase, leadId]
   );
 
+  const streamingRef = useRef(false);
+  streamingRef.current = isStreaming;
+
   const reloadMessages = useCallback(() => {
-    if (!leadId || isStreaming) return;
+    if (!leadId || streamingRef.current) return;
     api.fetchMessages(leadId).then((msgs) => {
-      if (msgs.length > 0) setMessages(msgs);
+      if (msgs.length > 0 && !streamingRef.current) setMessages(msgs);
     });
-  }, [leadId, isStreaming]);
+  }, [leadId]);
 
   return { messages, intentScore, phase, handoffLead, isStreaming, sendMessage, reloadMessages };
 }

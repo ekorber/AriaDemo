@@ -87,3 +87,15 @@ export async function fetchMessages(leadId: string): Promise<Message[]> {
   const data: MessageResponse[] = await res.json();
   return data.map(toMessage);
 }
+
+export async function createMessage(
+  leadId: string,
+  role: "user" | "assistant",
+  content: string
+): Promise<void> {
+  await fetch(`${BASE}/leads/${leadId}/messages/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ role, content }),
+  });
+}

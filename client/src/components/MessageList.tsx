@@ -40,9 +40,13 @@ export function MessageList({ messages }: MessageListProps) {
                   : "text-zinc-300 py-1"
               }`}
             >
-              <p className="text-sm leading-relaxed whitespace-pre-wrap">
+              <p className="text-base leading-relaxed whitespace-pre-wrap">
                 {textParts.map((p, i) => (
-                  <span key={i}>{p.value}</span>
+                  <span key={i}>
+                    {message.role === "assistant"
+                      ? p.value.replace(/ — /g, ", ").replace(/ -- /g, ", ")
+                      : p.value}
+                  </span>
                 ))}
                 {message.role === "assistant" && message.content === "" && (
                   <span className="inline-block w-1.5 h-4 bg-zinc-500 animate-pulse ml-0.5" />
