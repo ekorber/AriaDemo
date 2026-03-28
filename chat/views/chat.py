@@ -6,7 +6,7 @@ from django.http import StreamingHttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from .system_prompt import SYSTEM_PROMPT
+from ..system_prompt import SYSTEM_PROMPT
 
 
 @csrf_exempt
