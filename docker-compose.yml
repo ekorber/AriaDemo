@@ -13,9 +13,6 @@ services:
     depends_on:
       - mongo
     env_file: .env
-    volumes:
-      - .:/app
-    command: python manage.py runserver 0.0.0.0:8000
 
   frontend:
     build: ./client
@@ -23,9 +20,8 @@ services:
       - "5173:5173"
     depends_on:
       - backend
-    volumes:
-      - ./client:/app
-      - /app/node_modules
+    environment:
+      - VITE_API_TARGET=http://backend:8000
 
 volumes:
   mongo_data:

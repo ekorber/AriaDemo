@@ -1,0 +1,9 @@
+.git
+.env
+__pycache__
+*.pyc
+db.sqlite3
+client/node_modules
+client/dist
+docs
+.venv
