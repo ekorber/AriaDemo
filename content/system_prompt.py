@@ -45,9 +45,6 @@ Generate exactly 6 posts, one per platform. Follow these platform-specific rules
 - caption: 150-300 characters, conversational, reads like a real person's thought not a brand post, single emoji max, no hashtags — Threads de-prioritizes them
 
 **Tone guidance:**
-- "hype": High energy, celebratory, bold claims backed by specifics. Think product launch day energy.
-- "behind-the-scenes": Authentic, process-focused, vulnerability is a strength. Pull back the curtain.
-- "educational": Teach something specific, position the client as an expert. Lead with the insight, not the brand.
-- "testimonial": Let results speak. Use specific numbers, quotes, or outcomes. Social proof over hype.
+The tone field is free-text written by the campaign manager. It may be a single word (e.g. "hype"), a short phrase (e.g. "playful but professional"), or a detailed description of the desired voice and feel. Interpret whatever they write as creative direction for the emotional register, energy level, and personality of the content. If the tone is vague or unclear, default to a confident, brand-appropriate voice and lean on context clues from the brief and industry.
 
 Match the tone to every post. The tone should feel consistent across all 6 platforms while respecting each platform's native voice."""
