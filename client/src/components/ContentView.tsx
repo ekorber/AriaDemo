@@ -56,6 +56,7 @@ export function ContentView({
   const [selectedId, setSelectedId] = useState<string | null>(initialCampaignId ?? null);
   const [showNewForm, setShowNewForm] = useState(!!initialLeadId);
   const [confirmRegenerate, setConfirmRegenerate] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   // New campaign form state
   const [newLeadId, setNewLeadId] = useState(initialLeadId ?? "");
@@ -129,7 +130,7 @@ export function ContentView({
         {/* Back + header */}
         <div className="mb-6">
           <button
-            onClick={() => { setSelectedId(null); setConfirmRegenerate(false); }}
+            onClick={() => { setSelectedId(null); setConfirmRegenerate(false); setConfirmDelete(false); }}
             className="text-xs text-zinc-500 hover:text-zinc-300 mb-3 flex items-center gap-1 transition-colors"
           >
             <span>&larr;</span> Back to campaigns
@@ -216,11 +217,37 @@ export function ContentView({
           )}
 
           <button
-            onClick={() => { deleteCampaign(selected.id); setSelectedId(null); }}
+            onClick={() => setConfirmDelete(true)}
             className="text-xs text-red-500/60 hover:text-red-400 px-2 py-1.5 ml-auto transition-colors"
           >
             Delete
           </button>
+
+          {/* Delete confirmation modal */}
+          {confirmDelete && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+              <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-6 max-w-sm w-full mx-4 space-y-4">
+                <h3 className="text-sm font-medium text-zinc-100">Delete campaign?</h3>
+                <p className="text-xs text-zinc-400">
+                  This will permanently delete the <span className="text-zinc-200">{selected.clientName}</span> campaign and all its posts. This action cannot be undone.
+                </p>
+                <div className="flex gap-2 justify-end">
+                  <button
+                    onClick={() => setConfirmDelete(false)}
+                    className="text-xs text-zinc-500 hover:text-zinc-300 px-3 py-1.5 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => { deleteCampaign(selected.id); setSelectedId(null); setConfirmDelete(false); }}
+                    className="text-xs bg-red-600 hover:bg-red-500 text-white px-4 py-1.5 rounded font-medium transition-colors"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Posts grid or skeleton */}
