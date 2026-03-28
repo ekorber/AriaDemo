@@ -37,72 +37,75 @@ export async function streamMessage(
       if (done) break;
 
       buffer += decoder.decode(value, { stream: true });
-
-      // Process score_update tags
-      const scoreRegex = /<score_update>([\s\S]*?)<\/score_update>/g;
-      let match: RegExpExecArray | null;
-
-      while ((match = scoreRegex.exec(buffer)) !== null) {
-        try {
-          const update: ScoreUpdate = JSON.parse(match[1]);
-          onScoreUpdate(update);
-        } catch {
-          // ignore malformed score updates
-        }
-      }
-
-      // Strip score_update tags from display text
-      const cleanText = buffer.replace(
-        /<score_update>[\s\S]*?<\/score_update>/g,
-        ""
-      );
-
-      // Check for handoff JSON
-      const handoffMatch = cleanText.match(
-        /\{"event"\s*:\s*"handoff_triggered"\s*,\s*"lead"\s*:\s*\{[\s\S]*?\}\s*\}/
-      );
-
-      if (handoffMatch) {
-        try {
-          const handoffData = JSON.parse(handoffMatch[0]);
-          const textBeforeHandoff = cleanText
-            .substring(0, cleanText.indexOf(handoffMatch[0]))
-            .trim();
-          if (textBeforeHandoff) {
-            onChunk(textBeforeHandoff);
-          }
-          onHandoff(handoffData.lead);
-        } catch {
-          onChunk(cleanText);
-        }
-      } else {
-        // Strip any partial score_update tags at the end of buffer
-        const partialTagIndex = cleanText.lastIndexOf("<score_update>");
-        if (
-          partialTagIndex !== -1 &&
-          !cleanText.includes("</score_update>", partialTagIndex)
-        ) {
-          onChunk(cleanText.substring(0, partialTagIndex));
-        } else {
-          onChunk(cleanText);
-        }
-      }
+      emitSafe(buffer, onChunk, onScoreUpdate, onHandoff, false);
     }
 
-    // Process any remaining buffer
-    const finalClean = buffer
-      .replace(/<score_update>[\s\S]*?<\/score_update>/g, "")
-      .replace(
-        /\{"event"\s*:\s*"handoff_triggered"\s*,\s*"lead"\s*:\s*\{[\s\S]*?\}\s*\}/,
-        ""
-      )
-      .trim();
-
-    if (finalClean && finalClean !== buffer) {
-      onChunk(finalClean);
-    }
+    // Final pass — flush everything
+    emitSafe(buffer, onChunk, onScoreUpdate, onHandoff, true);
   } catch (error) {
     console.error("Stream error:", error);
     onChunk("Connection error. Please check your network and try again.");
+  }
+}
+
+function emitSafe(
+  buffer: string,
+  onChunk: (text: string) => void,
+  onScoreUpdate: (update: ScoreUpdate) => void,
+  onHandoff: (lead: Lead) => void,
+  isFinal: boolean
+) {
+  // 1. Extract and fire complete score_update tags
+  const scoreRegex = /<score_update>([\s\S]*?)<\/score_update>/g;
+  let match: RegExpExecArray | null;
+  while ((match = scoreRegex.exec(buffer)) !== null) {
+    try {
+      const update: ScoreUpdate = JSON.parse(match[1]);
+      onScoreUpdate(update);
+    } catch {
+      // ignore malformed
+    }
+  }
+
+  // 2. Strip complete score_update tags
+  let display = buffer.replace(/<score_update>[\s\S]*?<\/score_update>/g, "");
+
+  // 3. Check for handoff JSON
+  const handoffRegex =
+    /\{"event"\s*:\s*"handoff_triggered"\s*,\s*"lead"\s*:\s*\{[\s\S]*?\}\s*\}/;
+  const handoffMatch = display.match(handoffRegex);
+
+  if (handoffMatch) {
+    try {
+      const handoffData = JSON.parse(handoffMatch[0]);
+      const textBefore = display
+        .substring(0, display.indexOf(handoffMatch[0]))
+        .trim();
+      if (textBefore) onChunk(textBefore);
+      onHandoff(handoffData.lead);
+      return;
+    } catch {
+      // incomplete handoff JSON — hold it back below
+    }
+  }
+
+  // 4. Hold back anything that looks like the start of metadata
+  if (!isFinal) {
+    // Any remaining < in display is metadata (this app has no user-facing angle brackets).
+    // Truncate from the first remaining < onward.
+    const anyTag = display.indexOf("<");
+    if (anyTag !== -1) {
+      display = display.substring(0, anyTag);
+    }
+
+    // Hold back partial handoff JSON
+    const handoffStart = display.search(/\{\s*"event"/);
+    if (handoffStart !== -1) {
+      display = display.substring(0, handoffStart);
+    }
+  }
+
+  if (display.trim()) {
+    onChunk(display.trim());
   }
 }

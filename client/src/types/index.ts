@@ -5,7 +5,10 @@ export interface Message {
   createdAt: Date;
 }
 
+export type LeadStatus = "active" | "qualified" | "unqualified" | "handed_off" | "closed";
+
 export interface Lead {
+  id: string;
   name: string | null;
   project_type: string;
   timeline: string;
@@ -14,11 +17,17 @@ export interface Lead {
   intent_score: number;
   conversation_summary: string;
   hot_signals: string[];
+  status: LeadStatus;
+  createdAt: Date;
 }
 
-export type IntentPhase = "open" | "qualify" | "build" | "handoff";
+export type IntentPhase = "open" | "qualify" | "build" | "handoff" | "disqualified";
 
 export interface ScoreUpdate {
   score: number;
   phase: IntentPhase;
+  name?: string | null;
+  project_type?: string;
+  timeline?: string;
+  budget_signal?: "low" | "medium" | "high";
 }

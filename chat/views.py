@@ -26,14 +26,18 @@ def chat_stream(request):
     def event_stream():
         client = anthropic.Anthropic(api_key=api_key)
 
+        api_messages = [
+            {"role": m["role"], "content": m["content"]}
+            for m in messages
+        ]
+        if not api_messages:
+            api_messages = [{"role": "user", "content": "[New visitor has connected to chat]"}]
+
         with client.messages.stream(
             model="claude-sonnet-4-20250514",
             max_tokens=1000,
             system=SYSTEM_PROMPT,
-            messages=[
-                {"role": m["role"], "content": m["content"]}
-                for m in messages
-            ],
+            messages=api_messages,
         ) as stream:
             for text in stream.text_stream:
                 yield text
