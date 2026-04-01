@@ -276,13 +276,13 @@ export function useCampaigns(leads: Lead[]) {
   }, []);
 
   const assignPlatform = useCallback(
-    async (campaignId: string, platform: SocialPlatform, scheduledDate: string | null) => {
+    async (campaignId: string, platform: SocialPlatform, scheduledDate: string | null, postId?: string) => {
       setCampaigns((prev) => {
         const next = new Map(prev);
         const c = next.get(campaignId);
         if (c) {
           const newPost: SocialPost = {
-            id: `post_${campaignId}_${platform}_${Date.now()}`,
+            id: postId || `post_${campaignId}_${platform}_${Date.now()}`,
             platform,
             hook: "",
             caption: "",

@@ -15,14 +15,15 @@ interface ContentViewProps {
   getCampaign: (id: string) => Campaign | null;
   createCampaign: (leadId: string, brief: string, tone: CampaignTone) => Promise<string>;
   updateCampaignBrief: (id: string, brief: string) => void;
-  generateContent: (id: string) => Promise<void>;
+  generateContent: (id: string, scope: string, selectedPostId?: string, selectedDate?: string | null) => Promise<void>;
   updatePost: (campaignId: string, postId: string, fields: { hook?: string; caption?: string }) => void;
   approvePost: (campaignId: string, postId: string) => void;
   approveAll: (campaignId: string) => void;
   deleteCampaign: (campaignId: string) => void;
   duplicateCampaign: (campaignId: string) => Promise<string | null>;
   markExported: (campaignId: string) => void;
-  assignPlatform: (campaignId: string, platform: SocialPlatform, date: string | null) => void;
+  assignPlatform: (campaignId: string, platform: SocialPlatform, date: string | null, postId?: string) => void;
+  updateSchedule: (campaignId: string, postId: string, date: string | null, time: string | null) => void;
   initialCampaignId?: string | null;
   initialLeadId?: string | null;
   onConsumeInitial?: () => void;
@@ -42,6 +43,7 @@ export function ContentView({
   duplicateCampaign,
   markExported,
   assignPlatform,
+  updateSchedule,
   initialCampaignId,
   initialLeadId,
   onConsumeInitial,
@@ -117,6 +119,7 @@ export function ContentView({
         onExport={handleExport}
         onGenerate={generateContent}
         onAssignPlatform={assignPlatform}
+        onUpdateSchedule={updateSchedule}
       />
     );
   }

@@ -14,8 +14,9 @@ interface CampaignDetailViewProps {
   onDelete: (campaignId: string) => void;
   onDuplicate: (campaignId: string) => Promise<string | null>;
   onExport: (campaign: Campaign) => void;
-  onGenerate: (campaignId: string) => Promise<void>;
-  onAssignPlatform: (campaignId: string, platform: SocialPlatform, date: string | null) => void;
+  onGenerate: (campaignId: string, scope: string, selectedPostId?: string, selectedDate?: string | null) => Promise<void>;
+  onAssignPlatform: (campaignId: string, platform: SocialPlatform, date: string | null, postId?: string) => void;
+  onUpdateSchedule: (campaignId: string, postId: string, date: string | null, time: string | null) => void;
 }
 
 export function CampaignDetailView({
@@ -30,6 +31,7 @@ export function CampaignDetailView({
   onExport,
   onGenerate,
   onAssignPlatform,
+  onUpdateSchedule,
 }: CampaignDetailViewProps) {
   // "undecided" is stored as selectedDate === null
   // A specific date is stored as "2026-03-29"
@@ -71,16 +73,22 @@ export function CampaignDetailView({
   }, []);
 
   const handleAssignPlatform = useCallback((platform: SocialPlatform) => {
-    onAssignPlatform(campaign.id, platform, selectedDate);
-    // Auto-generate content for the new post
-    onGenerate(campaign.id);
+    const newPostId = `post_${campaign.id}_${platform}_${Date.now()}`;
+    onAssignPlatform(campaign.id, platform, selectedDate, newPostId);
+    onGenerate(campaign.id, "single", newPostId, selectedDate);
   }, [campaign.id, selectedDate, onAssignPlatform, onGenerate]);
 
-  const handleGenerate = useCallback(async (_scope: "single" | "date" | "platform" | "all") => {
-    // For now, all generation scopes call the same backend endpoint
-    // The scope can be used to filter which platforms/posts to regenerate
-    await onGenerate(campaign.id);
-  }, [campaign.id, onGenerate]);
+  const handleUpdateSchedule = useCallback((postId: string, date: string | null, time: string | null) => {
+    onUpdateSchedule(campaign.id, postId, date, time);
+    // If the date changed, navigate to the new date
+    if (date !== selectedDate) {
+      setSelectedDate(date);
+    }
+  }, [campaign.id, selectedDate, onUpdateSchedule]);
+
+  const handleGenerate = useCallback(async (scope: "single" | "date" | "platform" | "all") => {
+    await onGenerate(campaign.id, scope, selectedPost?.id, selectedDate);
+  }, [campaign.id, selectedPost?.id, selectedDate, onGenerate]);
 
   const approvedCount = campaign.socialPosts.filter((p) => p.approved).length;
   const totalCount = campaign.socialPosts.length;
@@ -156,6 +164,8 @@ export function CampaignDetailView({
           posts={campaign.socialPosts}
           selectedDate={selectedDate}
           onSelectDate={handleSelectDate}
+          selectedPostId={selectedPost?.id ?? null}
+          onSelectPost={handleSelectPost}
         />
 
         {selectedPost ? (
@@ -166,6 +176,7 @@ export function CampaignDetailView({
             onApprovePost={onApprovePost}
             onGenerate={handleGenerate}
             isGenerating={campaign.status === "generating"}
+            onUpdateSchedule={(_cId, pId, date, time) => handleUpdateSchedule(pId, date, time)}
           />
         ) : (
           <div className="flex-1 flex items-center justify-center">

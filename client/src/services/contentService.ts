@@ -1,5 +1,3 @@
-import { Campaign, SocialPost } from "../types";
-
 interface GenerateTarget {
   postId: string;
   platform: string;
