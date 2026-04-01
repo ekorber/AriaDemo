@@ -52,43 +52,123 @@ export function useCampaigns(leads: Lead[]) {
     await patchCampaignApi(campaignId, { brief });
   }, []);
 
-  const generateContent = useCallback(async (campaignId: string) => {
-    setCampaigns((prev) => {
-      const next = new Map(prev);
-      const c = next.get(campaignId);
-      if (c) next.set(campaignId, { ...c, status: "generating" });
-      return next;
-    });
+  const generateContent = useCallback(
+    async (campaignId: string, scope: string, selectedPostId?: string, selectedDate?: string | null) => {
+      // Read latest campaign from state to avoid stale closures
+      let campaign: Campaign | undefined;
+      setCampaigns((prev) => {
+        const next = new Map(prev);
+        const c = next.get(campaignId);
+        if (c) {
+          campaign = c;
+          next.set(campaignId, { ...c, status: "generating" });
+        }
+        return next;
+      });
 
-    const campaign = campaigns.get(campaignId);
-    if (!campaign) return;
+      if (!campaign) return;
 
-    const skipPlatforms = campaign.socialPosts
-      .filter((p) => p.approved)
-      .map((p) => p.platform);
+      // Compute targets and existing posts based on scope
+      const allPosts = campaign.socialPosts;
+      let targetPosts: SocialPost[];
 
-    await generateCampaignContent(
-      campaign,
-      skipPlatforms,
-      (_posts: SocialPost[]) => {
-        // Backend saves the posts — refetch to get the persisted state
-        fetchCampaigns().then((list) => {
-          const map = new Map<string, Campaign>();
-          for (const c of list) map.set(c.id, c);
-          setCampaigns(map);
-        });
-      },
-      (error: string) => {
-        console.error("Content generation failed:", error);
+      switch (scope) {
+        case "single": {
+          const post = allPosts.find((p) => p.id === selectedPostId);
+          targetPosts = post && !post.approved ? [post] : [];
+          break;
+        }
+        case "date":
+          targetPosts = allPosts.filter(
+            (p) => !p.approved && (selectedDate === null ? !p.scheduledDate : p.scheduledDate === selectedDate)
+          );
+          break;
+        case "platform": {
+          const post = allPosts.find((p) => p.id === selectedPostId);
+          const platform = post?.platform;
+          targetPosts = platform ? allPosts.filter((p) => !p.approved && p.platform === platform) : [];
+          break;
+        }
+        case "all":
+          targetPosts = allPosts.filter((p) => !p.approved);
+          break;
+        default:
+          targetPosts = [];
+      }
+
+      if (targetPosts.length === 0) {
+        // Nothing to generate — revert status
         setCampaigns((prev) => {
           const next = new Map(prev);
           const c = next.get(campaignId);
-          if (c) next.set(campaignId, { ...c, status: "draft" });
+          if (c) next.set(campaignId, { ...c, status: campaign!.status });
           return next;
         });
+        return;
       }
-    );
-  }, [campaigns]);
+
+      const targetIds = new Set(targetPosts.map((p) => p.id));
+      const existingPosts = allPosts
+        .filter((p) => !targetIds.has(p.id))
+        .map((p) => ({
+          postId: p.id,
+          platform: p.platform,
+          scheduledDate: p.scheduledDate,
+          scheduledTime: p.scheduledTime,
+          hook: p.hook,
+          caption: p.caption,
+          approved: p.approved,
+        }));
+
+      const targets = targetPosts.map((p) => ({
+        postId: p.id,
+        platform: p.platform,
+        scheduledDate: p.scheduledDate,
+        scheduledTime: p.scheduledTime,
+      }));
+
+      await generateCampaignContent(
+        {
+          campaignId: campaign.id,
+          clientName: campaign.clientName,
+          projectType: campaign.projectType,
+          tone: campaign.tone,
+          brief: campaign.brief,
+          scope,
+          targets,
+          existingPosts,
+        },
+        (_generatedPosts) => {
+          // Backend saves the posts — refetch to get the persisted state
+          fetchCampaigns()
+            .then((list) => {
+              const map = new Map<string, Campaign>();
+              for (const c of list) map.set(c.id, c);
+              setCampaigns(map);
+            })
+            .catch((err) => {
+              console.error("Failed to refetch campaigns after generation:", err);
+              setCampaigns((prev) => {
+                const next = new Map(prev);
+                const c = next.get(campaignId);
+                if (c) next.set(campaignId, { ...c, status: "ready" });
+                return next;
+              });
+            });
+        },
+        (error: string) => {
+          console.error("Content generation failed:", error);
+          setCampaigns((prev) => {
+            const next = new Map(prev);
+            const c = next.get(campaignId);
+            if (c) next.set(campaignId, { ...c, status: "draft" });
+            return next;
+          });
+        }
+      );
+    },
+    []
+  );
 
   const updatePost = useCallback(
     async (campaignId: string, postId: string, fields: Partial<Pick<SocialPost, "hook" | "caption">>) => {
