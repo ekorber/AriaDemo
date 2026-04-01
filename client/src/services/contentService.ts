@@ -1,28 +1,43 @@
 import { Campaign, SocialPost } from "../types";
 
-let postIdCounter = 0;
-function nextPostId(): string {
-  return `post_${++postIdCounter}_${Date.now()}`;
+interface GenerateTarget {
+  postId: string;
+  platform: string;
+  scheduledDate: string | null;
+  scheduledTime: string | null;
+}
+
+interface ExistingPost {
+  postId: string;
+  platform: string;
+  scheduledDate: string | null;
+  scheduledTime: string | null;
+  hook: string;
+  caption: string;
+  approved: boolean;
+}
+
+interface GeneratePayload {
+  campaignId: string;
+  clientName: string;
+  projectType: string;
+  tone: string;
+  brief: string;
+  scope: string;
+  targets: GenerateTarget[];
+  existingPosts: ExistingPost[];
 }
 
 export async function generateCampaignContent(
-  campaign: Campaign,
-  skipPlatforms: string[],
-  onComplete: (posts: SocialPost[]) => void,
+  payload: GeneratePayload,
+  onComplete: (generatedPosts: Record<string, { hook: string; caption: string }>) => void,
   onError: (error: string) => void
 ): Promise<void> {
   try {
     const response = await fetch("/api/content/generate/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        campaignId: campaign.id,
-        clientName: campaign.clientName,
-        projectType: campaign.projectType,
-        tone: campaign.tone,
-        brief: campaign.brief,
-        skipPlatforms,
-      }),
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
@@ -56,21 +71,18 @@ export async function generateCampaignContent(
   }
 }
 
-function parseContentResponse(raw: string): SocialPost[] | null {
+function parseContentResponse(raw: string): Record<string, { hook: string; caption: string }> | null {
   try {
     const jsonMatch = raw.match(/\{[\s\S]*\}/);
     if (!jsonMatch) return null;
     const parsed = JSON.parse(jsonMatch[0]);
-    if (!parsed.socialPosts || !Array.isArray(parsed.socialPosts)) return null;
 
-    return parsed.socialPosts.map((p: { platform: string; hook: string; caption: string }) => ({
-      id: nextPostId(),
-      platform: p.platform,
-      hook: p.hook || "",
-      caption: p.caption || "",
-      edited: false,
-      approved: false,
-    }));
+    // Handle new keyed-by-postId format: { posts: { postId: { hook, caption } } }
+    if (parsed.posts && typeof parsed.posts === "object" && !Array.isArray(parsed.posts)) {
+      return parsed.posts;
+    }
+
+    return null;
   } catch {
     return null;
   }
