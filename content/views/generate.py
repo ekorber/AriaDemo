@@ -1,5 +1,7 @@
 import json
 import os
+import re
+import time
 
 import anthropic
 from bson import ObjectId
@@ -24,10 +26,18 @@ def content_generate(request):
     project_type = body.get("projectType", "")
     tone = body.get("tone", "hype")
     brief = body.get("brief", "")
-    skip_platforms = body.get("skipPlatforms", [])
+    targets = body.get("targets", [])
+    existing_posts = body.get("existingPosts", [])
 
     if not brief:
         return JsonResponse({"error": "Brief is required"}, status=400)
+
+    if not targets:
+        return JsonResponse({"error": "No target posts to generate"}, status=400)
+
+    for t in targets:
+        if not t.get("platform"):
+            return JsonResponse({"error": "Each target must have a platform"}, status=400)
 
     api_key = os.environ.get("ANTHROPIC_API_KEY")
     if not api_key:
@@ -43,22 +53,9 @@ def content_generate(request):
         except Exception:
             pass
 
-    all_platforms = ["instagram", "tiktok", "x", "facebook", "youtube_shorts", "threads"]
-    platforms_to_generate = [p for p in all_platforms if p not in skip_platforms]
-
-    if not platforms_to_generate:
-        return JsonResponse({"error": "All platforms skipped"}, status=400)
-
-    platform_list = ", ".join(platforms_to_generate)
-    user_message = f"""Generate a social media campaign for the following client:
-
-Client: {client_name}
-Project: {project_type}
-Tone: {tone}
-Brief: {brief}
-
-Generate content ONLY for these platforms: {platform_list}
-Do NOT generate posts for any other platforms. Follow the platform rules in your instructions."""
+    user_message = _build_user_message(
+        client_name, project_type, tone, brief, targets, existing_posts
+    )
 
     collected = []
 
@@ -77,7 +74,7 @@ Do NOT generate posts for any other platforms. Follow the platform rules in your
 
         # After streaming completes, save posts to the campaign
         if campaign_id:
-            _save_generated_posts(campaign_id, "".join(collected), skip_platforms)
+            _save_generated_posts(campaign_id, "".join(collected))
 
     response = StreamingHttpResponse(
         event_stream(),
@@ -87,52 +84,92 @@ Do NOT generate posts for any other platforms. Follow the platform rules in your
     return response
 
 
-def _save_generated_posts(campaign_id, raw_text, skip_platforms):
-    """Parse generated content and save to the campaign document."""
+def _build_user_message(client_name, project_type, tone, brief, targets, existing_posts):
+    lines = [
+        f"Client: {client_name}",
+        f"Project: {project_type}",
+        f"Tone: {tone}",
+        f"Brief: {brief}",
+    ]
+
+    if existing_posts:
+        lines.append("")
+        lines.append("=== EXISTING POSTS (read-only context, do not regenerate) ===")
+        for ep in existing_posts:
+            parts = [ep.get("platform", "unknown")]
+            date = ep.get("scheduledDate")
+            time_val = ep.get("scheduledTime")
+            if date:
+                parts.append(f"{date} {time_val}" if time_val else date)
+            else:
+                parts.append("unscheduled")
+            if ep.get("approved"):
+                parts.append("approved")
+            label = " | ".join(parts)
+            lines.append(f"[{label}]")
+            hook = ep.get("hook", "")
+            caption = ep.get("caption", "")
+            if hook:
+                lines.append(f"Hook: {hook}")
+            if caption:
+                lines.append(f"Caption: {caption}")
+            lines.append("")
+
+    lines.append("=== GENERATE THESE POSTS ===")
+    for t in targets:
+        post_id = t.get("postId", "unknown")
+        platform = t.get("platform", "unknown")
+        date = t.get("scheduledDate")
+        time_val = t.get("scheduledTime")
+        if date:
+            schedule = f"{date} {time_val}" if time_val else date
+        else:
+            schedule = "unscheduled"
+        lines.append(f"- {post_id}: {platform} | {schedule}")
+
+    return "\n".join(lines)
+
+
+def _save_generated_posts(campaign_id, raw_text):
+    """Parse generated content and merge into existing campaign posts by postId."""
     db = get_db()
     try:
         oid = ObjectId(campaign_id)
     except Exception:
         return
 
-    json_match = __import__("re").search(r"\{[\s\S]*\}", raw_text)
+    json_match = re.search(r"\{[\s\S]*\}", raw_text)
     if not json_match:
-        db.campaigns.update_one({"_id": oid}, {"$set": {"status": "draft"}})
+        db.campaigns.update_one({"_id": oid}, {"$set": {"status": "ready"}})
         return
 
     try:
         parsed = json.loads(json_match.group(0))
     except json.JSONDecodeError:
-        db.campaigns.update_one({"_id": oid}, {"$set": {"status": "draft"}})
+        db.campaigns.update_one({"_id": oid}, {"$set": {"status": "ready"}})
         return
 
-    if not parsed.get("socialPosts") or not isinstance(parsed["socialPosts"], list):
-        db.campaigns.update_one({"_id": oid}, {"$set": {"status": "draft"}})
+    posts_dict = parsed.get("posts")
+    if not posts_dict or not isinstance(posts_dict, dict):
+        db.campaigns.update_one({"_id": oid}, {"$set": {"status": "ready"}})
         return
 
     campaign = db.campaigns.find_one({"_id": oid})
     if not campaign:
         return
 
-    # Keep approved posts that were skipped
-    approved_posts = [
-        p for p in campaign.get("social_posts", []) if p.get("approved")
-    ]
-
-    new_posts = []
-    for i, p in enumerate(parsed["socialPosts"]):
-        new_posts.append({
-            "id": f"post_{campaign_id}_{i}_{int(__import__('time').time() * 1000)}",
-            "platform": p.get("platform", ""),
-            "hook": p.get("hook", ""),
-            "caption": p.get("caption", ""),
-            "edited": False,
-            "approved": False,
-            "scheduled_date": None,
-            "scheduled_time": None,
-        })
+    # Merge: update hook/caption for matching postIds, leave everything else untouched
+    existing = campaign.get("social_posts", [])
+    updated = []
+    for post in existing:
+        pid = post.get("id", "")
+        if pid in posts_dict:
+            generated = posts_dict[pid]
+            post["hook"] = generated.get("hook", post.get("hook", ""))
+            post["caption"] = generated.get("caption", post.get("caption", ""))
+        updated.append(post)
 
     db.campaigns.update_one(
         {"_id": oid},
-        {"$set": {"social_posts": approved_posts + new_posts, "status": "ready"}},
+        {"$set": {"social_posts": updated, "status": "ready"}},
     )
