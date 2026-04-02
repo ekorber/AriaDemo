@@ -74,19 +74,14 @@ export function ScheduleModal({ currentDate, currentTime, onSave, onClose }: Sch
   };
 
   const handleSave = () => {
-    if (!selectedDate) {
-      onSave(null, null);
-      return;
-    }
-    if (!hasTime) {
-      onSave(selectedDate, null);
-      return;
-    }
-    // Convert 12h to 24h
-    let h24 = hour;
-    if (period === "AM" && hour === 12) h24 = 0;
-    else if (period === "PM" && hour !== 12) h24 = hour + 12;
-    const timeStr = `${String(h24).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+    const timeStr = hasTime
+      ? (() => {
+          let h24 = hour;
+          if (period === "AM" && hour === 12) h24 = 0;
+          else if (period === "PM" && hour !== 12) h24 = hour + 12;
+          return `${String(h24).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+        })()
+      : null;
     onSave(selectedDate, timeStr);
   };
 
@@ -102,56 +97,75 @@ export function ScheduleModal({ currentDate, currentTime, onSave, onClose }: Sch
           {/* Left: Calendar */}
           <div className="flex-1">
             <div className="text-xs uppercase tracking-widest text-zinc-500 mb-2">Date</div>
-            <div className="bg-zinc-800 rounded-lg p-3">
-              <div className="flex items-center justify-between mb-3">
-                <button
-                  onClick={() => navigateMonth(-1)}
-                  className="text-zinc-500 hover:text-zinc-300 px-1.5 py-0.5 rounded hover:bg-zinc-700 transition-colors text-sm"
-                >
-                  ‹
-                </button>
-                <span className="text-sm text-zinc-300 font-medium">{monthName}</span>
-                <button
-                  onClick={() => navigateMonth(1)}
-                  className="text-zinc-500 hover:text-zinc-300 px-1.5 py-0.5 rounded hover:bg-zinc-700 transition-colors text-sm"
-                >
-                  ›
-                </button>
-              </div>
-
-              <div className="grid grid-cols-7 text-center text-xs text-zinc-600 mb-1">
-                {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => (
-                  <span key={d} className="py-1">{d}</span>
-                ))}
-              </div>
-
-              <div className="grid grid-cols-7 text-center text-xs">
-                {cells.map((day, i) => {
-                  if (day === null) return <span key={i} />;
-                  const dateStr = formatDate(day);
-                  const isSelected = selectedDate === dateStr;
-                  return (
-                    <div
-                      key={i}
-                      onClick={() => setSelectedDate(dateStr)}
-                      className={`py-1.5 cursor-pointer rounded-md transition-colors ${
-                        isSelected
-                          ? "bg-blue-950 border border-blue-500 text-white font-medium"
-                          : "text-zinc-400 hover:bg-zinc-700"
-                      }`}
+            <div className="bg-zinc-800 rounded-lg p-3 min-h-[230px] flex flex-col">
+              {!selectedDate ? (
+                <div className="flex-1 flex flex-col items-center justify-center">
+                  <div className="text-sm text-zinc-500 mb-3">No date set</div>
+                  <button
+                    onClick={() => {
+                      const today = new Date();
+                      const m = String(today.getMonth() + 1).padStart(2, "0");
+                      const d = String(today.getDate()).padStart(2, "0");
+                      setSelectedDate(`${today.getFullYear()}-${m}-${d}`);
+                    }}
+                    className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                  >
+                    Set a date
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between mb-3">
+                    <button
+                      onClick={() => navigateMonth(-1)}
+                      className="text-zinc-500 hover:text-zinc-300 px-1.5 py-0.5 rounded hover:bg-zinc-700 transition-colors text-sm"
                     >
-                      {day}
-                    </div>
-                  );
-                })}
-              </div>
+                      ‹
+                    </button>
+                    <span className="text-sm text-zinc-300 font-medium">{monthName}</span>
+                    <button
+                      onClick={() => navigateMonth(1)}
+                      className="text-zinc-500 hover:text-zinc-300 px-1.5 py-0.5 rounded hover:bg-zinc-700 transition-colors text-sm"
+                    >
+                      ›
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-7 text-center text-xs text-zinc-600 mb-1">
+                    {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => (
+                      <span key={d} className="py-1">{d}</span>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-7 text-center text-xs">
+                    {cells.map((day, i) => {
+                      if (day === null) return <span key={i} />;
+                      const dateStr = formatDate(day);
+                      const isSelected = selectedDate === dateStr;
+                      return (
+                        <div
+                          key={i}
+                          onClick={() => setSelectedDate(dateStr)}
+                          className={`py-1.5 cursor-pointer rounded-md transition-colors ${
+                            isSelected
+                              ? "bg-blue-950 border border-blue-500 text-white font-medium"
+                              : "text-zinc-400 hover:bg-zinc-700"
+                          }`}
+                        >
+                          {day}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
           {/* Right: Time scroll wheels */}
           <div className="w-[160px]">
             <div className="text-xs uppercase tracking-widest text-zinc-500 mb-2">Time</div>
-            <div className="bg-zinc-800 rounded-lg p-3 flex flex-col items-center">
+            <div className="bg-zinc-800 rounded-lg p-3c min-h-[105px] flex flex-col items-center justify-center">
               {!hasTime ? (
                 <div className="text-center py-6">
                   <div className="text-sm text-zinc-500 mb-3">No time set</div>
@@ -168,7 +182,7 @@ export function ScheduleModal({ currentDate, currentTime, onSave, onClose }: Sch
                     {/* Hour wheel */}
                     <div className="flex flex-col items-center gap-1">
                       <button
-                        onClick={() => setHour(cycleValue(hours, hour, -1))}
+                        onClick={() => setHour(cycleValue(hours, hour, 1))}
                         className="text-zinc-600 hover:text-zinc-400 text-sm transition-colors"
                       >
                         ▲
@@ -177,7 +191,7 @@ export function ScheduleModal({ currentDate, currentTime, onSave, onClose }: Sch
                         {hour}
                       </div>
                       <button
-                        onClick={() => setHour(cycleValue(hours, hour, 1))}
+                        onClick={() => setHour(cycleValue(hours, hour, -1))}
                         className="text-zinc-600 hover:text-zinc-400 text-sm transition-colors"
                       >
                         ▼
@@ -189,7 +203,7 @@ export function ScheduleModal({ currentDate, currentTime, onSave, onClose }: Sch
                     {/* Minute wheel */}
                     <div className="flex flex-col items-center gap-1">
                       <button
-                        onClick={() => setMinute(cycleValue(minutes, minute, -1))}
+                        onClick={() => setMinute(cycleValue(minutes, minute, 1))}
                         className="text-zinc-600 hover:text-zinc-400 text-sm transition-colors"
                       >
                         ▲
@@ -198,7 +212,7 @@ export function ScheduleModal({ currentDate, currentTime, onSave, onClose }: Sch
                         {String(minute).padStart(2, "0")}
                       </div>
                       <button
-                        onClick={() => setMinute(cycleValue(minutes, minute, 1))}
+                        onClick={() => setMinute(cycleValue(minutes, minute, -1))}
                         className="text-zinc-600 hover:text-zinc-400 text-sm transition-colors"
                       >
                         ▼
@@ -235,13 +249,13 @@ export function ScheduleModal({ currentDate, currentTime, onSave, onClose }: Sch
           <div className="flex gap-3">
             {selectedDate && (
               <button
-                onClick={() => { setSelectedDate(null); setHasTime(false); }}
+                onClick={() => setSelectedDate(null)}
                 className="text-xs text-amber-500 hover:text-amber-400 transition-colors"
               >
-                Set as Undecided
+                Set Date as Undecided
               </button>
             )}
-            {hasTime && selectedDate && (
+            {hasTime && (
               <button
                 onClick={() => setHasTime(false)}
                 className="text-xs text-zinc-500 hover:text-zinc-400 transition-colors"
