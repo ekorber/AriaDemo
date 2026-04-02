@@ -204,12 +204,12 @@ export function CampaignCalendar({ posts, selectedDate, onSelectDate, selectedPo
                     <div className="flex-1 w-[2px] bg-zinc-800 mt-1"></div>
                   )}
                 </div>
-                <div className="flex-1 flex flex-col gap-1.5">
+                <div className="flex-1 min-w-0 flex flex-col gap-1.5">
                   {untimedPosts.map((post) => (
                     <button
                       key={post.id}
                       onClick={() => onSelectPost(post.id)}
-                      className={`w-full text-left rounded-md px-2 py-1.5 flex items-center gap-2 transition-colors ${
+                      className={`w-full text-left rounded-md px-2 py-1.5 flex items-center gap-2 overflow-hidden transition-colors ${
                         post.id === selectedPostId
                           ? "bg-blue-950 border border-blue-500"
                           : "bg-zinc-900 border border-zinc-800 hover:border-zinc-700"
@@ -243,10 +243,10 @@ export function CampaignCalendar({ posts, selectedDate, onSelectDate, selectedPo
                     <div className="flex-1 w-[2px] bg-zinc-800 mt-1"></div>
                   )}
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <button
                     onClick={() => onSelectPost(post.id)}
-                    className={`w-full text-left rounded-md px-2 py-1.5 flex items-center gap-2 transition-colors ${
+                    className={`w-full text-left rounded-md px-2 py-1.5 flex items-center gap-2 overflow-hidden transition-colors ${
                       post.id === selectedPostId
                         ? "bg-blue-950 border border-blue-500"
                         : "bg-zinc-900 border border-zinc-800 hover:border-zinc-700"
