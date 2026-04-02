@@ -46,10 +46,6 @@ export function PostEditor({
     }
   };
 
-  const dateLabel = post.scheduledDate
-    ? new Date(post.scheduledDate + "T00:00:00").toLocaleDateString("default", { month: "short", day: "numeric" })
-    : "Undecided";
-
   const scheduleLabel = (() => {
     const datePart = post.scheduledDate
       ? new Date(post.scheduledDate + "T00:00:00").toLocaleDateString("default", { month: "short", day: "numeric" })
@@ -66,35 +62,36 @@ export function PostEditor({
   return (
     <div className="flex-1 p-5 overflow-y-auto">
       {/* Header */}
-      <div className="mb-5">
-        <div className="text-xs uppercase tracking-widest text-zinc-500">{dateLabel}</div>
-        <div className="flex items-center gap-2 mt-1">
-          <span
-            className="w-2.5 h-2.5 rounded-full"
-            style={{
-              backgroundColor: color.hex,
-              border: color.border ? "1px solid #888" : undefined,
-              boxSizing: "border-box",
-            }}
-          />
-          <span className="text-base font-medium text-zinc-100">{label}</span>
-          <span className={`text-xs px-2 py-0.5 rounded-full ${post.approved ? "bg-emerald-950 text-emerald-400" : post.hook ? "bg-zinc-800 text-zinc-400" : "bg-zinc-800 text-zinc-500"}`}>
-            {post.approved ? "approved" : post.hook ? "ready" : "draft"}
-          </span>
-          {post.edited && (
-            <span className="text-xs text-zinc-600 uppercase tracking-wider">edited</span>
-          )}
+      <div className="flex">
+        <div className="mb-5">
+          <div className="flex items-center gap-2 mt-1">
+            <span
+              className="w-2.5 h-2.5 rounded-full"
+              style={{
+                backgroundColor: color.hex,
+                border: color.border ? "1px solid #888" : undefined,
+                boxSizing: "border-box",
+              }}
+            />
+            <span className="text-base font-medium text-zinc-100">{label}</span>
+            <span className={`text-xs px-2 py-0.5 rounded-full ${post.approved ? "bg-emerald-950 text-emerald-400" : post.hook ? "bg-zinc-800 text-zinc-400" : "bg-zinc-800 text-zinc-500"}`}>
+              {post.approved ? "approved" : post.hook ? "ready" : "draft"}
+            </span>
+            {post.edited && (
+              <span className="text-xs text-zinc-600 uppercase tracking-wider">edited</span>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* Schedule row */}
-      <div
-        onClick={() => setShowScheduleModal(true)}
-        className="mb-4 flex items-center gap-3 px-3 py-2.5 bg-zinc-900 border border-zinc-800 rounded-lg cursor-pointer hover:border-zinc-600 transition-colors"
-      >
-        <span className="text-sm text-zinc-500">📅</span>
-        <span className="text-sm text-zinc-300">{scheduleLabel}</span>
-        <span className="ml-auto text-xs text-blue-400">Edit</span>
+        {/* Schedule row */}
+        <div
+          onClick={() => setShowScheduleModal(true)}
+          className="ml-3 -mt-1 mb-4 flex items-center gap-3 px-3 py-2.5 bg-zinc-900 border border-zinc-800 rounded-lg cursor-pointer hover:border-zinc-600 transition-colors"
+        >
+          <span className="text-sm text-zinc-500">📅</span>
+          <span className="text-sm text-zinc-300">{scheduleLabel}</span>
+          <span className="ml-auto text-xs text-blue-400">Edit</span>
+        </div>
       </div>
 
       {showScheduleModal && (
