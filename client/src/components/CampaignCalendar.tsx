@@ -188,7 +188,7 @@ export function CampaignCalendar({ posts, selectedDate, onSelectDate, selectedPo
           const h24 = parseInt(hStr, 10);
           const isPm = h24 >= 12;
           const h12 = h24 === 0 ? 12 : h24 > 12 ? h24 - 12 : h24;
-          return `${h12}:${mStr}${isPm ? "p" : "a"}`;
+          return `${h12}:${mStr}${isPm ? "pm" : "am"}`;
         };
 
         return (
@@ -197,17 +197,61 @@ export function CampaignCalendar({ posts, selectedDate, onSelectDate, selectedPo
 
             {/* Untimed posts */}
             {untimedPosts.length > 0 && (
-              <div className="flex gap-2.5 mb-3">
-                <div className="flex flex-col items-center w-[40px] flex-shrink-0">
-                  <span className="text-[10px] text-zinc-600 whitespace-nowrap">No time</span>
-                  {timedPosts.length > 0 && (
-                    <div className="flex-1 w-[2px] bg-zinc-800 mt-1"></div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0 flex flex-col gap-1.5">
-                  {untimedPosts.map((post) => (
+              <div className="mb-3">
+                {untimedPosts.map((post, i) => (
+                  <div key={post.id}>
+                    <div className="flex gap-2.5 items-center">
+                      <div className="w-[40px] flex-shrink-0 text-center">
+                        {i === 0 && (
+                          <span className="text-[10px] text-zinc-600 whitespace-nowrap">No time</span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <button
+                          onClick={() => onSelectPost(post.id)}
+                          className={`w-full text-left rounded-md px-2 py-1.5 flex items-center gap-2 overflow-hidden transition-colors ${
+                            post.id === selectedPostId
+                              ? "bg-blue-950 border border-blue-500"
+                              : "bg-zinc-900 border border-zinc-800 hover:border-zinc-700"
+                          }`}
+                        >
+                          <PlatformIcon platform={post.platform} size={10} />
+                          <div className="min-w-0 flex-1">
+                            <div className="text-[11px] text-zinc-200 leading-snug truncate">
+                              {post.hook || PLATFORM_LABELS[post.platform]}
+                            </div>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+                    {(i < untimedPosts.length - 1 || timedPosts.length > 0) && (
+                      <div className="flex gap-2.5">
+                        <div className="w-[40px] flex-shrink-0 flex justify-center">
+                          <div className="w-[2px] h-3 bg-zinc-800"></div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Separator */}
+            {untimedPosts.length > 0 && timedPosts.length > 0 && (
+              <div className="border-t border-dashed border-zinc-800 mb-3"></div>
+            )}
+
+            {/* Timed posts */}
+            {timedPosts.map((post, i) => (
+              <div key={post.id}>
+                <div className="flex gap-2.5 items-center">
+                  <div className="w-[40px] flex-shrink-0 text-center">
+                    <span className="text-[10px] text-blue-400 whitespace-nowrap">
+                      {formatTime(post.scheduledTime!)}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
                     <button
-                      key={post.id}
                       onClick={() => onSelectPost(post.id)}
                       className={`w-full text-left rounded-md px-2 py-1.5 flex items-center gap-2 overflow-hidden transition-colors ${
                         post.id === selectedPostId
@@ -222,44 +266,15 @@ export function CampaignCalendar({ posts, selectedDate, onSelectDate, selectedPo
                         </div>
                       </div>
                     </button>
-                  ))}
+                  </div>
                 </div>
-              </div>
-            )}
-
-            {/* Separator */}
-            {untimedPosts.length > 0 && timedPosts.length > 0 && (
-              <div className="border-t border-dashed border-zinc-800 mb-3"></div>
-            )}
-
-            {/* Timed posts */}
-            {timedPosts.map((post, i) => (
-              <div key={post.id} className="flex gap-2.5 mb-2">
-                <div className="flex flex-col items-center w-[40px] flex-shrink-0">
-                  <span className="text-[10px] text-blue-400 whitespace-nowrap">
-                    {formatTime(post.scheduledTime!)}
-                  </span>
-                  {i < timedPosts.length - 1 && (
-                    <div className="flex-1 w-[2px] bg-zinc-800 mt-1"></div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <button
-                    onClick={() => onSelectPost(post.id)}
-                    className={`w-full text-left rounded-md px-2 py-1.5 flex items-center gap-2 overflow-hidden transition-colors ${
-                      post.id === selectedPostId
-                        ? "bg-blue-950 border border-blue-500"
-                        : "bg-zinc-900 border border-zinc-800 hover:border-zinc-700"
-                    }`}
-                  >
-                    <PlatformIcon platform={post.platform} size={10} />
-                    <div className="min-w-0 flex-1">
-                      <div className="text-[11px] text-zinc-200 leading-snug truncate">
-                        {post.hook || PLATFORM_LABELS[post.platform]}
-                      </div>
+                {i < timedPosts.length - 1 && (
+                  <div className="flex gap-2.5">
+                    <div className="w-[40px] flex-shrink-0 flex justify-center">
+                      <div className="w-[2px] h-3 bg-zinc-800"></div>
                     </div>
-                  </button>
-                </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
