@@ -16,8 +16,9 @@ interface ContentViewProps {
   createCampaign: (leadId: string, brief: string, tone: CampaignTone) => Promise<string>;
   updateCampaignBrief: (id: string, brief: string) => void;
   generateContent: (id: string, scope: string, selectedPostId?: string, selectedDate?: string | null) => Promise<void>;
-  updatePost: (campaignId: string, postId: string, fields: { hook?: string; caption?: string }) => void;
+  updatePost: (campaignId: string, postId: string, fields: { hook?: string; caption?: string; reviewReady?: boolean }) => void;
   approvePost: (campaignId: string, postId: string) => void;
+  deletePost: (campaignId: string, postId: string) => void;
   approveAll: (campaignId: string) => void;
   deleteCampaign: (campaignId: string) => void;
   duplicateCampaign: (campaignId: string) => Promise<string | null>;
@@ -38,6 +39,7 @@ export function ContentView({
   generateContent,
   updatePost,
   approvePost,
+  deletePost,
   approveAll,
   deleteCampaign,
   duplicateCampaign,
@@ -109,6 +111,7 @@ export function ContentView({
         onUpdateBrief={updateCampaignBrief}
         onUpdatePost={updatePost}
         onApprovePost={approvePost}
+        onDeletePost={deletePost}
         onApproveAll={approveAll}
         onDelete={(id) => { deleteCampaign(id); setSelectedId(null); }}
         onDuplicate={async (id) => {

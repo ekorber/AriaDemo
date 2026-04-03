@@ -12,7 +12,7 @@ interface RawCampaign {
     platform: string;
     hook: string;
     caption: string;
-    edited: boolean;
+    review_ready: boolean;
     approved: boolean;
     scheduled_date: string | null;
     scheduled_time: string | null;
@@ -34,7 +34,7 @@ function deserialize(raw: RawCampaign): Campaign {
       platform: p.platform as SocialPost["platform"],
       hook: p.hook,
       caption: p.caption,
-      edited: p.edited,
+      reviewReady: p.review_ready ?? false,
       approved: p.approved,
       scheduledDate: p.scheduled_date,
       scheduledTime: p.scheduled_time ?? null,

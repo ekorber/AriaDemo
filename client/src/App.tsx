@@ -158,6 +158,7 @@ export default function App() {
           updatePost={campaignHook.updatePost}
           approvePost={campaignHook.approvePost}
           approveAll={campaignHook.approveAll}
+          deletePost={campaignHook.deletePost}
           deleteCampaign={campaignHook.deleteCampaign}
           duplicateCampaign={campaignHook.duplicateCampaign}
           markExported={campaignHook.markExported}

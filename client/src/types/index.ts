@@ -33,7 +33,7 @@ export interface SocialPost {
   platform: SocialPlatform;
   hook: string;
   caption: string;
-  edited: boolean;
+  reviewReady: boolean;
   approved: boolean;
   scheduledDate: string | null;
   scheduledTime: string | null;  // "15:00" format or null

@@ -8,8 +8,9 @@ interface CampaignDetailViewProps {
   campaign: Campaign;
   onBack: () => void;
   onUpdateBrief: (campaignId: string, brief: string) => void;
-  onUpdatePost: (campaignId: string, postId: string, fields: { hook?: string; caption?: string }) => void;
+  onUpdatePost: (campaignId: string, postId: string, fields: { hook?: string; caption?: string; reviewReady?: boolean }) => void;
   onApprovePost: (campaignId: string, postId: string) => void;
+  onDeletePost: (campaignId: string, postId: string) => void;
   onApproveAll: (campaignId: string) => void;
   onDelete: (campaignId: string) => void;
   onDuplicate: (campaignId: string) => Promise<string | null>;
@@ -25,6 +26,7 @@ export function CampaignDetailView({
   onUpdateBrief,
   onUpdatePost,
   onApprovePost,
+  onDeletePost,
   onApproveAll,
   onDelete,
   onDuplicate,
@@ -75,8 +77,8 @@ export function CampaignDetailView({
   const handleAssignPlatform = useCallback((platform: SocialPlatform) => {
     const newPostId = `post_${campaign.id}_${platform}_${Date.now()}`;
     onAssignPlatform(campaign.id, platform, selectedDate, newPostId);
-    onGenerate(campaign.id, "single", newPostId, selectedDate);
-  }, [campaign.id, selectedDate, onAssignPlatform, onGenerate]);
+    setSelectedPostId(newPostId);
+  }, [campaign.id, selectedDate, onAssignPlatform]);
 
   const handleUpdateSchedule = useCallback((postId: string, date: string | null, time: string | null) => {
     onUpdateSchedule(campaign.id, postId, date, time);
@@ -174,6 +176,7 @@ export function CampaignDetailView({
             campaignId={campaign.id}
             onUpdatePost={onUpdatePost}
             onApprovePost={onApprovePost}
+            onDeletePost={(cId, pId) => { onDeletePost(cId, pId); setSelectedPostId(null); }}
             onGenerate={handleGenerate}
             isGenerating={campaign.status === "generating"}
             onUpdateSchedule={(_cId, pId, date, time) => handleUpdateSchedule(pId, date, time)}

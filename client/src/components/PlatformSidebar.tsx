@@ -53,8 +53,8 @@ export function PlatformSidebar({
                 </span>
                 <div className="min-w-0">
                   <div className="text-sm text-zinc-200 leading-snug line-clamp-2">{title}</div>
-                  <div className={`text-xs mt-0.5 ${post.approved ? "text-emerald-400" : post.hook ? "text-amber-400" : "text-zinc-600"}`}>
-                    {post.approved ? "approved" : post.hook ? "ready" : "draft"}
+                  <div className={`text-xs mt-0.5 ${post.approved ? "text-emerald-400" : post.reviewReady ? "text-amber-400" : "text-zinc-600"}`}>
+                    {post.approved ? "approved" : post.reviewReady ? "ready for review" : "draft"}
                   </div>
                 </div>
               </button>

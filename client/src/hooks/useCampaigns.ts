@@ -171,13 +171,13 @@ export function useCampaigns(leads: Lead[]) {
   );
 
   const updatePost = useCallback(
-    async (campaignId: string, postId: string, fields: Partial<Pick<SocialPost, "hook" | "caption">>) => {
+    async (campaignId: string, postId: string, fields: Partial<Pick<SocialPost, "hook" | "caption" | "reviewReady">>) => {
       setCampaigns((prev) => {
         const next = new Map(prev);
         const c = next.get(campaignId);
         if (c) {
           const updatedPosts = c.socialPosts.map((p) =>
-            p.id === postId ? { ...p, ...fields, edited: true } : p
+            p.id === postId ? { ...p, ...fields } : p
           );
           next.set(campaignId, { ...c, socialPosts: updatedPosts });
           // Persist in background
@@ -187,7 +187,7 @@ export function useCampaigns(leads: Lead[]) {
               platform: p.platform,
               hook: p.hook,
               caption: p.caption,
-              edited: p.edited,
+              review_ready: p.reviewReady,
               approved: p.approved,
               scheduled_date: p.scheduledDate,
               scheduled_time: p.scheduledTime,
@@ -199,6 +199,30 @@ export function useCampaigns(leads: Lead[]) {
     },
     []
   );
+
+  const deletePost = useCallback(async (campaignId: string, postId: string) => {
+    setCampaigns((prev) => {
+      const next = new Map(prev);
+      const c = next.get(campaignId);
+      if (c) {
+        const updatedPosts = c.socialPosts.filter((p) => p.id !== postId);
+        next.set(campaignId, { ...c, socialPosts: updatedPosts });
+        patchCampaignApi(campaignId, {
+          social_posts: updatedPosts.map((p) => ({
+            id: p.id,
+            platform: p.platform,
+            hook: p.hook,
+            caption: p.caption,
+
+            approved: p.approved,
+            scheduled_date: p.scheduledDate,
+            scheduled_time: p.scheduledTime,
+          })),
+        });
+      }
+      return next;
+    });
+  }, []);
 
   const approvePost = useCallback(async (campaignId: string, postId: string) => {
     setCampaigns((prev) => {
@@ -215,7 +239,7 @@ export function useCampaigns(leads: Lead[]) {
             platform: p.platform,
             hook: p.hook,
             caption: p.caption,
-            edited: p.edited,
+
             approved: p.approved,
             scheduled_date: p.scheduledDate,
             scheduled_time: p.scheduledTime,
@@ -239,7 +263,7 @@ export function useCampaigns(leads: Lead[]) {
             platform: p.platform,
             hook: p.hook,
             caption: p.caption,
-            edited: p.edited,
+
             approved: p.approved,
             scheduled_date: p.scheduledDate,
             scheduled_time: p.scheduledTime,
@@ -286,7 +310,7 @@ export function useCampaigns(leads: Lead[]) {
             platform,
             hook: "",
             caption: "",
-            edited: false,
+            reviewReady: false,
             approved: false,
             scheduledDate,
             scheduledTime: null,
@@ -299,7 +323,7 @@ export function useCampaigns(leads: Lead[]) {
               platform: p.platform,
               hook: p.hook,
               caption: p.caption,
-              edited: p.edited,
+              review_ready: p.reviewReady,
               approved: p.approved,
               scheduled_date: p.scheduledDate,
               scheduled_time: p.scheduledTime,
@@ -328,7 +352,7 @@ export function useCampaigns(leads: Lead[]) {
               platform: p.platform,
               hook: p.hook,
               caption: p.caption,
-              edited: p.edited,
+              review_ready: p.reviewReady,
               approved: p.approved,
               scheduled_date: p.scheduledDate,
               scheduled_time: p.scheduledTime,
@@ -350,6 +374,7 @@ export function useCampaigns(leads: Lead[]) {
     updatePost,
     approvePost,
     approveAll,
+    deletePost,
     deleteCampaign,
     duplicateCampaign,
     markExported,
