@@ -13,6 +13,7 @@ interface ExistingPost {
   hook: string;
   caption: string;
   approved: boolean;
+  reviewReady: boolean;
 }
 
 interface GeneratePayload {

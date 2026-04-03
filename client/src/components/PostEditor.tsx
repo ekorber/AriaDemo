@@ -39,6 +39,9 @@ export function PostEditor({
   const [showGenDropdown, setShowGenDropdown] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
+  const isDraft = !post.reviewReady && !post.approved;
+  const generateDisabled = isGenerating || !isDraft;
+
   const handleHookBlur = () => {
     if (hook !== post.hook) {
       onUpdatePost(campaignId, post.id, { hook });
@@ -140,14 +143,14 @@ export function PostEditor({
           <div className="flex">
             <button
               onClick={() => onGenerate("single")}
-              disabled={isGenerating}
+              disabled={generateDisabled}
               className="text-sm bg-zinc-100 text-zinc-900 hover:bg-white px-4 py-1.5 rounded-l font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {isGenerating ? "Generating..." : post.hook ? "Regenerate" : "Generate"}
             </button>
             <button
               onClick={() => setShowGenDropdown((v) => !v)}
-              disabled={isGenerating}
+              disabled={generateDisabled}
               className="text-sm bg-zinc-100 text-zinc-900 hover:bg-white px-1.5 py-1.5 rounded-r border-l border-zinc-300 font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>

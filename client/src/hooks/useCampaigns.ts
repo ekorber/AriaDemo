@@ -72,25 +72,27 @@ export function useCampaigns(leads: Lead[]) {
       const allPosts = campaign.socialPosts;
       let targetPosts: SocialPost[];
 
+      const isDraft = (p: SocialPost) => !p.approved && !p.reviewReady;
+
       switch (scope) {
         case "single": {
           const post = allPosts.find((p) => p.id === selectedPostId);
-          targetPosts = post && !post.approved ? [post] : [];
+          targetPosts = post && isDraft(post) ? [post] : [];
           break;
         }
         case "date":
           targetPosts = allPosts.filter(
-            (p) => !p.approved && (selectedDate === null ? !p.scheduledDate : p.scheduledDate === selectedDate)
+            (p) => isDraft(p) && (selectedDate === null ? !p.scheduledDate : p.scheduledDate === selectedDate)
           );
           break;
         case "platform": {
           const post = allPosts.find((p) => p.id === selectedPostId);
           const platform = post?.platform;
-          targetPosts = platform ? allPosts.filter((p) => !p.approved && p.platform === platform) : [];
+          targetPosts = platform ? allPosts.filter((p) => isDraft(p) && p.platform === platform) : [];
           break;
         }
         case "all":
-          targetPosts = allPosts.filter((p) => !p.approved);
+          targetPosts = allPosts.filter((p) => isDraft(p));
           break;
         default:
           targetPosts = [];
@@ -118,6 +120,7 @@ export function useCampaigns(leads: Lead[]) {
           hook: p.hook,
           caption: p.caption,
           approved: p.approved,
+          reviewReady: p.reviewReady,
         }));
 
       const targets = targetPosts.map((p) => ({

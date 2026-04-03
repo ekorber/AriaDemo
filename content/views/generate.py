@@ -105,6 +105,8 @@ def _build_user_message(client_name, project_type, tone, brief, targets, existin
                 parts.append("unscheduled")
             if ep.get("approved"):
                 parts.append("approved")
+            elif ep.get("reviewReady"):
+                parts.append("ready for review")
             label = " | ".join(parts)
             lines.append(f"[{label}]")
             hook = ep.get("hook", "")
