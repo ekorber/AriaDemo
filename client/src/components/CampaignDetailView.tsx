@@ -14,7 +14,6 @@ interface CampaignDetailViewProps {
   onApproveAll: (campaignId: string) => void;
   onDelete: (campaignId: string) => void;
   onDuplicate: (campaignId: string) => Promise<string | null>;
-  onExport: (campaign: Campaign) => void;
   onGenerate: (campaignId: string, scope: string, selectedPostId?: string, selectedDate?: string | null) => Promise<void>;
   onAssignPlatform: (campaignId: string, platform: SocialPlatform, date: string | null, postId?: string) => void;
   onUpdateSchedule: (campaignId: string, postId: string, date: string | null, time: string | null) => void;
@@ -30,7 +29,6 @@ export function CampaignDetailView({
   onApproveAll,
   onDelete,
   onDuplicate,
-  onExport,
   onGenerate,
   onAssignPlatform,
   onUpdateSchedule,
@@ -121,12 +119,6 @@ export function CampaignDetailView({
                   className="text-sm text-zinc-500 hover:text-zinc-300 px-2 py-1 transition-colors"
                 >
                   Approve All ({approvedCount}/{totalCount})
-                </button>
-                <button
-                  onClick={() => onExport(campaign)}
-                  className="text-sm text-zinc-500 hover:text-zinc-300 px-2 py-1 transition-colors"
-                >
-                  Export
                 </button>
                 <button
                   onClick={async () => {

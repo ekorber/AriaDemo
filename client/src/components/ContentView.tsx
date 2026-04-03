@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { Campaign, CampaignTone, CampaignStatus, Lead, SocialPlatform } from "../types";
 import { CampaignDetailView } from "./CampaignDetailView";
 
@@ -6,7 +6,6 @@ const STATUS_BADGE: Record<CampaignStatus, string> = {
   draft: "bg-zinc-800 text-zinc-400",
   generating: "bg-amber-950 text-amber-400 animate-pulse",
   ready: "bg-emerald-950 text-emerald-400",
-  exported: "bg-blue-950 text-blue-400",
 };
 
 interface ContentViewProps {
@@ -22,7 +21,6 @@ interface ContentViewProps {
   approveAll: (campaignId: string) => void;
   deleteCampaign: (campaignId: string) => void;
   duplicateCampaign: (campaignId: string) => Promise<string | null>;
-  markExported: (campaignId: string) => void;
   assignPlatform: (campaignId: string, platform: SocialPlatform, date: string | null, postId?: string) => void;
   updateSchedule: (campaignId: string, postId: string, date: string | null, time: string | null) => void;
   initialCampaignId?: string | null;
@@ -43,7 +41,6 @@ export function ContentView({
   approveAll,
   deleteCampaign,
   duplicateCampaign,
-  markExported,
   assignPlatform,
   updateSchedule,
   initialCampaignId,
@@ -79,29 +76,6 @@ export function ContentView({
     setNewTone("");
   };
 
-  const handleExport = useCallback((campaign: Campaign) => {
-    const PLATFORM_ORDER: SocialPlatform[] = ["instagram", "tiktok", "x", "facebook", "youtube_shorts", "threads"];
-    const PLATFORM_LABELS: Record<SocialPlatform, string> = {
-      instagram: "INSTAGRAM", tiktok: "TIKTOK", x: "X",
-      facebook: "FACEBOOK", youtube_shorts: "YOUTUBE SHORTS", threads: "THREADS",
-    };
-    const lines = PLATFORM_ORDER.map((platform) => {
-      const post = campaign.socialPosts.find((p) => p.platform === platform);
-      if (!post) return "";
-      return `=== ${PLATFORM_LABELS[platform]} ===\n${post.hook}\n${post.caption ? post.caption + "\n" : ""}`;
-    }).filter(Boolean);
-    const text = lines.join("\n");
-    const blob = new Blob([text], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${campaign.clientName.replace(/\s+/g, "_")}_campaign.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-    navigator.clipboard.writeText(text);
-    markExported(campaign.id);
-  }, [markExported]);
-
   // ─── Campaign Detail View ─────────────────────────────────
   if (selected) {
     return (
@@ -119,7 +93,6 @@ export function ContentView({
           if (newId) setSelectedId(newId);
           return newId;
         }}
-        onExport={handleExport}
         onGenerate={generateContent}
         onAssignPlatform={assignPlatform}
         onUpdateSchedule={updateSchedule}

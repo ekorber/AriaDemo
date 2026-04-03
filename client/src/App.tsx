@@ -161,7 +161,6 @@ export default function App() {
           deletePost={campaignHook.deletePost}
           deleteCampaign={campaignHook.deleteCampaign}
           duplicateCampaign={campaignHook.duplicateCampaign}
-          markExported={campaignHook.markExported}
           assignPlatform={campaignHook.assignPlatform}
           updateSchedule={campaignHook.updateSchedule}
           initialCampaignId={initialCampaignId}

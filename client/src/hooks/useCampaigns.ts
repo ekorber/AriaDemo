@@ -294,16 +294,6 @@ export function useCampaigns(leads: Lead[]) {
     return copy.id;
   }, []);
 
-  const markExported = useCallback(async (campaignId: string) => {
-    setCampaigns((prev) => {
-      const next = new Map(prev);
-      const c = next.get(campaignId);
-      if (c) next.set(campaignId, { ...c, status: "exported" });
-      return next;
-    });
-    await patchCampaignApi(campaignId, { status: "exported" });
-  }, []);
-
   const assignPlatform = useCallback(
     async (campaignId: string, platform: SocialPlatform, scheduledDate: string | null, postId?: string) => {
       setCampaigns((prev) => {
@@ -382,7 +372,6 @@ export function useCampaigns(leads: Lead[]) {
     deletePost,
     deleteCampaign,
     duplicateCampaign,
-    markExported,
     assignPlatform,
     updateSchedule,
   };
