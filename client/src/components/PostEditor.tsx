@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { SocialPost } from "../types";
-import { PLATFORM_COLORS, PLATFORM_LABELS } from "../constants/platformColors";
+import { PLATFORM_COLORS, PLATFORM_LABELS } from "../constants/platforms.ts";
 import { ScheduleModal } from "./ScheduleModal";
 
 interface PostEditorProps {

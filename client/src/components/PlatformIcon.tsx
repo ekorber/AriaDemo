@@ -1,5 +1,5 @@
 import { SocialPlatform } from "../types";
-import { PLATFORM_COLORS } from "../constants/platformColors";
+import { PLATFORM_COLORS } from "../constants/platforms.ts";
 
 interface PlatformIconProps {
   platform: SocialPlatform;

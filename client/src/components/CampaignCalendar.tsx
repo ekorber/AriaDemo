@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { SocialPost } from "../types";
-import { PLATFORM_COLORS, PLATFORM_ABBREVS, ALL_PLATFORMS, PLATFORM_LABELS } from "../constants/platformColors";
+import { PLATFORM_COLORS, PLATFORM_ABBREVS, ALL_PLATFORMS, PLATFORM_LABELS } from "../constants/platforms.ts";
 import { PlatformIcon } from "./PlatformIcon";
 
 interface CampaignCalendarProps {

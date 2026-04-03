@@ -82,11 +82,11 @@ git commit -m "Add scheduledDate field to social post data model"
 ### Task 2: Create platform color constants
 
 **Files:**
-- Create: `client/src/constants/platformColors.ts`
+- Create: `client/src/constants/platforms.ts`
 
 - [ ] **Step 1: Create the constants file**
 
-Create `client/src/constants/platformColors.ts`:
+Create `client/src/constants/platforms.ts`:
 
 ```typescript
 import { SocialPlatform } from "../types";
@@ -126,7 +126,7 @@ export const ALL_PLATFORMS: SocialPlatform[] = [
 - [ ] **Step 2: Commit**
 
 ```bash
-git add client/src/constants/platformColors.ts
+git add client/src/constants/platforms.ts
 git commit -m "Add platform color and label constants"
 ```
 

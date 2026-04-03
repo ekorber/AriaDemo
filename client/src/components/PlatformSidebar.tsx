@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { SocialPost, SocialPlatform } from "../types";
-import { PLATFORM_LABELS, ALL_PLATFORMS } from "../constants/platformColors";
+import { PLATFORM_LABELS, ALL_PLATFORMS } from "../constants/platforms.ts";
 import { PlatformIcon } from "./PlatformIcon";
 
 interface PlatformSidebarProps {
