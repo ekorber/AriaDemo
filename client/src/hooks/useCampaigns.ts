@@ -1,12 +1,12 @@
-import { useState, useCallback, useEffect } from "react";
-import { Campaign, CampaignTone, Lead, SocialPost, SocialPlatform } from "../types";
-import { generateCampaignContent } from "../services/contentService";
+import {useCallback, useEffect, useState} from "react";
+import {Campaign, CampaignTone, Lead, SocialPlatform, SocialPost} from "../types";
+import {generateCampaignContent} from "../services/contentService";
 import {
-  fetchCampaigns,
   createCampaignApi,
-  patchCampaignApi,
   deleteCampaignApi,
   duplicateCampaignApi,
+  fetchCampaigns,
+  patchCampaignApi,
 } from "../services/campaignService";
 
 export function useCampaigns(leads: Lead[]) {
@@ -56,15 +56,7 @@ export function useCampaigns(leads: Lead[]) {
     async (campaignId: string, scope: string, selectedPostId?: string, selectedDate?: string | null) => {
       // Read latest campaign from state to avoid stale closures
       let campaign: Campaign | undefined;
-      setCampaigns((prev) => {
-        const next = new Map(prev);
-        const c = next.get(campaignId);
-        if (c) {
-          campaign = c;
-          next.set(campaignId, { ...c, status: "generating" });
-        }
-        return next;
-      });
+      setCampaigns((prev) => new Map(prev));
 
       if (!campaign) return;
 
@@ -100,12 +92,7 @@ export function useCampaigns(leads: Lead[]) {
 
       if (targetPosts.length === 0) {
         // Nothing to generate — revert status
-        setCampaigns((prev) => {
-          const next = new Map(prev);
-          const c = next.get(campaignId);
-          if (c) next.set(campaignId, { ...c, status: campaign!.status });
-          return next;
-        });
+        setCampaigns((prev) => new Map(prev));
         return;
       }
 
@@ -151,22 +138,12 @@ export function useCampaigns(leads: Lead[]) {
             })
             .catch((err) => {
               console.error("Failed to refetch campaigns after generation:", err);
-              setCampaigns((prev) => {
-                const next = new Map(prev);
-                const c = next.get(campaignId);
-                if (c) next.set(campaignId, { ...c, status: "ready" });
-                return next;
-              });
+              setCampaigns((prev) => new Map(prev));
             });
         },
         (error: string) => {
           console.error("Content generation failed:", error);
-          setCampaigns((prev) => {
-            const next = new Map(prev);
-            const c = next.get(campaignId);
-            if (c) next.set(campaignId, { ...c, status: "draft" });
-            return next;
-          });
+          setCampaigns((prev) => new Map(prev));
         }
       );
     },

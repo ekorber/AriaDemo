@@ -1,12 +1,6 @@
 import { useState } from "react";
-import { Campaign, CampaignTone, CampaignStatus, Lead, SocialPlatform } from "../types";
+import { Campaign, CampaignTone, Lead, SocialPlatform } from "../types";
 import { CampaignDetailView } from "./CampaignDetailView";
-
-const STATUS_BADGE: Record<CampaignStatus, string> = {
-  draft: "bg-zinc-800 text-zinc-400",
-  generating: "bg-amber-950 text-amber-400 animate-pulse",
-  ready: "bg-emerald-950 text-emerald-400",
-};
 
 interface ContentViewProps {
   leads: Lead[];
@@ -198,9 +192,6 @@ export function ContentView({
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-zinc-200">{c.clientName}</span>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider ${STATUS_BADGE[c.status]}`}>
-                      {c.status}
-                    </span>
                   </div>
                   {total > 0 && (
                     <span className="text-xs text-zinc-500">{approved}/{total} approved</span>
