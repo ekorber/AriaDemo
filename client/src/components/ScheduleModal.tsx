@@ -3,11 +3,12 @@ import { useState, useMemo } from "react";
 interface ScheduleModalProps {
   currentDate: string | null;   // "2026-03-28" or null
   currentTime: string | null;   // "15:00" or null
+  isDraft?: boolean;
   onSave: (date: string | null, time: string | null) => void;
   onClose: () => void;
 }
 
-export function ScheduleModal({ currentDate, currentTime, onSave, onClose }: ScheduleModalProps) {
+export function ScheduleModal({ currentDate, currentTime, isDraft = true, onSave, onClose }: ScheduleModalProps) {
   // Parse initial date for calendar
   const initialMonth = useMemo(() => {
     if (currentDate) {
@@ -247,7 +248,7 @@ export function ScheduleModal({ currentDate, currentTime, onSave, onClose }: Sch
         {/* Bottom actions */}
         <div className="flex items-center justify-between mt-4 pt-4 border-t border-zinc-800">
           <div className="flex gap-3">
-            {selectedDate && (
+            {isDraft && selectedDate && (
               <button
                 onClick={() => setSelectedDate(null)}
                 className="text-xs text-amber-500 hover:text-amber-400 transition-colors"
@@ -255,7 +256,7 @@ export function ScheduleModal({ currentDate, currentTime, onSave, onClose }: Sch
                 Set Date as Undecided
               </button>
             )}
-            {hasTime && (
+            {isDraft && hasTime && (
               <button
                 onClick={() => setHasTime(false)}
                 className="text-xs text-zinc-500 hover:text-zinc-400 transition-colors"

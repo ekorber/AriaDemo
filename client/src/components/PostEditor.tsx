@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { SocialPost } from "../types";
 import { PLATFORM_COLORS, PLATFORM_LABELS } from "../constants/platformColors";
 import { ScheduleModal } from "./ScheduleModal";
@@ -38,19 +38,38 @@ export function PostEditor({
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showGenDropdown, setShowGenDropdown] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const savingTimer = useRef<ReturnType<typeof setTimeout>>();
+  const prevGenerating = useRef(isGenerating);
+
+  const flashSaving = useCallback(() => {
+    setSaving(true);
+    clearTimeout(savingTimer.current);
+    savingTimer.current = setTimeout(() => setSaving(false), 800);
+  }, []);
+
+  useEffect(() => {
+    if (prevGenerating.current && !isGenerating) {
+      flashSaving();
+    }
+    prevGenerating.current = isGenerating;
+  }, [isGenerating, flashSaving]);
 
   const isDraft = !post.reviewReady && !post.approved;
+  const hasSchedule = !!post.scheduledDate && !!post.scheduledTime;
   const generateDisabled = isGenerating || !isDraft;
 
   const handleHookBlur = () => {
     if (hook !== post.hook) {
       onUpdatePost(campaignId, post.id, { hook });
+      flashSaving();
     }
   };
 
   const handleCaptionBlur = () => {
     if (caption !== post.caption) {
       onUpdatePost(campaignId, post.id, { caption });
+      flashSaving();
     }
   };
 
@@ -68,7 +87,16 @@ export function PostEditor({
   })();
 
   return (
-    <div className="flex-1 p-5 overflow-y-auto">
+    <div className="flex-1 p-5 overflow-y-auto relative">
+      {/* Saving indicator */}
+      {saving && (
+        <div className="absolute top-3 right-4 flex items-center gap-1.5 text-xs text-zinc-500">
+          <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="50 20" />
+          </svg>
+          Saving
+        </div>
+      )}
       {/* Header */}
       <div className="flex">
         <div className="mb-5">
@@ -95,7 +123,7 @@ export function PostEditor({
         >
           <span className="text-sm text-zinc-500">📅</span>
           <span className="text-sm text-zinc-300">{scheduleLabel}</span>
-          <span className="ml-auto text-xs text-blue-400">Edit</span>
+          {!post.approved && <span className="ml-auto text-xs text-blue-400">Edit</span>}
         </div>
       </div>
 
@@ -103,6 +131,7 @@ export function PostEditor({
         <ScheduleModal
           currentDate={post.scheduledDate}
           currentTime={post.scheduledTime}
+          isDraft={isDraft}
           onSave={(date, time) => {
             onUpdateSchedule(campaignId, post.id, date, time);
             setShowScheduleModal(false);
@@ -111,30 +140,43 @@ export function PostEditor({
         />
       )}
 
-      {/* Hook field */}
-      <div className="mb-4">
-        <label className="text-xs uppercase tracking-widest text-zinc-500 block mb-1.5">Hook</label>
-        <textarea
-          value={hook}
-          onChange={(e) => setHook(e.target.value)}
-          onBlur={handleHookBlur}
-          className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-base text-zinc-200 font-medium resize-none focus:outline-none focus:border-zinc-600"
-          rows={2}
-          placeholder="Opening line..."
-        />
-      </div>
+      {/* Hook + Caption fields */}
+      <div className="relative">
+        {isGenerating && isDraft && (
+          <div className="absolute inset-0 z-10 bg-zinc-950/60 rounded-lg flex items-center justify-center">
+            <div className="flex items-center gap-2 text-sm text-zinc-400">
+              <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="50 20" />
+              </svg>
+              Generating...
+            </div>
+          </div>
+        )}
+        <div className="mb-4">
+          <label className="text-xs uppercase tracking-widest text-zinc-500 block mb-1.5">Hook</label>
+          <textarea
+            value={hook}
+            onChange={(e) => setHook(e.target.value)}
+            onBlur={handleHookBlur}
+            disabled={isGenerating && isDraft}
+            className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-base text-zinc-200 font-medium resize-none focus:outline-none focus:border-zinc-600"
+            rows={2}
+            placeholder="Opening line..."
+          />
+        </div>
 
-      {/* Caption field */}
-      <div className="mb-5">
-        <label className="text-xs uppercase tracking-widest text-zinc-500 block mb-1.5">Caption</label>
-        <textarea
-          value={caption}
-          onChange={(e) => setCaption(e.target.value)}
-          onBlur={handleCaptionBlur}
-          className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-base text-zinc-400 resize-none focus:outline-none focus:border-zinc-600 leading-relaxed"
-          rows={8}
-          placeholder="Post body..."
-        />
+        <div className="mb-5">
+          <label className="text-xs uppercase tracking-widest text-zinc-500 block mb-1.5">Caption</label>
+          <textarea
+            value={caption}
+            onChange={(e) => setCaption(e.target.value)}
+            onBlur={handleCaptionBlur}
+            disabled={isGenerating && isDraft}
+            className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-base text-zinc-400 resize-none focus:outline-none focus:border-zinc-600 leading-relaxed"
+            rows={8}
+            placeholder="Post body..."
+          />
+        </div>
       </div>
 
       {/* Action buttons */}
@@ -176,7 +218,7 @@ export function PostEditor({
         </div>
         {post.approved ? (
           <button
-            onClick={() => onApprovePost(campaignId, post.id)}
+            onClick={() => { onApprovePost(campaignId, post.id); flashSaving(); }}
             className="text-sm px-3 py-1.5 rounded transition-colors border border-zinc-700 text-zinc-400 hover:text-zinc-200"
           >
             Unapprove
@@ -184,13 +226,14 @@ export function PostEditor({
         ) : post.reviewReady ? (
           <>
             <button
-              onClick={() => onApprovePost(campaignId, post.id)}
-              className="text-sm px-3 py-1.5 rounded transition-colors border border-zinc-700 text-zinc-400 hover:text-zinc-200"
+              onClick={() => { onApprovePost(campaignId, post.id); flashSaving(); }}
+              disabled={!hasSchedule}
+              className="text-sm px-3 py-1.5 rounded transition-colors border border-zinc-700 text-zinc-400 hover:text-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Approve
             </button>
             <button
-              onClick={() => onUpdatePost(campaignId, post.id, { reviewReady: false })}
+              onClick={() => { onUpdatePost(campaignId, post.id, { reviewReady: false }); flashSaving(); }}
               className="text-sm px-3 py-1.5 rounded transition-colors border border-zinc-700 text-zinc-500 hover:text-zinc-200"
             >
               Return to draft
@@ -198,8 +241,8 @@ export function PostEditor({
           </>
         ) : (
           <button
-            onClick={() => onUpdatePost(campaignId, post.id, { reviewReady: true })}
-            disabled={!hook.trim()}
+            onClick={() => { onUpdatePost(campaignId, post.id, { reviewReady: true }); flashSaving(); }}
+            disabled={!hook.trim() || !hasSchedule}
             className="text-sm px-3 py-1.5 rounded transition-colors border border-zinc-700 text-zinc-400 hover:text-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Mark for review

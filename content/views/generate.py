@@ -169,7 +169,6 @@ def _save_generated_posts(campaign_id, raw_text):
             generated = posts_dict[pid]
             post["hook"] = generated.get("hook", post.get("hook", ""))
             post["caption"] = generated.get("caption", post.get("caption", ""))
-            post["review_ready"] = True
         updated.append(post)
 
     db.campaigns.update_one(

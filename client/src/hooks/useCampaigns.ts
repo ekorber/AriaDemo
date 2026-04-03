@@ -258,7 +258,9 @@ export function useCampaigns(leads: Lead[]) {
       const next = new Map(prev);
       const c = next.get(campaignId);
       if (c) {
-        const updatedPosts = c.socialPosts.map((p) => ({ ...p, approved: true }));
+        const updatedPosts = c.socialPosts.map((p) =>
+          p.scheduledDate && p.scheduledTime ? { ...p, approved: true } : p
+        );
         next.set(campaignId, { ...c, socialPosts: updatedPosts });
         patchCampaignApi(campaignId, {
           social_posts: updatedPosts.map((p) => ({
