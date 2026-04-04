@@ -238,7 +238,7 @@ export function PostEditor({
         {/* Caption panel */}
         <div className="flex-1 min-w-0">
           <label className="text-xs uppercase tracking-widest text-zinc-500 block mb-1.5">Caption</label>
-          <div className="relative mb-3">
+          <div className="relative mb-1">
             {isGenerating && isDraft && (
               <div className="absolute inset-0 z-10 bg-zinc-950/60 rounded-lg flex items-center justify-center">
                 <div className="flex items-center gap-2 text-sm text-zinc-400">
