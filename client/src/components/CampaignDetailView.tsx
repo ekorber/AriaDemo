@@ -54,6 +54,7 @@ export function CampaignDetailView({
   });
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [showEditFields, setShowEditFields] = useState(false);
 
   // Posts for the selected date
   const datePosts = useMemo(() => {
@@ -121,6 +122,16 @@ export function CampaignDetailView({
             <span className="text-sm text-zinc-500">{campaign.projectType}</span>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowEditFields(!showEditFields)}
+              className={`text-sm px-2 py-1 transition-colors ${
+                showEditFields
+                  ? "text-blue-400 hover:text-blue-300"
+                  : "text-zinc-500 hover:text-zinc-300"
+              }`}
+            >
+              Edit
+            </button>
             {totalCount > 0 && (
               <>
                 <button
@@ -149,29 +160,31 @@ export function CampaignDetailView({
           </div>
         </div>
 
-        {/* Editable brief & tone */}
-        <div className="mt-2 space-y-2">
-          <div>
-            <label className="text-xs text-zinc-500 block mb-1">Brief</label>
-            <textarea
-              value={campaign.brief}
-              onChange={(e) => onUpdateBrief(campaign.id, e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 text-sm text-zinc-400 resize-none focus:outline-none focus:border-zinc-600"
-              rows={2}
-              placeholder="Describe the campaign angle — what's the news, what are we promoting, who's the audience?"
-            />
+        {/* Editable brief & tone (collapsible) */}
+        {showEditFields && (
+          <div className="mt-2 space-y-2">
+            <div>
+              <label className="text-xs text-zinc-500 block mb-1">Brief</label>
+              <textarea
+                value={campaign.brief}
+                onChange={(e) => onUpdateBrief(campaign.id, e.target.value)}
+                className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 text-sm text-zinc-400 resize-none focus:outline-none focus:border-zinc-600"
+                rows={2}
+                placeholder="Describe the campaign angle — what's the news, what are we promoting, who's the audience?"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-zinc-500 block mb-1">Tone</label>
+              <input
+                type="text"
+                value={campaign.tone}
+                onChange={(e) => onUpdateTone(campaign.id, e.target.value)}
+                className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 text-sm text-zinc-400 focus:outline-none focus:border-zinc-600"
+                placeholder="e.g. hype, behind-the-scenes, educational, testimonial"
+              />
+            </div>
           </div>
-          <div>
-            <label className="text-xs text-zinc-500 block mb-1">Tone</label>
-            <input
-              type="text"
-              value={campaign.tone}
-              onChange={(e) => onUpdateTone(campaign.id, e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 text-sm text-zinc-400 focus:outline-none focus:border-zinc-600"
-              placeholder="e.g. hype, behind-the-scenes, educational, testimonial"
-            />
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Three-panel layout */}

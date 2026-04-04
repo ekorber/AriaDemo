@@ -56,6 +56,7 @@ export function ContentView({
   const [newLeadId, setNewLeadId] = useState(initialLeadId ?? "");
   const [newBrief, setNewBrief] = useState("");
   const [newTone, setNewTone] = useState<CampaignTone>("");
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // React to initialLeadId changes (e.g. from pipeline "Create Campaign" button)
   useEffect(() => {
@@ -212,18 +213,32 @@ export function ContentView({
             const approved = c.socialPosts.filter((p) => p.approved).length;
             const total = c.socialPosts.length;
             return (
-              <button
+              <div
                 key={c.id}
                 onClick={() => setSelectedId(c.id)}
-                className="w-full text-left border border-zinc-800 rounded-lg bg-zinc-900/50 hover:bg-zinc-900 p-4 transition-colors"
+                className="w-full text-left border border-zinc-800 rounded-lg bg-zinc-900/50 hover:bg-zinc-900 p-4 transition-colors cursor-pointer"
               >
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-zinc-200">{c.clientName}</span>
                   </div>
-                  {total > 0 && (
-                    <span className="text-xs text-zinc-500">{approved}/{total} approved</span>
-                  )}
+                  <div className="flex items-center gap-3">
+                    {total > 0 && (
+                      <span className="text-xs text-zinc-500">{approved}/{total} approved</span>
+                    )}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setSelectedId(c.id); }}
+                      className="text-xs text-zinc-500 hover:text-zinc-200 px-2 py-0.5 rounded hover:bg-zinc-800 transition-colors"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(c.id); }}
+                      className="text-xs text-red-500/60 hover:text-red-400 px-2 py-0.5 rounded hover:bg-zinc-800 transition-colors"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
                 <div className="flex items-center gap-3 text-xs text-zinc-500">
                   <span>{c.projectType}</span>
@@ -232,11 +247,43 @@ export function ContentView({
                   <span className="text-zinc-700">|</span>
                   <span>{c.createdAt.toLocaleDateString()}</span>
                 </div>
-              </button>
+                {c.brief && (
+                  <p className="mt-2 text-xs text-zinc-500 line-clamp-2">{c.brief}</p>
+                )}
+              </div>
             );
           })}
         </div>
       )}
+
+      {/* Delete confirmation modal */}
+      {confirmDeleteId && (() => {
+        const c = campaigns.find((c) => c.id === confirmDeleteId);
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+            <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-6 max-w-sm w-full mx-4 space-y-4">
+              <h3 className="text-base font-medium text-zinc-100">Delete campaign?</h3>
+              <p className="text-sm text-zinc-400">
+                This will permanently delete the <span className="text-zinc-200">{c?.clientName}</span> campaign and all its posts. This action cannot be undone.
+              </p>
+              <div className="flex gap-2 justify-end">
+                <button
+                  onClick={() => setConfirmDeleteId(null)}
+                  className="text-sm text-zinc-500 hover:text-zinc-300 px-3 py-1.5 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => { deleteCampaign(confirmDeleteId); setConfirmDeleteId(null); }}
+                  className="text-sm bg-red-600 hover:bg-red-500 text-white px-4 py-1.5 rounded font-medium transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
