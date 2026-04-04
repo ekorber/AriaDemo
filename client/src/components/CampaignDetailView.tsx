@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
-import { Campaign, SocialPlatform } from "../types";
+import { Campaign, CampaignTone, SocialPlatform } from "../types";
 import { CampaignCalendar } from "./CampaignCalendar";
 import { PostEditor } from "./PostEditor";
 import { PlatformSidebar } from "./PlatformSidebar";
@@ -8,6 +8,7 @@ interface CampaignDetailViewProps {
   campaign: Campaign;
   onBack: () => void;
   onUpdateBrief: (campaignId: string, brief: string) => void;
+  onUpdateTone: (campaignId: string, tone: CampaignTone) => void;
   onUpdatePost: (campaignId: string, postId: string, fields: { hook?: string; caption?: string; reviewReady?: boolean }) => void;
   onApprovePost: (campaignId: string, postId: string) => void;
   onDeletePost: (campaignId: string, postId: string) => void;
@@ -23,6 +24,7 @@ export function CampaignDetailView({
   campaign,
   onBack,
   onUpdateBrief,
+  onUpdateTone,
   onUpdatePost,
   onApprovePost,
   onDeletePost,
@@ -107,9 +109,6 @@ export function CampaignDetailView({
             </button>
             <h1 className="text-base font-semibold text-zinc-100">{campaign.clientName}</h1>
             <span className="text-sm text-zinc-500">{campaign.projectType}</span>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 uppercase tracking-wider">
-              {campaign.tone}
-            </span>
           </div>
           <div className="flex items-center gap-2">
             {totalCount > 0 && (
@@ -140,15 +139,28 @@ export function CampaignDetailView({
           </div>
         </div>
 
-        {/* Editable brief */}
-        <div className="mt-2">
-          <textarea
-            value={campaign.brief}
-            onChange={(e) => onUpdateBrief(campaign.id, e.target.value)}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 text-sm text-zinc-400 resize-none focus:outline-none focus:border-zinc-600"
-            rows={2}
-            placeholder="Campaign brief..."
-          />
+        {/* Editable brief & tone */}
+        <div className="mt-2 space-y-2">
+          <div>
+            <label className="text-xs text-zinc-500 block mb-1">Brief</label>
+            <textarea
+              value={campaign.brief}
+              onChange={(e) => onUpdateBrief(campaign.id, e.target.value)}
+              className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 text-sm text-zinc-400 resize-none focus:outline-none focus:border-zinc-600"
+              rows={2}
+              placeholder="Describe the campaign angle — what's the news, what are we promoting, who's the audience?"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-zinc-500 block mb-1">Tone</label>
+            <input
+              type="text"
+              value={campaign.tone}
+              onChange={(e) => onUpdateTone(campaign.id, e.target.value)}
+              className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 text-sm text-zinc-400 focus:outline-none focus:border-zinc-600"
+              placeholder="e.g. hype, behind-the-scenes, educational, testimonial"
+            />
+          </div>
         </div>
       </div>
 

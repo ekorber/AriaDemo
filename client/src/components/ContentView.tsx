@@ -8,6 +8,7 @@ interface ContentViewProps {
   getCampaign: (id: string) => Campaign | null;
   createCampaign: (leadId: string, brief: string, tone: CampaignTone) => Promise<string>;
   updateCampaignBrief: (id: string, brief: string) => void;
+  updateCampaignTone: (id: string, tone: CampaignTone) => void;
   generateContent: (id: string, scope: string, selectedPostId?: string, selectedDate?: string | null) => Promise<void>;
   updatePost: (campaignId: string, postId: string, fields: { hook?: string; caption?: string; reviewReady?: boolean }) => void;
   approvePost: (campaignId: string, postId: string) => void;
@@ -28,6 +29,7 @@ export function ContentView({
   getCampaign,
   createCampaign,
   updateCampaignBrief,
+  updateCampaignTone,
   generateContent,
   updatePost,
   approvePost,
@@ -77,6 +79,7 @@ export function ContentView({
         campaign={selected}
         onBack={() => { setSelectedId(null); }}
         onUpdateBrief={updateCampaignBrief}
+        onUpdateTone={updateCampaignTone}
         onUpdatePost={updatePost}
         onApprovePost={approvePost}
         onDeletePost={deletePost}

@@ -154,6 +154,7 @@ export default function App() {
           getCampaign={campaignHook.getCampaign}
           createCampaign={campaignHook.createCampaign}
           updateCampaignBrief={campaignHook.updateCampaignBrief}
+          updateCampaignTone={campaignHook.updateCampaignTone}
           generateContent={campaignHook.generateContent}
           updatePost={campaignHook.updatePost}
           approvePost={campaignHook.approvePost}

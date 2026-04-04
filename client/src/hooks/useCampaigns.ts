@@ -52,6 +52,16 @@ export function useCampaigns(leads: Lead[]) {
     await patchCampaignApi(campaignId, { brief });
   }, []);
 
+  const updateCampaignTone = useCallback(async (campaignId: string, tone: CampaignTone) => {
+    setCampaigns((prev) => {
+      const next = new Map(prev);
+      const c = next.get(campaignId);
+      if (c) next.set(campaignId, { ...c, tone });
+      return next;
+    });
+    await patchCampaignApi(campaignId, { tone });
+  }, []);
+
   const generateContent = useCallback(
     async (campaignId: string, scope: string, selectedPostId?: string, selectedDate?: string | null) => {
       // Read latest campaign from state to avoid stale closures
@@ -342,6 +352,7 @@ export function useCampaigns(leads: Lead[]) {
     getCampaign: (id: string) => campaigns.get(id) ?? null,
     createCampaign,
     updateCampaignBrief,
+    updateCampaignTone,
     generateContent,
     updatePost,
     approvePost,
