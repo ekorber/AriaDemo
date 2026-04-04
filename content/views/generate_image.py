@@ -1,10 +1,10 @@
+import base64
 import json
 import os
 import uuid
 
 import anthropic
 import openai
-import requests as http_requests
 from bson import ObjectId
 from django.conf import settings
 from django.http import JsonResponse
@@ -103,29 +103,35 @@ def image_generate(request):
             errors.append(f"Claude prompt failed for {post_id}: {type(e).__name__}: {e}")
             continue
 
-        # Step 2: Generate the image with DALL-E
+        # Step 2: Generate image with DALL-E using b64_json to avoid download issues
         try:
             image_response = dalle.images.generate(
                 model="dall-e-3",
                 prompt=dalle_prompt,
                 size=size,
                 quality="standard",
+                response_format="b64_json",
                 n=1,
             )
-            image_url_remote = image_response.data[0].url
+            b64_data = image_response.data[0].b64_json
         except Exception as e:
             errors.append(f"DALL-E failed for {post_id}: {type(e).__name__}: {e}")
             continue
 
-        # Step 3: Download and save locally
+        # Step 3: Save base64 image data directly to file (no HTTP download needed)
         try:
-            local_url = _download_and_save(image_url_remote)
-            if local_url:
-                generated[post_id] = {"imageUrl": local_url}
-            else:
-                errors.append(f"Download returned None for {post_id}")
+            filename = f"{uuid.uuid4().hex}.png"
+            upload_dir = os.path.join(settings.BASE_DIR, "static", "generated_images")
+            os.makedirs(upload_dir, exist_ok=True)
+            filepath = os.path.join(upload_dir, filename)
+
+            with open(filepath, "wb") as f:
+                f.write(base64.b64decode(b64_data))
+
+            local_url = f"/static/generated_images/{filename}"
+            generated[post_id] = {"imageUrl": local_url}
         except Exception as e:
-            errors.append(f"Download failed for {post_id}: {type(e).__name__}: {e}")
+            errors.append(f"File save failed for {post_id}: {type(e).__name__}: {e}")
             continue
 
     if campaign_id and generated:
@@ -135,33 +141,6 @@ def image_generate(request):
     if errors:
         result["errors"] = errors
     return JsonResponse(result)
-
-
-def _download_and_save(remote_url):
-    """Download image from URL and save to static directory."""
-    try:
-        resp = http_requests.get(remote_url, timeout=30)
-        resp.raise_for_status()
-
-        content_type = resp.headers.get("content-type", "image/png")
-        ext = "png"
-        if "jpeg" in content_type or "jpg" in content_type:
-            ext = "jpg"
-        elif "webp" in content_type:
-            ext = "webp"
-
-        filename = f"{uuid.uuid4().hex}.{ext}"
-        upload_dir = os.path.join(settings.BASE_DIR, "static", "generated_images")
-        os.makedirs(upload_dir, exist_ok=True)
-
-        filepath = os.path.join(upload_dir, filename)
-        with open(filepath, "wb") as f:
-            f.write(resp.content)
-
-        return f"/static/generated_images/{filename}"
-    except Exception as e:
-        print(f"Failed to download image: {e}")
-        return None
 
 
 def _save_generated_images(campaign_id, generated):
