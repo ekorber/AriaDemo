@@ -127,6 +127,30 @@ export function PostEditor({
         </div>
       </div>
 
+      {isDraft && (!hook.trim() || !hasSchedule) && (
+        <div className="flex items-center gap-4 mb-4 text-xs text-zinc-500">
+          <span className="uppercase tracking-widest text-zinc-600">Needed for review</span>
+          <span className="flex items-center gap-1.5">
+            {hook.trim()
+              ? <span className="text-emerald-500">✓</span>
+              : <span className="text-zinc-600">○</span>}
+            <span className={hook.trim() ? "text-zinc-500 line-through" : "text-zinc-400"}>Hook text</span>
+          </span>
+          <span className="flex items-center gap-1.5">
+            {post.scheduledDate
+              ? <span className="text-emerald-500">✓</span>
+              : <span className="text-zinc-600">○</span>}
+            <span className={post.scheduledDate ? "text-zinc-500 line-through" : "text-zinc-400"}>Scheduled date</span>
+          </span>
+          <span className="flex items-center gap-1.5">
+            {post.scheduledTime
+              ? <span className="text-emerald-500">✓</span>
+              : <span className="text-zinc-600">○</span>}
+            <span className={post.scheduledTime ? "text-zinc-500 line-through" : "text-zinc-400"}>Scheduled time</span>
+          </span>
+        </div>
+      )}
+
       {showScheduleModal && (
         <ScheduleModal
           currentDate={post.scheduledDate}
