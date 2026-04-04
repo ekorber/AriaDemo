@@ -19,5 +19,8 @@ node_modules/
 # Superpowers
 .superpowers/
 
+# Generated images
+static/generated_images/
+
 /prompts
 TODO.md

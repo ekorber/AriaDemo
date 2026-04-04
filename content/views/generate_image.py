@@ -1,67 +1,24 @@
+import base64
 import json
 import os
-import re
+import uuid
 
 import anthropic
 from bson import ObjectId
+from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from chat.db import get_db
 
-IMAGE_SYSTEM_PROMPT = """You are an AI image prompt engineer for a social media marketing platform. Given a client brief and a list of target posts, you generate detailed image generation prompts tailored for each platform.
-
-You will receive:
-1. A client brief with campaign details
-2. Target posts to generate image prompts for
-
-Return ONLY valid JSON with this exact structure, keyed by postId:
-
-{
-  "posts": {
-    "<postId>": { "imagePrompt": "..." },
-    "<postId>": { "imagePrompt": "..." }
-  }
+PLATFORM_IMAGE_GUIDANCE = {
+    "instagram": "Square format (1:1), visually striking, high production value, lifestyle-oriented, aspirational, rich colors and lighting.",
+    "x": "Landscape format (16:9), eye-catching but clean, bold imagery that works at small sizes, high contrast.",
+    "facebook": "Landscape format (1.91:1), warm and relatable, community-oriented, shareable, authentic feeling.",
+    "threads": "Square format (1:1), raw and authentic aesthetic, casual unfiltered look, candid moments.",
+    "linkedin": "Landscape format (1.91:1), professional and polished, industry-appropriate, thought leadership visuals, clean design.",
 }
-
-Generate an image prompt for EVERY postId listed in the target posts. Each prompt should be a detailed, vivid description suitable for an AI image generator (like DALL-E or Stable Diffusion). Follow these platform-specific guidelines:
-
-**Instagram:**
-- Square format (1:1 ratio), visually striking, high production value
-- Lifestyle-oriented, aspirational imagery, rich colors and lighting
-- Think: product flat lays, behind-the-scenes moments, polished brand aesthetics
-
-**X (formerly Twitter):**
-- Landscape format (16:9 ratio), eye-catching but clean
-- Bold imagery that works at small sizes in a feed, high contrast
-- Think: data visualizations, quote cards, striking single-subject photos
-
-**Facebook:**
-- Landscape format (1.91:1 ratio), warm and relatable
-- Community-oriented, shareable imagery, authentic feeling
-- Think: team photos, event shots, infographics, lifestyle moments
-
-**Threads:**
-- Square format (1:1 ratio), raw and authentic aesthetic
-- Casual, unfiltered look — avoid overly polished corporate imagery
-- Think: candid moments, simple graphics, memes, real textures
-
-**LinkedIn:**
-- Landscape format (1.91:1 ratio), professional and polished
-- Industry-appropriate, thought leadership visuals, clean design
-- Think: professional headshots, conference photos, clean infographics, office culture
-
-**General guidelines:**
-- Always incorporate the brand/client context into the visual direction
-- Specify composition, lighting, color palette, and mood
-- Include specific details about objects, people, settings, and style
-- Mention the aspect ratio in each prompt
-- Match the campaign tone to the visual mood
-- When generating multiple images for the same platform, vary the visual approach
-
-**Tone guidance:**
-The tone field indicates the emotional register. Translate this into visual direction — "hype" means bold colors and dynamic composition, "behind-the-scenes" means candid and raw, "educational" means clean and informative, etc."""
 
 
 @csrf_exempt
@@ -89,96 +46,64 @@ def image_generate(request):
     if not api_key:
         return JsonResponse({"error": "API key not configured"}, status=500)
 
-    user_message = _build_user_message(client_name, project_type, tone, brief, targets)
-
     client = anthropic.Anthropic(api_key=api_key)
-    response = client.messages.create(
-        model="claude-sonnet-4-20250514",
-        max_tokens=4000,
-        system=IMAGE_SYSTEM_PROMPT,
-        messages=[{"role": "user", "content": user_message}],
-    )
+    generated = {}
 
-    raw_text = response.content[0].text
-    prompts = _parse_prompts(raw_text)
+    for t in targets:
+        post_id = t.get("postId", "unknown")
+        platform = t.get("platform", "unknown")
+        guidance = PLATFORM_IMAGE_GUIDANCE.get(platform, "")
 
-    if not prompts:
-        return JsonResponse({"error": "Could not parse image prompts"}, status=500)
+        prompt = (
+            f"Generate a social media image for {platform}. "
+            f"Client: {client_name}. Project: {project_type}. "
+            f"Campaign brief: {brief}. Tone: {tone}. "
+            f"Platform guidance: {guidance} "
+            f"Create a polished, professional image suitable for posting. "
+            f"No text overlays unless essential to the concept."
+        )
 
-    # Generate images using the prompts
-    generated = _generate_images(prompts, api_key)
+        try:
+            response = client.messages.create(
+                model="claude-sonnet-4-20250514",
+                max_tokens=1024,
+                messages=[{"role": "user", "content": prompt}],
+            )
 
-    # Save image URLs to campaign
-    if campaign_id:
+            for block in response.content:
+                if block.type == "image":
+                    # Save image to static files
+                    image_url = _save_image(block.source.data, block.source.media_type)
+                    if image_url:
+                        generated[post_id] = {"imageUrl": image_url}
+                    break
+        except Exception as e:
+            print(f"Image generation failed for {post_id}: {e}")
+            continue
+
+    if campaign_id and generated:
         _save_generated_images(campaign_id, generated)
 
     return JsonResponse({"posts": generated})
 
 
-def _build_user_message(client_name, project_type, tone, brief, targets):
-    lines = [
-        f"Client: {client_name}",
-        f"Project: {project_type}",
-        f"Tone: {tone}",
-        f"Brief: {brief}",
-        "",
-        "=== GENERATE IMAGE PROMPTS FOR THESE POSTS ===",
-    ]
-    for t in targets:
-        post_id = t.get("postId", "unknown")
-        platform = t.get("platform", "unknown")
-        date = t.get("scheduledDate")
-        time_val = t.get("scheduledTime")
-        if date:
-            schedule = f"{date} {time_val}" if time_val else date
-        else:
-            schedule = "unscheduled"
-        lines.append(f"- {post_id}: {platform} | {schedule}")
+def _save_image(b64_data, media_type):
+    """Save base64 image data to the static directory and return a URL."""
+    ext = "png"
+    if "jpeg" in media_type or "jpg" in media_type:
+        ext = "jpg"
+    elif "webp" in media_type:
+        ext = "webp"
 
-    return "\n".join(lines)
+    filename = f"{uuid.uuid4().hex}.{ext}"
+    upload_dir = os.path.join(settings.BASE_DIR, "static", "generated_images")
+    os.makedirs(upload_dir, exist_ok=True)
 
+    filepath = os.path.join(upload_dir, filename)
+    with open(filepath, "wb") as f:
+        f.write(base64.b64decode(b64_data))
 
-def _parse_prompts(raw_text):
-    json_match = re.search(r"\{[\s\S]*\}", raw_text)
-    if not json_match:
-        return None
-    try:
-        parsed = json.loads(json_match.group(0))
-        return parsed.get("posts")
-    except json.JSONDecodeError:
-        return None
-
-
-def _generate_images(prompts, api_key):
-    """Generate images from prompts. Returns {postId: {imageUrl: "..."}}."""
-    generated = {}
-    client = anthropic.Anthropic(api_key=api_key)
-
-    for post_id, data in prompts.items():
-        prompt = data.get("imagePrompt", "")
-        if not prompt:
-            continue
-
-        try:
-            response = client.images.generate(
-                model="claude-image-generation-fast-20250515",
-                prompt=prompt,
-                n=1,
-                size="auto",
-                output_format="webp",
-                output_compression=80,
-            )
-            if response.data and len(response.data) > 0:
-                image = response.data[0]
-                if hasattr(image, "url") and image.url:
-                    generated[post_id] = {"imageUrl": image.url}
-                elif hasattr(image, "b64_json") and image.b64_json:
-                    generated[post_id] = {"imageUrl": f"data:image/webp;base64,{image.b64_json}"}
-        except Exception as e:
-            print(f"Image generation failed for {post_id}: {e}")
-            continue
-
-    return generated
+    return f"/static/generated_images/{filename}"
 
 
 def _save_generated_images(campaign_id, generated):
