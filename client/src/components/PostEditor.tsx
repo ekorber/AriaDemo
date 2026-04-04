@@ -142,7 +142,7 @@ export function PostEditor({
           ) : (
             <button
               onClick={() => { onUpdatePost(campaignId, post.id, { reviewReady: true }); flashSaving(); }}
-              disabled={!caption.trim() || !hasSchedule}
+              disabled={!caption.trim() || !hasSchedule || (post.platform === "instagram" && !post.imageUrl)}
               className="text-sm px-3 py-1.5 rounded transition-colors border border-zinc-700 text-zinc-400 hover:text-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Mark for review
@@ -198,6 +198,14 @@ export function PostEditor({
                   : <span className="text-zinc-600">○</span>}
                 <span className={post.scheduledTime ? "text-zinc-500 line-through" : "text-zinc-400"}>Scheduled time</span>
               </span>
+              {post.platform === "instagram" && (
+                <span className="flex items-center gap-1.5">
+                  {post.imageUrl
+                    ? <span className="text-emerald-500">✓</span>
+                    : <span className="text-zinc-600">○</span>}
+                  <span className={post.imageUrl ? "text-zinc-500 line-through" : "text-zinc-400"}>Generated image</span>
+                </span>
+              )}
             </>
           )}
           {saving && (
