@@ -31,6 +31,7 @@ export interface SocialPost {
   id: string;
   platform: SocialPlatform;
   caption: string;
+  imageUrl: string | null;
   reviewReady: boolean;
   approved: boolean;
   scheduledDate: string | null;

@@ -69,6 +69,44 @@ export async function generateCampaignContent(
   }
 }
 
+interface GenerateImagePayload {
+  campaignId: string;
+  clientName: string;
+  projectType: string;
+  tone: string;
+  brief: string;
+  scope: string;
+  targets: GenerateTarget[];
+}
+
+export async function generateImageContent(
+  payload: GenerateImagePayload,
+  onComplete: (generatedImages: Record<string, { imageUrl: string }>) => void,
+  onError: (error: string) => void
+): Promise<void> {
+  try {
+    const response = await fetch("/api/content/generate-image/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      onError("Failed to generate images. Please try again.");
+      return;
+    }
+
+    const data = await response.json();
+    if (data.posts) {
+      onComplete(data.posts);
+    } else {
+      onError("Could not parse the generated images. Please try again.");
+    }
+  } catch {
+    onError("Connection error. Please check your network and try again.");
+  }
+}
+
 function parseContentResponse(raw: string): Record<string, { caption: string }> | null {
   try {
     const jsonMatch = raw.match(/\{[\s\S]*\}/);

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { SocialPost } from "../types";
-import { PLATFORM_COLORS, PLATFORM_LABELS } from "../constants/platforms.ts";
+import { PLATFORM_COLORS, PLATFORM_LABELS, IMAGE_PLATFORMS } from "../constants/platforms.ts";
 import { ScheduleModal } from "./ScheduleModal";
 
 interface PostEditorProps {
@@ -11,7 +11,9 @@ interface PostEditorProps {
   onDeletePost: (campaignId: string, postId: string) => void;
   onUpdateSchedule: (campaignId: string, postId: string, date: string | null, time: string | null) => void;
   onGenerate: (scope: "single" | "date" | "platform" | "all") => void;
+  onGenerateImage: (scope: "single" | "date" | "platform" | "all") => void;
   isGenerating: boolean;
+  isGeneratingImage: boolean;
 }
 
 export function PostEditor({
@@ -22,11 +24,14 @@ export function PostEditor({
   onDeletePost,
   onUpdateSchedule,
   onGenerate,
+  onGenerateImage,
   isGenerating,
+  isGeneratingImage,
 }: PostEditorProps) {
   const [caption, setCaption] = useState(post.caption);
   const color = PLATFORM_COLORS[post.platform];
   const label = PLATFORM_LABELS[post.platform];
+  const supportsImages = IMAGE_PLATFORMS.has(post.platform);
 
   useEffect(() => {
     setCaption(post.caption);
@@ -35,6 +40,7 @@ export function PostEditor({
 
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showGenDropdown, setShowGenDropdown] = useState(false);
+  const [showGenImageDropdown, setShowGenImageDropdown] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [saving, setSaving] = useState(false);
   const savingTimer = useRef<ReturnType<typeof setTimeout>>();
@@ -155,69 +161,147 @@ export function PostEditor({
         />
       )}
 
-      {/* Hook + Caption fields */}
-      <div className="relative">
-        {isGenerating && isDraft && (
-          <div className="absolute inset-0 z-10 bg-zinc-950/60 rounded-lg flex items-center justify-center">
-            <div className="flex items-center gap-2 text-sm text-zinc-400">
-              <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="50 20" />
-              </svg>
-              Generating...
+      {/* Split layout: image (left) + caption (right) */}
+      <div className={`flex gap-5 ${supportsImages ? "" : "flex-col"}`}>
+        {/* Image panel — only for platforms that support images */}
+        {supportsImages && (
+          <div className="flex-1 min-w-0">
+            <label className="text-xs uppercase tracking-widest text-zinc-500 block mb-1.5">Image</label>
+            <div className="relative mb-3">
+              {isGeneratingImage && isDraft && (
+                <div className="absolute inset-0 z-10 bg-zinc-950/60 rounded-lg flex items-center justify-center">
+                  <div className="flex items-center gap-2 text-sm text-zinc-400">
+                    <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="50 20" />
+                    </svg>
+                    Generating image...
+                  </div>
+                </div>
+              )}
+              {post.imageUrl ? (
+                <img
+                  src={post.imageUrl}
+                  alt="Post image"
+                  className="w-full rounded-lg border border-zinc-800 object-cover"
+                  style={{ maxHeight: "280px" }}
+                />
+              ) : (
+                <div className="w-full rounded-lg border border-zinc-800 bg-zinc-900 flex items-center justify-center" style={{ height: "280px" }}>
+                  <div className="text-center text-zinc-600">
+                    <svg className="w-10 h-10 mx-auto mb-2 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0 0 22.5 18.75V5.25A2.25 2.25 0 0 0 20.25 3H3.75A2.25 2.25 0 0 0 1.5 5.25v13.5A2.25 2.25 0 0 0 3.75 21Z" />
+                    </svg>
+                    <span className="text-sm">No image yet</span>
+                  </div>
+                </div>
+              )}
+            </div>
+            {/* Generate Image button */}
+            <div className="relative">
+              <div className="flex">
+                <button
+                  onClick={() => onGenerateImage("single")}
+                  disabled={generateDisabled || isGeneratingImage}
+                  className="text-sm bg-zinc-100 text-zinc-900 hover:bg-white px-4 py-1.5 rounded-l font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {isGeneratingImage ? "Generating..." : post.imageUrl ? "Regenerate Image" : "Generate Image"}
+                </button>
+                <button
+                  onClick={() => setShowGenImageDropdown((v) => !v)}
+                  disabled={generateDisabled || isGeneratingImage}
+                  className="text-sm bg-zinc-100 text-zinc-900 hover:bg-white px-1.5 py-1.5 rounded-r border-l border-zinc-300 font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                </button>
+              </div>
+              {showGenImageDropdown && (
+                <div className="absolute left-0 top-full mt-1 bg-zinc-100 rounded shadow-xl z-20 min-w-[200px] py-1">
+                  {([
+                    { scope: "date" as const, label: "All images on this date" },
+                    { scope: "platform" as const, label: `All ${label} images` },
+                    { scope: "all" as const, label: "Every image in campaign" },
+                  ]).map((item) => (
+                    <button
+                      key={item.scope}
+                      onClick={() => { setShowGenImageDropdown(false); onGenerateImage(item.scope); }}
+                      className="w-full text-left text-sm px-3 py-1.5 text-zinc-900 font-medium hover:bg-white transition-colors"
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
-        <div className="mb-5">
-          <label className="text-xs uppercase tracking-widest text-zinc-500 block mb-1.5">Caption</label>
-          <textarea
-            value={caption}
-            onChange={(e) => setCaption(e.target.value)}
-            onBlur={handleCaptionBlur}
-            disabled={isGenerating && isDraft}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-base text-zinc-200 resize-none focus:outline-none focus:border-zinc-600 leading-relaxed"
-            rows={10}
-            placeholder="Write your post..."
-          />
+
+        {/* Caption panel */}
+        <div className="flex-1 min-w-0">
+          <div className="relative">
+            {isGenerating && isDraft && (
+              <div className="absolute inset-0 z-10 bg-zinc-950/60 rounded-lg flex items-center justify-center">
+                <div className="flex items-center gap-2 text-sm text-zinc-400">
+                  <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="50 20" />
+                  </svg>
+                  Generating caption...
+                </div>
+              </div>
+            )}
+            <div className="mb-3">
+              <label className="text-xs uppercase tracking-widest text-zinc-500 block mb-1.5">Caption</label>
+              <textarea
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                onBlur={handleCaptionBlur}
+                disabled={isGenerating && isDraft}
+                className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-base text-zinc-200 resize-none focus:outline-none focus:border-zinc-600 leading-relaxed"
+                rows={supportsImages ? 8 : 10}
+                placeholder="Write your post..."
+              />
+            </div>
+          </div>
+          {/* Generate Caption button */}
+          <div className="relative">
+            <div className="flex">
+              <button
+                onClick={() => onGenerate("single")}
+                disabled={generateDisabled}
+                className="text-sm bg-zinc-100 text-zinc-900 hover:bg-white px-4 py-1.5 rounded-l font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {isGenerating ? "Generating..." : post.caption ? "Regenerate Caption" : "Generate Caption"}
+              </button>
+              <button
+                onClick={() => setShowGenDropdown((v) => !v)}
+                disabled={generateDisabled}
+                className="text-sm bg-zinc-100 text-zinc-900 hover:bg-white px-1.5 py-1.5 rounded-r border-l border-zinc-300 font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+              </button>
+            </div>
+            {showGenDropdown && (
+              <div className="absolute left-0 top-full mt-1 bg-zinc-100 rounded shadow-xl z-20 min-w-[200px] py-1">
+                {([
+                  { scope: "date" as const, label: "All captions on this date" },
+                  { scope: "platform" as const, label: `All ${label} captions` },
+                  { scope: "all" as const, label: "Every caption in campaign" },
+                ]).map((item) => (
+                  <button
+                    key={item.scope}
+                    onClick={() => { setShowGenDropdown(false); onGenerate(item.scope); }}
+                    className="w-full text-left text-sm px-3 py-1.5 text-zinc-900 font-medium hover:bg-white transition-colors"
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Action buttons */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <div className="relative">
-          <div className="flex">
-            <button
-              onClick={() => onGenerate("single")}
-              disabled={generateDisabled}
-              className="text-sm bg-zinc-100 text-zinc-900 hover:bg-white px-4 py-1.5 rounded-l font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {isGenerating ? "Generating..." : post.caption ? "Regenerate" : "Generate"}
-            </button>
-            <button
-              onClick={() => setShowGenDropdown((v) => !v)}
-              disabled={generateDisabled}
-              className="text-sm bg-zinc-100 text-zinc-900 hover:bg-white px-1.5 py-1.5 rounded-r border-l border-zinc-300 font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
-            </button>
-          </div>
-          {showGenDropdown && (
-            <div className="absolute left-0 top-full mt-1 bg-zinc-100 rounded shadow-xl z-20 min-w-[160px] py-1">
-              {([
-                { scope: "date" as const, label: "All posts on this date" },
-                { scope: "platform" as const, label: `All ${label} posts` },
-                { scope: "all" as const, label: "Every post in campaign" },
-              ]).map((item) => (
-                <button
-                  key={item.scope}
-                  onClick={() => { setShowGenDropdown(false); onGenerate(item.scope); }}
-                  className="w-full text-left text-sm px-3 py-1.5 text-zinc-900 font-medium hover:bg-white transition-colors"
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+      <div className="flex items-center gap-2 flex-wrap mt-4">
         {post.approved ? (
           <button
             onClick={() => { onApprovePost(campaignId, post.id); flashSaving(); }}

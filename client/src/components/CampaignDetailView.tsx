@@ -16,9 +16,11 @@ interface CampaignDetailViewProps {
   onDelete: (campaignId: string) => void;
   onDuplicate: (campaignId: string) => Promise<string | null>;
   onGenerate: (campaignId: string, scope: string, selectedPostId?: string, selectedDate?: string | null) => Promise<void>;
+  onGenerateImage: (campaignId: string, scope: string, selectedPostId?: string, selectedDate?: string | null) => Promise<void>;
   onAssignPlatform: (campaignId: string, platform: SocialPlatform, date: string | null, postId?: string) => void;
   onUpdateSchedule: (campaignId: string, postId: string, date: string | null, time: string | null) => void;
   isGenerating: (id: string) => boolean;
+  isGeneratingImage: (id: string) => boolean;
 }
 
 export function CampaignDetailView({
@@ -33,9 +35,11 @@ export function CampaignDetailView({
   onDelete,
   onDuplicate,
   onGenerate,
+  onGenerateImage,
   onAssignPlatform,
   onUpdateSchedule,
   isGenerating,
+  isGeneratingImage,
 }: CampaignDetailViewProps) {
   // "undecided" is stored as selectedDate === null
   // A specific date is stored as "2026-03-29"
@@ -93,6 +97,10 @@ export function CampaignDetailView({
   const handleGenerate = useCallback(async (scope: "single" | "date" | "platform" | "all") => {
     await onGenerate(campaign.id, scope, selectedPost?.id, selectedDate);
   }, [campaign.id, selectedPost?.id, selectedDate, onGenerate]);
+
+  const handleGenerateImage = useCallback(async (scope: "single" | "date" | "platform" | "all") => {
+    await onGenerateImage(campaign.id, scope, selectedPost?.id, selectedDate);
+  }, [campaign.id, selectedPost?.id, selectedDate, onGenerateImage]);
 
   const approvedCount = campaign.socialPosts.filter((p) => p.approved).length;
   const totalCount = campaign.socialPosts.length;
@@ -184,7 +192,9 @@ export function CampaignDetailView({
             onApprovePost={onApprovePost}
             onDeletePost={(cId, pId) => { onDeletePost(cId, pId); setSelectedPostId(null); }}
             onGenerate={handleGenerate}
+            onGenerateImage={handleGenerateImage}
             isGenerating={isGenerating(campaign.id)}
+            isGeneratingImage={isGeneratingImage(campaign.id)}
             onUpdateSchedule={(_cId, pId, date, time) => handleUpdateSchedule(pId, date, time)}
           />
         ) : (

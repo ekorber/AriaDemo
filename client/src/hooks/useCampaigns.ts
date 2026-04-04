@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useState} from "react";
 import {Campaign, CampaignTone, Lead, SocialPlatform, SocialPost} from "../types";
-import {generateCampaignContent} from "../services/contentService";
+import {generateCampaignContent, generateImageContent} from "../services/contentService";
 import {
   createCampaignApi,
   deleteCampaignApi,
@@ -12,6 +12,7 @@ import {
 export function useCampaigns(leads: Lead[]) {
   const [campaigns, setCampaigns] = useState<Map<string, Campaign>>(new Map());
   const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set());
+  const [generatingImageIds, setGeneratingImageIds] = useState<Set<string>>(new Set());
 
   // Load campaigns from backend on mount
   useEffect(() => {
@@ -160,6 +161,87 @@ export function useCampaigns(leads: Lead[]) {
     [campaigns]
   );
 
+  const generateImage = useCallback(
+    async (campaignId: string, scope: string, selectedPostId?: string, selectedDate?: string | null) => {
+      const campaign = campaigns.get(campaignId);
+      if (!campaign) return;
+
+      setGeneratingImageIds((prev) => new Set(prev).add(campaignId));
+
+      const allPosts = campaign.socialPosts;
+      let targetPosts: SocialPost[];
+
+      const isDraft = (p: SocialPost) => !p.approved && !p.reviewReady;
+
+      switch (scope) {
+        case "single": {
+          const post = allPosts.find((p) => p.id === selectedPostId);
+          targetPosts = post && isDraft(post) ? [post] : [];
+          break;
+        }
+        case "date":
+          targetPosts = allPosts.filter(
+            (p) => isDraft(p) && (selectedDate === null ? !p.scheduledDate : p.scheduledDate === selectedDate)
+          );
+          break;
+        case "platform": {
+          const post = allPosts.find((p) => p.id === selectedPostId);
+          const platform = post?.platform;
+          targetPosts = platform ? allPosts.filter((p) => isDraft(p) && p.platform === platform) : [];
+          break;
+        }
+        case "all":
+          targetPosts = allPosts.filter((p) => isDraft(p));
+          break;
+        default:
+          targetPosts = [];
+      }
+
+      if (targetPosts.length === 0) {
+        setGeneratingImageIds((prev) => { const next = new Set(prev); next.delete(campaignId); return next; });
+        return;
+      }
+
+      const targets = targetPosts.map((p) => ({
+        postId: p.id,
+        platform: p.platform,
+        scheduledDate: p.scheduledDate,
+        scheduledTime: p.scheduledTime,
+      }));
+
+      await generateImageContent(
+        {
+          campaignId: campaign.id,
+          clientName: campaign.clientName,
+          projectType: campaign.projectType,
+          tone: campaign.tone,
+          brief: campaign.brief,
+          scope,
+          targets,
+        },
+        (_generatedImages) => {
+          fetchCampaigns()
+            .then((list) => {
+              const map = new Map<string, Campaign>();
+              for (const c of list) map.set(c.id, c);
+              setCampaigns(map);
+            })
+            .catch((err) => {
+              console.error("Failed to refetch campaigns after image generation:", err);
+            })
+            .finally(() => {
+              setGeneratingImageIds((prev) => { const next = new Set(prev); next.delete(campaignId); return next; });
+            });
+        },
+        (error: string) => {
+          console.error("Image generation failed:", error);
+          setGeneratingImageIds((prev) => { const next = new Set(prev); next.delete(campaignId); return next; });
+        }
+      );
+    },
+    [campaigns]
+  );
+
   const updatePost = useCallback(
     async (campaignId: string, postId: string, fields: Partial<Pick<SocialPost, "caption" | "reviewReady">>) => {
       setCampaigns((prev) => {
@@ -176,6 +258,7 @@ export function useCampaigns(leads: Lead[]) {
               id: p.id,
               platform: p.platform,
               caption: p.caption,
+              image_url: p.imageUrl,
               review_ready: p.reviewReady,
               approved: p.approved,
               scheduled_date: p.scheduledDate,
@@ -201,6 +284,7 @@ export function useCampaigns(leads: Lead[]) {
             id: p.id,
             platform: p.platform,
             caption: p.caption,
+            image_url: p.imageUrl,
             approved: p.approved,
             scheduled_date: p.scheduledDate,
             scheduled_time: p.scheduledTime,
@@ -225,6 +309,7 @@ export function useCampaigns(leads: Lead[]) {
             id: p.id,
             platform: p.platform,
             caption: p.caption,
+            image_url: p.imageUrl,
             approved: p.approved,
             scheduled_date: p.scheduledDate,
             scheduled_time: p.scheduledTime,
@@ -249,6 +334,7 @@ export function useCampaigns(leads: Lead[]) {
             id: p.id,
             platform: p.platform,
             caption: p.caption,
+            image_url: p.imageUrl,
             approved: p.approved,
             scheduled_date: p.scheduledDate,
             scheduled_time: p.scheduledTime,
@@ -284,6 +370,7 @@ export function useCampaigns(leads: Lead[]) {
             id: postId || `post_${campaignId}_${platform}_${Date.now()}`,
             platform,
             caption: "",
+            imageUrl: null,
             reviewReady: false,
             approved: false,
             scheduledDate,
@@ -296,6 +383,7 @@ export function useCampaigns(leads: Lead[]) {
               id: p.id,
               platform: p.platform,
               caption: p.caption,
+              image_url: p.imageUrl,
               review_ready: p.reviewReady,
               approved: p.approved,
               scheduled_date: p.scheduledDate,
@@ -324,6 +412,7 @@ export function useCampaigns(leads: Lead[]) {
               id: p.id,
               platform: p.platform,
               caption: p.caption,
+              image_url: p.imageUrl,
               review_ready: p.reviewReady,
               approved: p.approved,
               scheduled_date: p.scheduledDate,
@@ -344,7 +433,9 @@ export function useCampaigns(leads: Lead[]) {
     updateCampaignBrief,
     updateCampaignTone,
     generateContent,
+    generateImage,
     isGenerating: (id: string) => generatingIds.has(id),
+    isGeneratingImage: (id: string) => generatingImageIds.has(id),
     updatePost,
     approvePost,
     approveAll,

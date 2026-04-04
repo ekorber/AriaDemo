@@ -11,6 +11,7 @@ interface RawCampaign {
     id: string;
     platform: string;
     caption: string;
+    image_url: string | null;
     review_ready: boolean;
     approved: boolean;
     scheduled_date: string | null;
@@ -32,6 +33,7 @@ function deserialize(raw: RawCampaign): Campaign {
       id: p.id,
       platform: p.platform as SocialPost["platform"],
       caption: p.caption,
+      imageUrl: p.image_url ?? null,
       reviewReady: p.review_ready ?? false,
       approved: p.approved,
       scheduledDate: p.scheduled_date,

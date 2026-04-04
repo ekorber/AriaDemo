@@ -33,3 +33,7 @@ export const PLATFORM_ABBREVS: Record<SocialPlatform, string> = {
 export const ALL_PLATFORMS: SocialPlatform[] = [
   "instagram", "tiktok", "x", "facebook", "youtube_shorts", "threads", "linkedin",
 ];
+
+export const IMAGE_PLATFORMS: Set<SocialPlatform> = new Set([
+  "instagram", "x", "facebook", "threads", "linkedin",
+]);

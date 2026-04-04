@@ -10,7 +10,9 @@ interface ContentViewProps {
   updateCampaignBrief: (id: string, brief: string) => void;
   updateCampaignTone: (id: string, tone: CampaignTone) => void;
   generateContent: (id: string, scope: string, selectedPostId?: string, selectedDate?: string | null) => Promise<void>;
+  generateImage: (id: string, scope: string, selectedPostId?: string, selectedDate?: string | null) => Promise<void>;
   isGenerating: (id: string) => boolean;
+  isGeneratingImage: (id: string) => boolean;
   updatePost: (campaignId: string, postId: string, fields: { caption?: string; reviewReady?: boolean }) => void;
   approvePost: (campaignId: string, postId: string) => void;
   deletePost: (campaignId: string, postId: string) => void;
@@ -32,7 +34,9 @@ export function ContentView({
   updateCampaignBrief,
   updateCampaignTone,
   generateContent,
+  generateImage,
   isGenerating,
+  isGeneratingImage,
   updatePost,
   approvePost,
   deletePost,
@@ -109,7 +113,9 @@ export function ContentView({
           return newId;
         }}
         onGenerate={generateContent}
+        onGenerateImage={generateImage}
         isGenerating={isGenerating}
+        isGeneratingImage={isGeneratingImage}
         onAssignPlatform={assignPlatform}
         onUpdateSchedule={updateSchedule}
       />
