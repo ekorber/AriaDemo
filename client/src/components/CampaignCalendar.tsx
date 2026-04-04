@@ -199,7 +199,7 @@ export function CampaignCalendar({ posts, selectedDate, onSelectDate, selectedPo
             {untimedPosts.length > 0 && (
               <div className="mb-3">
                 {untimedPosts.map((post, i) => (
-                  <div key={post.id}>
+                  <div key={post.id} className={i > 0 ? "mt-1.5" : ""}>
                     <div className="flex gap-2.5 items-center">
                       <div className="w-[40px] flex-shrink-0 text-center">
                         {i === 0 && (
@@ -224,13 +224,6 @@ export function CampaignCalendar({ posts, selectedDate, onSelectDate, selectedPo
                         </button>
                       </div>
                     </div>
-                    {(i < untimedPosts.length - 1 || timedPosts.length > 0) && (
-                      <div className="flex gap-2.5">
-                        <div className="w-[40px] flex-shrink-0 flex justify-center">
-                          <div className="w-[2px] h-3 bg-zinc-800"></div>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
