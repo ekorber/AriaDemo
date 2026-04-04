@@ -30,7 +30,6 @@ export type CampaignTone = string;
 export interface SocialPost {
   id: string;
   platform: SocialPlatform;
-  hook: string;
   caption: string;
   reviewReady: boolean;
   approved: boolean;

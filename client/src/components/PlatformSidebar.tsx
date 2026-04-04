@@ -35,8 +35,9 @@ export function PlatformSidebar({
         <div className="space-y-1.5 mb-3">
           {posts.map((post) => {
             const isSelected = post.id === selectedPostId;
-            const title = post.hook
-              ? post.hook.length > 40 ? post.hook.slice(0, 40) + "…" : post.hook
+            const firstLine = post.caption ? post.caption.split('\n')[0] : "";
+            const title = firstLine
+              ? firstLine.length > 40 ? firstLine.slice(0, 40) + "…" : firstLine
               : PLATFORM_LABELS[post.platform];
             return (
               <button

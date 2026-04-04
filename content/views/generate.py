@@ -109,10 +109,7 @@ def _build_user_message(client_name, project_type, tone, brief, targets, existin
                 parts.append("ready for review")
             label = " | ".join(parts)
             lines.append(f"[{label}]")
-            hook = ep.get("hook", "")
             caption = ep.get("caption", "")
-            if hook:
-                lines.append(f"Hook: {hook}")
             if caption:
                 lines.append(f"Caption: {caption}")
             lines.append("")
@@ -160,14 +157,13 @@ def _save_generated_posts(campaign_id, raw_text):
     if not campaign:
         return
 
-    # Merge: update hook/caption for matching postIds, leave everything else untouched
+    # Merge: update caption for matching postIds, leave everything else untouched
     existing = campaign.get("social_posts", [])
     updated = []
     for post in existing:
         pid = post.get("id", "")
         if pid in posts_dict:
             generated = posts_dict[pid]
-            post["hook"] = generated.get("hook", post.get("hook", ""))
             post["caption"] = generated.get("caption", post.get("caption", ""))
         updated.append(post)
 

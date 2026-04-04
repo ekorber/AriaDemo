@@ -9,7 +9,7 @@ interface CampaignDetailViewProps {
   onBack: () => void;
   onUpdateBrief: (campaignId: string, brief: string) => void;
   onUpdateTone: (campaignId: string, tone: CampaignTone) => void;
-  onUpdatePost: (campaignId: string, postId: string, fields: { hook?: string; caption?: string; reviewReady?: boolean }) => void;
+  onUpdatePost: (campaignId: string, postId: string, fields: { caption?: string; reviewReady?: boolean }) => void;
   onApprovePost: (campaignId: string, postId: string) => void;
   onDeletePost: (campaignId: string, postId: string) => void;
   onApproveAll: (campaignId: string) => void;

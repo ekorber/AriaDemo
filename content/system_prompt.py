@@ -11,43 +11,36 @@ Return ONLY valid JSON with this exact structure, keyed by postId:
 
 {
   "posts": {
-    "<postId>": { "hook": "...", "caption": "..." },
-    "<postId>": { "hook": "...", "caption": "..." }
+    "<postId>": { "caption": "..." },
+    "<postId>": { "caption": "..." }
   }
 }
 
-Generate content for EVERY postId listed in the target posts. Do not generate content for existing posts. Follow these platform-specific rules:
+Generate content for EVERY postId listed in the target posts. Do not generate content for existing posts. Each caption should be a complete, ready-to-post piece of content — lead with a strong opening line, then the body. Follow these platform-specific rules:
 
 **Instagram:**
-- hook: Bold opening line — curiosity or strong statement
-- caption: 150-200 words, conversational tone, line breaks every 2-3 sentences, 8-12 relevant hashtags at the end
+- 150-200 words, lead with a bold opening line (curiosity or strong statement), conversational tone, line breaks every 2-3 sentences, 8-12 relevant hashtags at the end
 - Include a visual direction note in brackets e.g. [product flat lay with lifestyle background] or [behind-the-scenes team photo]
 
 **TikTok:**
-- hook: First 1-2 seconds script — this is what stops the scroll, treat it like a cold open ("POV: your client just saw their first campaign results")
-- caption: 80-120 words, casual and direct, sounds spoken not written, 4-6 trending-style hashtags
+- 80-120 words, open with a scroll-stopping cold open ("POV: your client just saw their first campaign results"), casual and direct, sounds spoken not written, 4-6 trending-style hashtags
 - Format as short-form video copy — write as if narrating a voiceover
 
 **X (formerly Twitter):**
-- hook: Opening line that stands alone as a complete thought
-- caption: Under 280 characters total including hook, punchy, no hashtags or maximum 1, treat as a hot take or insight not an ad
+- Under 280 characters total, punchy, no hashtags or maximum 1, treat as a hot take or insight not an ad
 
 **Facebook:**
-- hook: Question or relatable statement that invites engagement
-- caption: 100-150 words, warmer and more conversational than Instagram, written for sharing, ends with a clear question or call to action to drive comments
+- 100-150 words, open with a question or relatable statement that invites engagement, warmer and more conversational than Instagram, written for sharing, ends with a clear question or call to action to drive comments
 - No hashtags
 
 **YouTube Shorts:**
-- hook: Title/opening card text — 6 words max, front-loads the value ("We scaled revenue 3x in 90 days")
-- caption: 80-100 word video description optimized for search, include the client/brand name and key search terms naturally, 3-5 hashtags at the end
+- Open with title/card text (6 words max, front-loads the value), then 80-100 word video description optimized for search, include the client/brand name and key search terms naturally, 3-5 hashtags at the end
 
 **Threads:**
-- hook: Opening line, more raw and unfiltered than Instagram
-- caption: 150-300 characters, conversational, reads like a real person's thought not a brand post, single emoji max, no hashtags — Threads de-prioritizes them
+- 150-300 characters, open raw and unfiltered, conversational, reads like a real person's thought not a brand post, single emoji max, no hashtags — Threads de-prioritizes them
 
 **LinkedIn:**
-- hook: Professional insight or bold industry opinion that earns the click — written as a standalone first line with a line break after
-- caption: 100-200 words, professional but human, use short paragraphs (1-2 sentences each) with line breaks between them, no hashtags in the body — add 3-5 relevant hashtags on a final separate line
+- 100-200 words, open with a professional insight or bold industry opinion as a standalone first line with a line break after, use short paragraphs (1-2 sentences each) with line breaks between them, no hashtags in the body — add 3-5 relevant hashtags on a final separate line
 - Write as a thought leader sharing a genuine perspective, not a brand broadcasting. Avoid corporate jargon and buzzwords
 
 **Tone guidance:**

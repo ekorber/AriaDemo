@@ -113,7 +113,6 @@ export function useCampaigns(leads: Lead[]) {
           platform: p.platform,
           scheduledDate: p.scheduledDate,
           scheduledTime: p.scheduledTime,
-          hook: p.hook,
           caption: p.caption,
           approved: p.approved,
           reviewReady: p.reviewReady,
@@ -162,7 +161,7 @@ export function useCampaigns(leads: Lead[]) {
   );
 
   const updatePost = useCallback(
-    async (campaignId: string, postId: string, fields: Partial<Pick<SocialPost, "hook" | "caption" | "reviewReady">>) => {
+    async (campaignId: string, postId: string, fields: Partial<Pick<SocialPost, "caption" | "reviewReady">>) => {
       setCampaigns((prev) => {
         const next = new Map(prev);
         const c = next.get(campaignId);
@@ -176,7 +175,6 @@ export function useCampaigns(leads: Lead[]) {
             social_posts: updatedPosts.map((p) => ({
               id: p.id,
               platform: p.platform,
-              hook: p.hook,
               caption: p.caption,
               review_ready: p.reviewReady,
               approved: p.approved,
@@ -202,9 +200,7 @@ export function useCampaigns(leads: Lead[]) {
           social_posts: updatedPosts.map((p) => ({
             id: p.id,
             platform: p.platform,
-            hook: p.hook,
             caption: p.caption,
-
             approved: p.approved,
             scheduled_date: p.scheduledDate,
             scheduled_time: p.scheduledTime,
@@ -228,9 +224,7 @@ export function useCampaigns(leads: Lead[]) {
           social_posts: updatedPosts.map((p) => ({
             id: p.id,
             platform: p.platform,
-            hook: p.hook,
             caption: p.caption,
-
             approved: p.approved,
             scheduled_date: p.scheduledDate,
             scheduled_time: p.scheduledTime,
@@ -254,9 +248,7 @@ export function useCampaigns(leads: Lead[]) {
           social_posts: updatedPosts.map((p) => ({
             id: p.id,
             platform: p.platform,
-            hook: p.hook,
             caption: p.caption,
-
             approved: p.approved,
             scheduled_date: p.scheduledDate,
             scheduled_time: p.scheduledTime,
@@ -291,7 +283,6 @@ export function useCampaigns(leads: Lead[]) {
           const newPost: SocialPost = {
             id: postId || `post_${campaignId}_${platform}_${Date.now()}`,
             platform,
-            hook: "",
             caption: "",
             reviewReady: false,
             approved: false,
@@ -304,7 +295,6 @@ export function useCampaigns(leads: Lead[]) {
             social_posts: updatedPosts.map((p) => ({
               id: p.id,
               platform: p.platform,
-              hook: p.hook,
               caption: p.caption,
               review_ready: p.reviewReady,
               approved: p.approved,
@@ -333,7 +323,6 @@ export function useCampaigns(leads: Lead[]) {
             social_posts: updatedPosts.map((p) => ({
               id: p.id,
               platform: p.platform,
-              hook: p.hook,
               caption: p.caption,
               review_ready: p.reviewReady,
               approved: p.approved,

@@ -11,7 +11,7 @@ interface ContentViewProps {
   updateCampaignTone: (id: string, tone: CampaignTone) => void;
   generateContent: (id: string, scope: string, selectedPostId?: string, selectedDate?: string | null) => Promise<void>;
   isGenerating: (id: string) => boolean;
-  updatePost: (campaignId: string, postId: string, fields: { hook?: string; caption?: string; reviewReady?: boolean }) => void;
+  updatePost: (campaignId: string, postId: string, fields: { caption?: string; reviewReady?: boolean }) => void;
   approvePost: (campaignId: string, postId: string) => void;
   deletePost: (campaignId: string, postId: string) => void;
   approveAll: (campaignId: string) => void;

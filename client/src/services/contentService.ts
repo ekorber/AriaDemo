@@ -10,7 +10,6 @@ interface ExistingPost {
   platform: string;
   scheduledDate: string | null;
   scheduledTime: string | null;
-  hook: string;
   caption: string;
   approved: boolean;
   reviewReady: boolean;
@@ -29,7 +28,7 @@ interface GeneratePayload {
 
 export async function generateCampaignContent(
   payload: GeneratePayload,
-  onComplete: (generatedPosts: Record<string, { hook: string; caption: string }>) => void,
+  onComplete: (generatedPosts: Record<string, { caption: string }>) => void,
   onError: (error: string) => void
 ): Promise<void> {
   try {
@@ -70,13 +69,13 @@ export async function generateCampaignContent(
   }
 }
 
-function parseContentResponse(raw: string): Record<string, { hook: string; caption: string }> | null {
+function parseContentResponse(raw: string): Record<string, { caption: string }> | null {
   try {
     const jsonMatch = raw.match(/\{[\s\S]*\}/);
     if (!jsonMatch) return null;
     const parsed = JSON.parse(jsonMatch[0]);
 
-    // Handle new keyed-by-postId format: { posts: { postId: { hook, caption } } }
+    // Handle keyed-by-postId format: { posts: { postId: { caption } } }
     if (parsed.posts && typeof parsed.posts === "object" && !Array.isArray(parsed.posts)) {
       return parsed.posts;
     }

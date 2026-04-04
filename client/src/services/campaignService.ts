@@ -10,7 +10,6 @@ interface RawCampaign {
   social_posts: Array<{
     id: string;
     platform: string;
-    hook: string;
     caption: string;
     review_ready: boolean;
     approved: boolean;
@@ -32,7 +31,6 @@ function deserialize(raw: RawCampaign): Campaign {
     socialPosts: (raw.social_posts || []).map((p) => ({
       id: p.id,
       platform: p.platform as SocialPost["platform"],
-      hook: p.hook,
       caption: p.caption,
       reviewReady: p.review_ready ?? false,
       approved: p.approved,

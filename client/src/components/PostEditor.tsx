@@ -6,7 +6,7 @@ import { ScheduleModal } from "./ScheduleModal";
 interface PostEditorProps {
   post: SocialPost;
   campaignId: string;
-  onUpdatePost: (campaignId: string, postId: string, fields: { hook?: string; caption?: string; reviewReady?: boolean }) => void;
+  onUpdatePost: (campaignId: string, postId: string, fields: { caption?: string; reviewReady?: boolean }) => void;
   onApprovePost: (campaignId: string, postId: string) => void;
   onDeletePost: (campaignId: string, postId: string) => void;
   onUpdateSchedule: (campaignId: string, postId: string, date: string | null, time: string | null) => void;
@@ -24,16 +24,14 @@ export function PostEditor({
   onGenerate,
   isGenerating,
 }: PostEditorProps) {
-  const [hook, setHook] = useState(post.hook);
   const [caption, setCaption] = useState(post.caption);
   const color = PLATFORM_COLORS[post.platform];
   const label = PLATFORM_LABELS[post.platform];
 
   useEffect(() => {
-    setHook(post.hook);
     setCaption(post.caption);
     setConfirmDelete(false);
-  }, [post.id, post.hook, post.caption]);
+  }, [post.id, post.caption]);
 
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showGenDropdown, setShowGenDropdown] = useState(false);
@@ -58,13 +56,6 @@ export function PostEditor({
   const isDraft = !post.reviewReady && !post.approved;
   const hasSchedule = !!post.scheduledDate && !!post.scheduledTime;
   const generateDisabled = isGenerating || !isDraft;
-
-  const handleHookBlur = () => {
-    if (hook !== post.hook) {
-      onUpdatePost(campaignId, post.id, { hook });
-      flashSaving();
-    }
-  };
 
   const handleCaptionBlur = () => {
     if (caption !== post.caption) {
@@ -127,14 +118,14 @@ export function PostEditor({
         </div>
       </div>
 
-      {isDraft && (!hook.trim() || !hasSchedule) && (
+      {isDraft && (!caption.trim() || !hasSchedule) && (
         <div className="flex items-center gap-4 mb-4 text-xs text-zinc-500">
           <span className="uppercase tracking-widest text-zinc-600">Needed for review</span>
           <span className="flex items-center gap-1.5">
-            {hook.trim()
+            {caption.trim()
               ? <span className="text-emerald-500">✓</span>
               : <span className="text-zinc-600">○</span>}
-            <span className={hook.trim() ? "text-zinc-500 line-through" : "text-zinc-400"}>Hook text</span>
+            <span className={caption.trim() ? "text-zinc-500 line-through" : "text-zinc-400"}>Post content</span>
           </span>
           <span className="flex items-center gap-1.5">
             {post.scheduledDate
@@ -176,19 +167,6 @@ export function PostEditor({
             </div>
           </div>
         )}
-        <div className="mb-4">
-          <label className="text-xs uppercase tracking-widest text-zinc-500 block mb-1.5">Hook</label>
-          <textarea
-            value={hook}
-            onChange={(e) => setHook(e.target.value)}
-            onBlur={handleHookBlur}
-            disabled={isGenerating && isDraft}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-base text-zinc-200 font-medium resize-none focus:outline-none focus:border-zinc-600"
-            rows={2}
-            placeholder="Opening line..."
-          />
-        </div>
-
         <div className="mb-5">
           <label className="text-xs uppercase tracking-widest text-zinc-500 block mb-1.5">Caption</label>
           <textarea
@@ -196,9 +174,9 @@ export function PostEditor({
             onChange={(e) => setCaption(e.target.value)}
             onBlur={handleCaptionBlur}
             disabled={isGenerating && isDraft}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-base text-zinc-400 resize-none focus:outline-none focus:border-zinc-600 leading-relaxed"
-            rows={8}
-            placeholder="Post body..."
+            className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-base text-zinc-200 resize-none focus:outline-none focus:border-zinc-600 leading-relaxed"
+            rows={10}
+            placeholder="Write your post..."
           />
         </div>
       </div>
@@ -212,7 +190,7 @@ export function PostEditor({
               disabled={generateDisabled}
               className="text-sm bg-zinc-100 text-zinc-900 hover:bg-white px-4 py-1.5 rounded-l font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              {isGenerating ? "Generating..." : post.hook ? "Regenerate" : "Generate"}
+              {isGenerating ? "Generating..." : post.caption ? "Regenerate" : "Generate"}
             </button>
             <button
               onClick={() => setShowGenDropdown((v) => !v)}
@@ -266,7 +244,7 @@ export function PostEditor({
         ) : (
           <button
             onClick={() => { onUpdatePost(campaignId, post.id, { reviewReady: true }); flashSaving(); }}
-            disabled={!hook.trim() || !hasSchedule}
+            disabled={!caption.trim() || !hasSchedule}
             className="text-sm px-3 py-1.5 rounded transition-colors border border-zinc-700 text-zinc-400 hover:text-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Mark for review

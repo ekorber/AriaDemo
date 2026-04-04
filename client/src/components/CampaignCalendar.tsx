@@ -218,7 +218,7 @@ export function CampaignCalendar({ posts, selectedDate, onSelectDate, selectedPo
                           <PlatformIcon platform={post.platform} size={10} />
                           <div className="min-w-0 flex-1">
                             <div className="text-[11px] text-zinc-200 leading-snug truncate">
-                              {post.hook || PLATFORM_LABELS[post.platform]}
+                              {post.caption ? post.caption.split('\n')[0] : PLATFORM_LABELS[post.platform]}
                             </div>
                           </div>
                         </button>
@@ -255,7 +255,7 @@ export function CampaignCalendar({ posts, selectedDate, onSelectDate, selectedPo
                       <PlatformIcon platform={post.platform} size={10} />
                       <div className="min-w-0 flex-1">
                         <div className="text-[11px] text-zinc-200 leading-snug truncate">
-                          {post.hook || PLATFORM_LABELS[post.platform]}
+                          {post.caption ? post.caption.split('\n')[0] : PLATFORM_LABELS[post.platform]}
                         </div>
                       </div>
                     </button>
