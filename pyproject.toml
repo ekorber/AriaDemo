@@ -8,4 +8,6 @@ dependencies = [
     "anthropic>=0.39.0",
     "python-dotenv>=1.1.0",
     "pymongo>=4.7",
+    "openai>=1.0",
+    "requests>=2.31",
 ]
