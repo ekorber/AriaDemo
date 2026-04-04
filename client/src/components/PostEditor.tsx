@@ -124,7 +124,7 @@ export function PostEditor({
         </div>
       </div>
 
-      {isDraft && (!caption.trim() || !hasSchedule) && (
+      {isDraft && (
         <div className="flex items-center gap-4 mb-4 text-xs text-zinc-500">
           <span className="uppercase tracking-widest text-zinc-600">Needed for review</span>
           <span className="flex items-center gap-1.5">
@@ -167,7 +167,7 @@ export function PostEditor({
         {supportsImages && (
           <div className="flex-1 min-w-0">
             <label className="text-xs uppercase tracking-widest text-zinc-500 block mb-1.5">Image</label>
-            <div className="relative mb-3">
+            <div className="relative mb-3 rounded-lg overflow-hidden border border-zinc-800">
               {isGeneratingImage && isDraft && (
                 <div className="absolute inset-0 z-10 bg-zinc-950/60 rounded-lg flex items-center justify-center">
                   <div className="flex items-center gap-2 text-sm text-zinc-400">
@@ -182,11 +182,10 @@ export function PostEditor({
                 <img
                   src={post.imageUrl}
                   alt="Post image"
-                  className="w-full rounded-lg border border-zinc-800 object-cover"
-                  style={{ maxHeight: "280px" }}
+                  className="w-full block"
                 />
               ) : (
-                <div className="w-full rounded-lg border border-zinc-800 bg-zinc-900 flex items-center justify-center" style={{ height: "280px" }}>
+                <div className="w-full bg-zinc-900 flex items-center justify-center" style={{ height: "280px" }}>
                   <div className="text-center text-zinc-600">
                     <svg className="w-10 h-10 mx-auto mb-2 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0 0 22.5 18.75V5.25A2.25 2.25 0 0 0 20.25 3H3.75A2.25 2.25 0 0 0 1.5 5.25v13.5A2.25 2.25 0 0 0 3.75 21Z" />
