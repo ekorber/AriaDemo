@@ -72,6 +72,7 @@ def image_generate(request):
     claude = anthropic.Anthropic(api_key=anthropic_key)
     dalle = openai.OpenAI(api_key=openai_key)
     generated = {}
+    errors = []
 
     for t in targets:
         post_id = t.get("postId", "unknown")
@@ -99,7 +100,7 @@ def image_generate(request):
             )
             dalle_prompt = prompt_response.content[0].text.strip()
         except Exception as e:
-            print(f"Claude prompt generation failed for {post_id}: {e}")
+            errors.append(f"Claude prompt failed for {post_id}: {type(e).__name__}: {e}")
             continue
 
         # Step 2: Generate the image with DALL-E
@@ -112,19 +113,28 @@ def image_generate(request):
                 n=1,
             )
             image_url_remote = image_response.data[0].url
+        except Exception as e:
+            errors.append(f"DALL-E failed for {post_id}: {type(e).__name__}: {e}")
+            continue
 
-            # Download and save locally
+        # Step 3: Download and save locally
+        try:
             local_url = _download_and_save(image_url_remote)
             if local_url:
                 generated[post_id] = {"imageUrl": local_url}
+            else:
+                errors.append(f"Download returned None for {post_id}")
         except Exception as e:
-            print(f"DALL-E generation failed for {post_id}: {e}")
+            errors.append(f"Download failed for {post_id}: {type(e).__name__}: {e}")
             continue
 
     if campaign_id and generated:
         _save_generated_images(campaign_id, generated)
 
-    return JsonResponse({"posts": generated})
+    result = {"posts": generated}
+    if errors:
+        result["errors"] = errors
+    return JsonResponse(result)
 
 
 def _download_and_save(remote_url):
