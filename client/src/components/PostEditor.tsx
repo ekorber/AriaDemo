@@ -317,8 +317,7 @@ export function PostEditor({
                 onBlur={handleCaptionBlur}
                 disabled={isGenerating && isDraft}
                 className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-base text-zinc-200 resize-none focus:outline-none focus:border-zinc-600 leading-relaxed"
-                style={supportsImages ? { height: "280px" } : undefined}
-                rows={supportsImages ? undefined : 10}
+                style={{ height: "614px" }}
                 placeholder="Write your post..."
               />
           </div>

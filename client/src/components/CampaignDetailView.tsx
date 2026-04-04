@@ -109,7 +109,7 @@ export function CampaignDetailView({
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       {/* Top bar: back, campaign info, actions */}
-      <div className="px-5 py-3 border-b border-zinc-800 flex-shrink-0">
+      <div className="px-5 py-3 border-b border-zinc-800 flex-shrink-0 relative z-20">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
@@ -124,13 +124,17 @@ export function CampaignDetailView({
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowEditFields(!showEditFields)}
-              className={`text-sm px-2 py-1 transition-colors ${
+              className={`px-2 py-1 transition-colors ${
                 showEditFields
                   ? "text-blue-400 hover:text-blue-300"
                   : "text-zinc-500 hover:text-zinc-300"
               }`}
             >
-              Edit
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                {showEditFields
+                  ? <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+                  : <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />}
+              </svg>
             </button>
             {totalCount > 0 && (
               <>
@@ -160,9 +164,9 @@ export function CampaignDetailView({
           </div>
         </div>
 
-        {/* Editable brief & tone (collapsible) */}
+        {/* Editable brief & tone (collapsible overlay) */}
         {showEditFields && (
-          <div className="mt-2 space-y-2">
+          <div className="absolute left-0 right-0 top-full bg-zinc-950 border-b border-zinc-800 px-5 py-3 space-y-2 shadow-lg">
             <div>
               <label className="text-xs text-zinc-500 block mb-1">Brief</label>
               <textarea
