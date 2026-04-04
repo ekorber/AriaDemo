@@ -39,7 +39,6 @@ function deserialize(raw: RawCampaign): Campaign {
       scheduledDate: p.scheduled_date,
       scheduledTime: p.scheduled_time ?? null,
     })),
-    status: raw.status as Campaign["status"],
     createdAt: new Date(raw.created_at),
   };
 }

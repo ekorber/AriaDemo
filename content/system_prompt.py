@@ -45,6 +45,11 @@ Generate content for EVERY postId listed in the target posts. Do not generate co
 - hook: Opening line, more raw and unfiltered than Instagram
 - caption: 150-300 characters, conversational, reads like a real person's thought not a brand post, single emoji max, no hashtags — Threads de-prioritizes them
 
+**LinkedIn:**
+- hook: Professional insight or bold industry opinion that earns the click — written as a standalone first line with a line break after
+- caption: 100-200 words, professional but human, use short paragraphs (1-2 sentences each) with line breaks between them, no hashtags in the body — add 3-5 relevant hashtags on a final separate line
+- Write as a thought leader sharing a genuine perspective, not a brand broadcasting. Avoid corporate jargon and buzzwords
+
 **Tone guidance:**
 The tone field is free-text written by the campaign manager. It may be a single word (e.g. "hype"), a short phrase (e.g. "playful but professional"), or a detailed description of the desired voice and feel. Interpret whatever they write as creative direction for the emotional register, energy level, and personality of the content. If the tone is vague or unclear, default to a confident, brand-appropriate voice and lean on context clues from the brief and industry.
 

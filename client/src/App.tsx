@@ -162,6 +162,7 @@ export default function App() {
           updateCampaignBrief={campaignHook.updateCampaignBrief}
           updateCampaignTone={campaignHook.updateCampaignTone}
           generateContent={campaignHook.generateContent}
+          isGenerating={campaignHook.isGenerating}
           updatePost={campaignHook.updatePost}
           approvePost={campaignHook.approvePost}
           approveAll={campaignHook.approveAll}

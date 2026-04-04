@@ -23,7 +23,7 @@ export interface Lead {
 
 export type IntentPhase = "open" | "qualify" | "build" | "handoff" | "disqualified";
 
-export type SocialPlatform = "instagram" | "tiktok" | "x" | "facebook" | "youtube_shorts" | "threads";
+export type SocialPlatform = "instagram" | "tiktok" | "x" | "facebook" | "youtube_shorts" | "threads" | "linkedin";
 
 export type CampaignTone = string;
 

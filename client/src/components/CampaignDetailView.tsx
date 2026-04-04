@@ -18,6 +18,7 @@ interface CampaignDetailViewProps {
   onGenerate: (campaignId: string, scope: string, selectedPostId?: string, selectedDate?: string | null) => Promise<void>;
   onAssignPlatform: (campaignId: string, platform: SocialPlatform, date: string | null, postId?: string) => void;
   onUpdateSchedule: (campaignId: string, postId: string, date: string | null, time: string | null) => void;
+  isGenerating: (id: string) => boolean;
 }
 
 export function CampaignDetailView({
@@ -34,6 +35,7 @@ export function CampaignDetailView({
   onGenerate,
   onAssignPlatform,
   onUpdateSchedule,
+  isGenerating,
 }: CampaignDetailViewProps) {
   // "undecided" is stored as selectedDate === null
   // A specific date is stored as "2026-03-29"
@@ -182,7 +184,7 @@ export function CampaignDetailView({
             onApprovePost={onApprovePost}
             onDeletePost={(cId, pId) => { onDeletePost(cId, pId); setSelectedPostId(null); }}
             onGenerate={handleGenerate}
-            isGenerating={campaign.status === "generating"}
+            isGenerating={isGenerating(campaign.id)}
             onUpdateSchedule={(_cId, pId, date, time) => handleUpdateSchedule(pId, date, time)}
           />
         ) : (

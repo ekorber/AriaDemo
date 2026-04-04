@@ -11,6 +11,7 @@ import {
 
 export function useCampaigns(leads: Lead[]) {
   const [campaigns, setCampaigns] = useState<Map<string, Campaign>>(new Map());
+  const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set());
 
   // Load campaigns from backend on mount
   useEffect(() => {
@@ -64,11 +65,10 @@ export function useCampaigns(leads: Lead[]) {
 
   const generateContent = useCallback(
     async (campaignId: string, scope: string, selectedPostId?: string, selectedDate?: string | null) => {
-      // Read latest campaign from state to avoid stale closures
-      let campaign: Campaign | undefined;
-      setCampaigns((prev) => new Map(prev));
-
+      const campaign = campaigns.get(campaignId);
       if (!campaign) return;
+
+      setGeneratingIds((prev) => new Set(prev).add(campaignId));
 
       // Compute targets and existing posts based on scope
       const allPosts = campaign.socialPosts;
@@ -101,8 +101,7 @@ export function useCampaigns(leads: Lead[]) {
       }
 
       if (targetPosts.length === 0) {
-        // Nothing to generate — revert status
-        setCampaigns((prev) => new Map(prev));
+        setGeneratingIds((prev) => { const next = new Set(prev); next.delete(campaignId); return next; });
         return;
       }
 
@@ -148,16 +147,18 @@ export function useCampaigns(leads: Lead[]) {
             })
             .catch((err) => {
               console.error("Failed to refetch campaigns after generation:", err);
-              setCampaigns((prev) => new Map(prev));
+            })
+            .finally(() => {
+              setGeneratingIds((prev) => { const next = new Set(prev); next.delete(campaignId); return next; });
             });
         },
         (error: string) => {
           console.error("Content generation failed:", error);
-          setCampaigns((prev) => new Map(prev));
+          setGeneratingIds((prev) => { const next = new Set(prev); next.delete(campaignId); return next; });
         }
       );
     },
-    []
+    [campaigns]
   );
 
   const updatePost = useCallback(
@@ -354,6 +355,7 @@ export function useCampaigns(leads: Lead[]) {
     updateCampaignBrief,
     updateCampaignTone,
     generateContent,
+    isGenerating: (id: string) => generatingIds.has(id),
     updatePost,
     approvePost,
     approveAll,
