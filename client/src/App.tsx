@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useMemo } from "react";
 import { useAgent } from "./hooks/useAgent";
 import { useLeads } from "./hooks/useLeads";
 import { useCampaigns } from "./hooks/useCampaigns";
@@ -18,6 +18,11 @@ export default function App() {
   const campaignHook = useCampaigns(leads);
   const [initialCampaignId, setInitialCampaignId] = useState<string | null>(null);
   const [initialLeadId, setInitialLeadId] = useState<string | null>(null);
+
+  const campaignLeadIds = useMemo(
+    () => new Set(campaignHook.campaigns.map((c) => c.leadId)),
+    [campaignHook.campaigns]
+  );
 
   const handleCreateCampaignFromPipeline = useCallback((leadId: string) => {
     setInitialLeadId(leadId);
@@ -145,6 +150,7 @@ export default function App() {
           leads={leads}
           onMove={moveLead}
           onCreateCampaign={handleCreateCampaignFromPipeline}
+          campaignLeadIds={campaignLeadIds}
         />
       </div>
       <div className={`flex-1 flex flex-col min-h-0 ${activeTab !== "content" ? "hidden" : ""}`}>

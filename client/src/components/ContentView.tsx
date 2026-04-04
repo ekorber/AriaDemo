@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Campaign, CampaignTone, Lead, SocialPlatform } from "../types";
 import { CampaignDetailView } from "./CampaignDetailView";
 
@@ -51,10 +51,26 @@ export function ContentView({
   const [newBrief, setNewBrief] = useState("");
   const [newTone, setNewTone] = useState<CampaignTone>("");
 
-  // Consume initial props after first render
-  if ((initialCampaignId || initialLeadId) && onConsumeInitial) {
-    onConsumeInitial();
-  }
+  // React to initialLeadId changes (e.g. from pipeline "Create Campaign" button)
+  useEffect(() => {
+    if (initialLeadId) {
+      setShowNewForm(true);
+      setNewLeadId(initialLeadId);
+      setNewBrief("");
+      setNewTone("");
+      setSelectedId(null);
+      onConsumeInitial?.();
+    }
+  }, [initialLeadId]);
+
+  // React to initialCampaignId changes
+  useEffect(() => {
+    if (initialCampaignId) {
+      setSelectedId(initialCampaignId);
+      setShowNewForm(false);
+      onConsumeInitial?.();
+    }
+  }, [initialCampaignId]);
 
   const handedOffLeads = leads.filter(
     (l) => l.status === "handed_off" || l.status === "closed"

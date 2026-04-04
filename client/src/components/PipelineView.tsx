@@ -15,9 +15,10 @@ interface PipelineViewProps {
   leads: Lead[];
   onMove: (id: string, status: LeadStatus) => void;
   onCreateCampaign?: (leadId: string) => void;
+  campaignLeadIds?: Set<string>;
 }
 
-export function PipelineView({ leads, onMove, onCreateCampaign }: PipelineViewProps) {
+export function PipelineView({ leads, onMove, onCreateCampaign, campaignLeadIds }: PipelineViewProps) {
   const [dragOver, setDragOver] = useState<LeadStatus | null>(null);
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [closing, setClosing] = useState(false);
@@ -96,24 +97,13 @@ export function PipelineView({ leads, onMove, onCreateCampaign }: PipelineViewPr
             </div>
             <div className={`flex-1 overflow-y-auto p-3 transition-colors ${isOver ? "bg-zinc-800/20" : ""}`}>
               {columnLeads.map((lead) => (
-                <div key={lead.id} className="mb-2">
-                  <LeadCard
-                    lead={lead}
-                    selected={lead.id === selectedLeadId}
-                    onClick={() => handleCardClick(lead.id)}
-                  />
-                  {showCampaignAction && onCreateCampaign && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onCreateCampaign(lead.id);
-                      }}
-                      className="w-full mt-1 text-[10px] text-zinc-600 hover:text-zinc-400 hover:bg-zinc-800/50 rounded px-2 py-1 transition-colors text-left"
-                    >
-                      + Create Campaign
-                    </button>
-                  )}
-                </div>
+                <LeadCard
+                  key={lead.id}
+                  lead={lead}
+                  selected={lead.id === selectedLeadId}
+                  onClick={() => handleCardClick(lead.id)}
+                  onCreateCampaign={showCampaignAction && onCreateCampaign && !campaignLeadIds?.has(lead.id) ? () => onCreateCampaign(lead.id) : undefined}
+                />
               ))}
             </div>
           </div>
