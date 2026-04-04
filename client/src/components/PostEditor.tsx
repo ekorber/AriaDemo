@@ -85,17 +85,8 @@ export function PostEditor({
 
   return (
     <div className="flex-1 p-5 overflow-y-auto relative">
-      {/* Saving indicator */}
-      {saving && (
-        <div className="absolute top-3 right-4 flex items-center gap-1.5 text-xs text-zinc-500">
-          <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="50 20" />
-          </svg>
-          Saving
-        </div>
-      )}
       {/* Header */}
-      <div className="flex">
+      <div className="flex items-start">
         <div className="mb-5">
           <div className="flex items-center gap-2 mt-1">
             <span
@@ -122,29 +113,101 @@ export function PostEditor({
           <span className="text-sm text-zinc-300">{scheduleLabel}</span>
           {!post.approved && <span className="ml-auto text-xs text-blue-400">Edit</span>}
         </div>
+
+        {/* Action buttons */}
+        <div className="flex items-center gap-2 ml-auto">
+          {post.approved ? (
+            <button
+              onClick={() => { onApprovePost(campaignId, post.id); flashSaving(); }}
+              className="text-sm px-3 py-1.5 rounded transition-colors border border-zinc-700 text-zinc-400 hover:text-zinc-200"
+            >
+              Unapprove
+            </button>
+          ) : post.reviewReady ? (
+            <>
+              <button
+                onClick={() => { onApprovePost(campaignId, post.id); flashSaving(); }}
+                disabled={!hasSchedule}
+                className="text-sm px-3 py-1.5 rounded transition-colors border border-zinc-700 text-zinc-400 hover:text-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Approve
+              </button>
+              <button
+                onClick={() => { onUpdatePost(campaignId, post.id, { reviewReady: false }); flashSaving(); }}
+                className="text-sm px-3 py-1.5 rounded transition-colors border border-zinc-700 text-zinc-500 hover:text-zinc-200"
+              >
+                Return to draft
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => { onUpdatePost(campaignId, post.id, { reviewReady: true }); flashSaving(); }}
+              disabled={!caption.trim() || !hasSchedule}
+              className="text-sm px-3 py-1.5 rounded transition-colors border border-zinc-700 text-zinc-400 hover:text-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Mark for review
+            </button>
+          )}
+          {confirmDelete ? (
+            <span className="flex items-center gap-1.5">
+              <span className="text-xs text-zinc-500">Delete?</span>
+              <button
+                onClick={() => onDeletePost(campaignId, post.id)}
+                className="text-sm px-2.5 py-1.5 rounded transition-colors border border-red-800 text-red-400 hover:bg-red-950/50"
+              >
+                Yes
+              </button>
+              <button
+                onClick={() => setConfirmDelete(false)}
+                className="text-sm px-2.5 py-1.5 rounded transition-colors border border-zinc-700 text-zinc-400 hover:text-zinc-200"
+              >
+                No
+              </button>
+            </span>
+          ) : (
+            <button
+              onClick={() => setConfirmDelete(true)}
+              className="text-sm px-3 py-1.5 rounded transition-colors border border-red-900 text-red-400 hover:text-red-300 hover:border-red-700"
+            >
+              Delete
+            </button>
+          )}
+        </div>
       </div>
 
-      {isDraft && (
+      {(isDraft || saving) && (
         <div className="flex items-center gap-4 mb-4 text-xs text-zinc-500">
-          <span className="uppercase tracking-widest text-zinc-600">Needed for review</span>
-          <span className="flex items-center gap-1.5">
-            {caption.trim()
-              ? <span className="text-emerald-500">✓</span>
-              : <span className="text-zinc-600">○</span>}
-            <span className={caption.trim() ? "text-zinc-500 line-through" : "text-zinc-400"}>Post content</span>
-          </span>
-          <span className="flex items-center gap-1.5">
-            {post.scheduledDate
-              ? <span className="text-emerald-500">✓</span>
-              : <span className="text-zinc-600">○</span>}
-            <span className={post.scheduledDate ? "text-zinc-500 line-through" : "text-zinc-400"}>Scheduled date</span>
-          </span>
-          <span className="flex items-center gap-1.5">
-            {post.scheduledTime
-              ? <span className="text-emerald-500">✓</span>
-              : <span className="text-zinc-600">○</span>}
-            <span className={post.scheduledTime ? "text-zinc-500 line-through" : "text-zinc-400"}>Scheduled time</span>
-          </span>
+          {isDraft && (
+            <>
+              <span className="uppercase tracking-widest text-zinc-600">Needed for review</span>
+              <span className="flex items-center gap-1.5">
+                {caption.trim()
+                  ? <span className="text-emerald-500">✓</span>
+                  : <span className="text-zinc-600">○</span>}
+                <span className={caption.trim() ? "text-zinc-500 line-through" : "text-zinc-400"}>Post content</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                {post.scheduledDate
+                  ? <span className="text-emerald-500">✓</span>
+                  : <span className="text-zinc-600">○</span>}
+                <span className={post.scheduledDate ? "text-zinc-500 line-through" : "text-zinc-400"}>Scheduled date</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                {post.scheduledTime
+                  ? <span className="text-emerald-500">✓</span>
+                  : <span className="text-zinc-600">○</span>}
+                <span className={post.scheduledTime ? "text-zinc-500 line-through" : "text-zinc-400"}>Scheduled time</span>
+              </span>
+            </>
+          )}
+          {saving && (
+            <div className="flex items-center gap-1.5 -mt-2 ml-auto">
+              <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="50 20" />
+              </svg>
+              Saving
+            </div>
+          )}
         </div>
       )}
 
@@ -298,65 +361,6 @@ export function PostEditor({
         </div>
       </div>
 
-      {/* Action buttons */}
-      <div className="flex items-center gap-2 flex-wrap mt-4">
-        {post.approved ? (
-          <button
-            onClick={() => { onApprovePost(campaignId, post.id); flashSaving(); }}
-            className="text-sm px-3 py-1.5 rounded transition-colors border border-zinc-700 text-zinc-400 hover:text-zinc-200"
-          >
-            Unapprove
-          </button>
-        ) : post.reviewReady ? (
-          <>
-            <button
-              onClick={() => { onApprovePost(campaignId, post.id); flashSaving(); }}
-              disabled={!hasSchedule}
-              className="text-sm px-3 py-1.5 rounded transition-colors border border-zinc-700 text-zinc-400 hover:text-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              Approve
-            </button>
-            <button
-              onClick={() => { onUpdatePost(campaignId, post.id, { reviewReady: false }); flashSaving(); }}
-              className="text-sm px-3 py-1.5 rounded transition-colors border border-zinc-700 text-zinc-500 hover:text-zinc-200"
-            >
-              Return to draft
-            </button>
-          </>
-        ) : (
-          <button
-            onClick={() => { onUpdatePost(campaignId, post.id, { reviewReady: true }); flashSaving(); }}
-            disabled={!caption.trim() || !hasSchedule}
-            className="text-sm px-3 py-1.5 rounded transition-colors border border-zinc-700 text-zinc-400 hover:text-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            Mark for review
-          </button>
-        )}
-        {confirmDelete ? (
-          <span className="flex items-center gap-1.5">
-            <span className="text-xs text-zinc-500">Delete?</span>
-            <button
-              onClick={() => onDeletePost(campaignId, post.id)}
-              className="text-sm px-2.5 py-1.5 rounded transition-colors border border-red-800 text-red-400 hover:bg-red-950/50"
-            >
-              Yes
-            </button>
-            <button
-              onClick={() => setConfirmDelete(false)}
-              className="text-sm px-2.5 py-1.5 rounded transition-colors border border-zinc-700 text-zinc-400 hover:text-zinc-200"
-            >
-              No
-            </button>
-          </span>
-        ) : (
-          <button
-            onClick={() => setConfirmDelete(true)}
-            className="text-sm px-3 py-1.5 rounded transition-colors border border-red-900 text-red-400 hover:text-red-300 hover:border-red-700"
-          >
-            Delete
-          </button>
-        )}
-      </div>
     </div>
   );
 }
