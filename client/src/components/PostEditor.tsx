@@ -237,7 +237,8 @@ export function PostEditor({
 
         {/* Caption panel */}
         <div className="flex-1 min-w-0">
-          <div className="relative">
+          <label className="text-xs uppercase tracking-widest text-zinc-500 block mb-1.5">Caption</label>
+          <div className="relative mb-3">
             {isGenerating && isDraft && (
               <div className="absolute inset-0 z-10 bg-zinc-950/60 rounded-lg flex items-center justify-center">
                 <div className="flex items-center gap-2 text-sm text-zinc-400">
@@ -248,18 +249,16 @@ export function PostEditor({
                 </div>
               </div>
             )}
-            <div className="mb-3">
-              <label className="text-xs uppercase tracking-widest text-zinc-500 block mb-1.5">Caption</label>
               <textarea
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
                 onBlur={handleCaptionBlur}
                 disabled={isGenerating && isDraft}
                 className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-base text-zinc-200 resize-none focus:outline-none focus:border-zinc-600 leading-relaxed"
-                rows={supportsImages ? 8 : 10}
+                style={supportsImages ? { height: "280px" } : undefined}
+                rows={supportsImages ? undefined : 10}
                 placeholder="Write your post..."
               />
-            </div>
           </div>
           {/* Generate Caption button */}
           <div className="relative">
