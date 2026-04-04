@@ -67,7 +67,7 @@ export function CampaignCalendar({ posts, selectedDate, onSelectDate, selectedPo
   };
 
   return (
-    <div className="w-[280px] min-w-[280px] border-r border-zinc-800 p-4 bg-zinc-950 flex flex-col">
+    <div className="w-[280px] min-w-[280px] border-r border-zinc-800 p-4 bg-zinc-950 flex flex-col min-h-0">
       <div className="text-xs uppercase tracking-widest text-zinc-500 mb-3">Schedule</div>
 
       <div className="bg-zinc-900 rounded-lg p-3.5">
@@ -192,7 +192,7 @@ export function CampaignCalendar({ posts, selectedDate, onSelectDate, selectedPo
         };
 
         return (
-          <div className="mt-3 pt-3 border-t border-zinc-800">
+          <div className="mt-3 pt-3 border-t border-zinc-800 min-h-0 overflow-y-auto flex-1 pr-2">
             <div className="text-xs uppercase tracking-widest text-zinc-500 mb-3">Timeline</div>
 
             {/* Untimed posts */}
