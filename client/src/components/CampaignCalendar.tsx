@@ -64,7 +64,7 @@ export function CampaignCalendar({ posts, selectedDate, onSelectDate }: Campaign
   };
 
   return (
-    <div className="w-[280px] min-w-[280px] border-r border-zinc-800 p-4 bg-zinc-950 flex flex-col min-h-0">
+    <div className="w-full lg:w-[280px] lg:min-w-[280px] border-r border-zinc-800 p-4 bg-zinc-950 flex flex-col shrink-0">
       <div className="text-xs uppercase tracking-widest text-zinc-500 mb-3">Schedule</div>
 
       <div className="bg-zinc-900 rounded-lg p-3.5">

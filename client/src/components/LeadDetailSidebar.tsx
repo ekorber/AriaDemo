@@ -166,7 +166,7 @@ export function LeadDetailSidebar({ lead, closing, onClose, onUpdate, prospectNo
   return (
     <div
       data-sidebar
-      className="w-[420px] absolute right-0 top-0 bottom-0 z-10 border-l border-zinc-800 bg-zinc-950 flex flex-col overflow-hidden shadow-2xl transition-transform duration-200 ease-out"
+      className="w-full sm:w-[420px] absolute right-0 top-0 bottom-0 z-10 border-l border-zinc-800 bg-zinc-950 flex flex-col overflow-hidden shadow-2xl transition-transform duration-200 ease-out"
       style={{ transform: !mounted || closing ? "translateX(100%)" : "translateX(0)" }}
     >
       {/* Header */}

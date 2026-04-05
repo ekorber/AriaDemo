@@ -67,7 +67,7 @@ export function PipelineView({ leads, onMove, onDelete, onUpdate, prospectNoun }
 
   return (
     <div
-      className="flex-1 flex overflow-hidden bg-zinc-950 relative"
+      className="flex-1 flex overflow-x-auto overflow-y-hidden bg-zinc-950 relative"
       onClick={(e) => {
         if (selectedLeadId && (e.target as HTMLElement).closest("[data-lead-card]") === null &&
             (e.target as HTMLElement).closest("[data-sidebar]") === null) {
@@ -84,7 +84,7 @@ export function PipelineView({ leads, onMove, onDelete, onUpdate, prospectNoun }
             onDragOver={(e) => handleDragOver(e, col.status)}
             onDragLeave={handleDragLeave}
             onDrop={(e) => handleDrop(e, col.status)}
-            className={`flex-1 flex flex-col overflow-hidden transition-colors ${
+            className={`min-w-[200px] sm:min-w-0 flex-1 flex flex-col overflow-hidden transition-colors ${
               i < COLUMNS.length - 1 ? "border-r border-zinc-800" : ""
             } ${isOver ? "bg-zinc-900/50" : ""}`}
           >
@@ -113,13 +113,19 @@ export function PipelineView({ leads, onMove, onDelete, onUpdate, prospectNoun }
       })}
 
       {selectedLead && (
-        <LeadDetailSidebar
-          lead={selectedLead}
-          closing={closing}
-          onClose={closeSidebar}
-          onUpdate={onUpdate}
-          prospectNoun={prospectNoun}
-        />
+        <>
+          {/* Mobile backdrop */}
+          <div
+            className="fixed inset-0 z-[9] bg-black/60 sm:hidden"
+          />
+          <LeadDetailSidebar
+            lead={selectedLead}
+            closing={closing}
+            onClose={closeSidebar}
+            onUpdate={onUpdate}
+            prospectNoun={prospectNoun}
+          />
+        </>
       )}
 
       {deleteConfirmId && (

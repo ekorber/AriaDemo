@@ -6,6 +6,8 @@ interface IntentPanelProps {
   phase: IntentPhase;
   handoffLead: Lead | null;
   handoffPerson?: string;
+  open?: boolean;
+  onClose?: () => void;
 }
 
 const phaseLabels: Record<IntentPhase, string> = {
@@ -22,58 +24,36 @@ function getScoreColor(score: number): string {
   return "#34d399"; // emerald-400
 }
 
-export function IntentPanel({ intentScore, phase, handoffLead, handoffPerson }: IntentPanelProps) {
+export function IntentPanel({ intentScore, phase, handoffLead, handoffPerson, open, onClose }: IntentPanelProps) {
   const radius = 54;
   const circumference = 2 * Math.PI * radius;
   const progress = (intentScore / 100) * circumference;
   const strokeDashoffset = circumference - progress;
   const color = getScoreColor(intentScore);
 
-  return (
-    <div className="w-[280px] flex flex-col items-center px-4 py-6 space-y-6">
+  const content = (
+    <div className="flex flex-col items-center px-4 py-6 space-y-6 h-full">
       {/* Score Gauge */}
-      <div className="relative">
+      <div className="relative shrink-0">
         <svg width="128" height="128" viewBox="0 0 128 128">
-          {/* Background circle */}
+          <circle cx="64" cy="64" r={radius} fill="none" stroke="#27272a" strokeWidth="8" />
           <circle
-            cx="64"
-            cy="64"
-            r={radius}
-            fill="none"
-            stroke="#27272a"
-            strokeWidth="8"
-          />
-          {/* Progress circle */}
-          <circle
-            cx="64"
-            cy="64"
-            r={radius}
-            fill="none"
-            stroke={color}
-            strokeWidth="8"
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={strokeDashoffset}
-            transform="rotate(-90 64 64)"
-            className="transition-all duration-700 ease-out"
+            cx="64" cy="64" r={radius} fill="none" stroke={color} strokeWidth="8"
+            strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset}
+            transform="rotate(-90 64 64)" className="transition-all duration-700 ease-out"
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span
-            className="text-2xl font-semibold transition-colors duration-700"
-            style={{ color }}
-          >
+          <span className="text-2xl font-semibold transition-colors duration-700" style={{ color }}>
             {intentScore}
           </span>
         </div>
       </div>
 
-      {/* Phase Label */}
       <p className="text-xs text-zinc-500 tracking-wide uppercase">
         {phaseLabels[phase]}
       </p>
 
-      {/* Bottom Section */}
       <div className="w-full flex-1">
         {phase === "handoff" && handoffLead ? (
           <HandoffCard lead={handoffLead} handoffPerson={handoffPerson} />
@@ -84,5 +64,28 @@ export function IntentPanel({ intentScore, phase, handoffLead, handoffPerson }: 
         )}
       </div>
     </div>
+  );
+
+  return (
+    <>
+      {/* Desktop: inline sidebar */}
+      <div className="hidden md:block w-[280px] shrink-0">
+        {content}
+      </div>
+
+      {/* Mobile: slide-out drawer */}
+      {open && (
+        <div className="fixed inset-0 z-40 md:hidden">
+          <div className="absolute inset-0 bg-black/60" />
+          <div className="absolute right-0 top-0 bottom-0 w-[280px] bg-zinc-950 border-l border-zinc-800 shadow-2xl animate-slide-in overflow-y-auto">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
+              <span className="text-xs font-semibold tracking-widest text-zinc-400 uppercase">Intent</span>
+              <button onClick={onClose} className="text-zinc-500 hover:text-zinc-300 text-lg leading-none">&times;</button>
+            </div>
+            {content}
+          </div>
+        </div>
+      )}
+    </>
   );
 }
