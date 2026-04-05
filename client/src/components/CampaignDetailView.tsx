@@ -12,7 +12,6 @@ interface CampaignDetailViewProps {
   onUpdatePost: (campaignId: string, postId: string, fields: { caption?: string; reviewReady?: boolean }) => void;
   onApprovePost: (campaignId: string, postId: string) => void;
   onDeletePost: (campaignId: string, postId: string) => void;
-  onApproveAll: (campaignId: string) => void;
   onDelete: (campaignId: string) => void;
   onDuplicate: (campaignId: string) => Promise<string | null>;
   onGenerate: (campaignId: string, scope: string, selectedPostId?: string, selectedDate?: string | null) => Promise<void>;
@@ -31,7 +30,6 @@ export function CampaignDetailView({
   onUpdatePost,
   onApprovePost,
   onDeletePost,
-  onApproveAll,
   onDelete,
   onDuplicate,
   onGenerate,
@@ -103,7 +101,6 @@ export function CampaignDetailView({
     await onGenerateImage(campaign.id, scope, selectedPost?.id, selectedDate);
   }, [campaign.id, selectedPost?.id, selectedDate, onGenerateImage]);
 
-  const approvedCount = campaign.socialPosts.filter((p) => p.approved).length;
   const totalCount = campaign.socialPosts.length;
 
   return (
@@ -137,29 +134,21 @@ export function CampaignDetailView({
               </svg>
             </button>
             {totalCount > 0 && (
-              <>
-                <button
-                  onClick={() => onApproveAll(campaign.id)}
-                  className="text-sm text-zinc-500 hover:text-zinc-300 px-2 py-1 transition-colors"
-                >
-                  Approve All ({approvedCount}/{totalCount})
-                </button>
-                <button
-                  onClick={async () => {
-                    await onDuplicate(campaign.id);
-                    // Parent handles navigation to the new campaign
-                  }}
-                  className="text-sm text-zinc-500 hover:text-zinc-300 px-2 py-1 transition-colors"
-                >
-                  Duplicate
-                </button>
-              </>
+              <button
+                onClick={async () => {
+                  await onDuplicate(campaign.id);
+                  // Parent handles navigation to the new campaign
+                }}
+                className="text-sm text-zinc-500 hover:text-zinc-300 px-2 py-1 transition-colors"
+              >
+                Duplicate Campaign
+              </button>
             )}
             <button
               onClick={() => setConfirmDelete(true)}
               className="text-sm text-red-500/60 hover:text-red-400 px-2 py-1 transition-colors"
             >
-              Delete
+              Delete Campaign
             </button>
           </div>
         </div>

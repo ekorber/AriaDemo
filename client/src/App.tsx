@@ -186,7 +186,6 @@ export default function App() {
           isGeneratingImage={campaignHook.isGeneratingImage}
           updatePost={campaignHook.updatePost}
           approvePost={campaignHook.approvePost}
-          approveAll={campaignHook.approveAll}
           deletePost={campaignHook.deletePost}
           deleteCampaign={campaignHook.deleteCampaign}
           duplicateCampaign={campaignHook.duplicateCampaign}

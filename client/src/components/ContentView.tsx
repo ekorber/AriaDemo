@@ -16,7 +16,6 @@ interface ContentViewProps {
   updatePost: (campaignId: string, postId: string, fields: { caption?: string; reviewReady?: boolean }) => void;
   approvePost: (campaignId: string, postId: string) => void;
   deletePost: (campaignId: string, postId: string) => void;
-  approveAll: (campaignId: string) => void;
   deleteCampaign: (campaignId: string) => void;
   duplicateCampaign: (campaignId: string) => Promise<string | null>;
   assignPlatform: (campaignId: string, platform: SocialPlatform, date: string | null, postId?: string) => void;
@@ -40,7 +39,6 @@ export function ContentView({
   updatePost,
   approvePost,
   deletePost,
-  approveAll,
   deleteCampaign,
   duplicateCampaign,
   assignPlatform,
@@ -106,7 +104,6 @@ export function ContentView({
         onUpdatePost={updatePost}
         onApprovePost={approvePost}
         onDeletePost={deletePost}
-        onApproveAll={approveAll}
         onDelete={(id) => { deleteCampaign(id); setSelectedId(null); }}
         onDuplicate={async (id) => {
           const newId = await duplicateCampaign(id);
