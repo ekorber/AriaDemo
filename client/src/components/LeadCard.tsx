@@ -23,9 +23,11 @@ interface LeadCardProps {
   selected?: boolean;
   onClick?: () => void;
   onCreateCampaign?: () => void;
+  onDelete?: () => void;
+  prospectNoun?: string;
 }
 
-export function LeadCard({ lead, selected, onClick, onCreateCampaign }: LeadCardProps) {
+export function LeadCard({ lead, selected, onClick, onCreateCampaign, onDelete, prospectNoun = "contact" }: LeadCardProps) {
   const level = scoreLevel(lead.intent_score);
 
   return (
@@ -43,9 +45,23 @@ export function LeadCard({ lead, selected, onClick, onCreateCampaign }: LeadCard
     >
       <div className="flex items-center justify-between mb-1.5">
         <span className="text-sm font-medium text-zinc-100">
-          {lead.name || "Unknown artist"}
+          {lead.name || `Unknown ${prospectNoun}`}
         </span>
-        <span className="text-xs text-zinc-500">{lead.project_type}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-zinc-500">{lead.project_type}</span>
+          {onDelete && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+              className="text-zinc-600 hover:text-red-400 transition-colors text-sm leading-none"
+              title="Delete lead"
+            >
+              &times;
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="text-xs text-zinc-400 mb-2">{lead.timeline}</div>

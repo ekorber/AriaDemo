@@ -14,14 +14,18 @@ const COLUMNS: { status: LeadStatus; label: string }[] = [
 interface PipelineViewProps {
   leads: Lead[];
   onMove: (id: string, status: LeadStatus) => void;
+  onDelete: (id: string) => void;
+  onUpdate: (id: string, fields: Partial<Lead>) => void;
   onCreateCampaign?: (leadId: string) => void;
   campaignLeadIds?: Set<string>;
+  prospectNoun?: string;
 }
 
-export function PipelineView({ leads, onMove, onCreateCampaign, campaignLeadIds }: PipelineViewProps) {
+export function PipelineView({ leads, onMove, onDelete, onUpdate, onCreateCampaign, campaignLeadIds, prospectNoun }: PipelineViewProps) {
   const [dragOver, setDragOver] = useState<LeadStatus | null>(null);
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [closing, setClosing] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const selectedLead = selectedLeadId
     ? leads.find((l) => l.id === selectedLeadId) ?? null
@@ -103,6 +107,8 @@ export function PipelineView({ leads, onMove, onCreateCampaign, campaignLeadIds 
                   selected={lead.id === selectedLeadId}
                   onClick={() => handleCardClick(lead.id)}
                   onCreateCampaign={showCampaignAction && onCreateCampaign && !campaignLeadIds?.has(lead.id) ? () => onCreateCampaign(lead.id) : undefined}
+                  onDelete={() => setDeleteConfirmId(lead.id)}
+                  prospectNoun={prospectNoun}
                 />
               ))}
             </div>
@@ -115,7 +121,42 @@ export function PipelineView({ leads, onMove, onCreateCampaign, campaignLeadIds 
           lead={selectedLead}
           closing={closing}
           onClose={closeSidebar}
+          onUpdate={onUpdate}
+          prospectNoun={prospectNoun}
         />
+      )}
+
+      {deleteConfirmId && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+          onClick={() => setDeleteConfirmId(null)}
+        >
+          <div
+            className="bg-zinc-900 border border-zinc-700 rounded-xl p-5 w-80 space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-sm font-medium text-zinc-100">Delete lead?</h3>
+            <p className="text-xs text-zinc-400">This action cannot be undone.</p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setDeleteConfirmId(null)}
+                className="text-xs text-zinc-400 hover:text-zinc-200 px-3 py-1.5 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  onDelete(deleteConfirmId);
+                  if (selectedLeadId === deleteConfirmId) setSelectedLeadId(null);
+                  setDeleteConfirmId(null);
+                }}
+                className="text-xs text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 px-3 py-1.5 rounded-lg transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

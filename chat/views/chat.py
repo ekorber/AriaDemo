@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from chat.db import get_db
-from chat.system_prompt import SYSTEM_PROMPT
+from chat.system_prompt import build_system_prompt
 
 
 @csrf_exempt
@@ -22,6 +22,7 @@ def chat_stream(request):
 
     messages = body.get("messages", [])
     lead_id = body.get("lead_id")
+    archetype = body.get("archetype")
 
     api_key = os.environ.get("ANTHROPIC_API_KEY")
     if not api_key:
@@ -62,7 +63,7 @@ def chat_stream(request):
         with client.messages.stream(
             model="claude-sonnet-4-20250514",
             max_tokens=1000,
-            system=SYSTEM_PROMPT,
+            system=build_system_prompt(archetype),
             messages=api_messages,
         ) as stream:
             for text in stream.text_stream:

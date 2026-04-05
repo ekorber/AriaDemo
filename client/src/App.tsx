@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useMemo } from "react";
 import { useAgent } from "./hooks/useAgent";
+import { useArchetypes } from "./hooks/useArchetypes";
 import { useLeads } from "./hooks/useLeads";
 import { useCampaigns } from "./hooks/useCampaigns";
 import { ChatPanel } from "./components/ChatPanel";
@@ -11,7 +12,8 @@ type Tab = "chat" | "pipeline" | "content";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>("chat");
-  const { leads, startChat, updateLead, promoteToHandoff, moveLead } = useLeads();
+  const { archetypes, active: activeArchetype, activeKey: archetypeKey, setActiveKey } = useArchetypes();
+  const { leads, startChat, updateLead, promoteToHandoff, moveLead, deleteLead } = useLeads();
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
 
   // Campaign state
@@ -81,9 +83,17 @@ export default function App() {
     [promoteToHandoff, activeChatId]
   );
 
+  const archetypeConfig = activeArchetype ? { key: activeArchetype.key, greeting: activeArchetype.greeting } : null;
   const { messages, intentScore, phase, handoffLead, isStreaming, sendMessage, reloadMessages } =
-    useAgent(activeChatId, { onChatStart, onScoreUpdate, onHandoff });
+    useAgent(activeChatId, { onChatStart, onScoreUpdate, onHandoff }, archetypeConfig);
   const [chatInput, setChatInput] = useState("");
+
+  const handleArchetypeChange = useCallback((key: string) => {
+    setActiveKey(key);
+    setActiveChatId(null);
+    setChatInput("");
+    qualifiedRef.current = false;
+  }, [setActiveKey]);
 
   return (
     <div className="h-screen flex flex-col bg-zinc-950 text-zinc-100">
@@ -124,7 +134,22 @@ export default function App() {
             Content
           </button>
         </nav>
-        <span className="ml-auto text-sm text-zinc-500">Sales Agent</span>
+        <div className="ml-auto flex items-center gap-3">
+          {archetypes.length > 0 && (
+            <select
+              value={archetypeKey}
+              onChange={(e) => handleArchetypeChange(e.target.value)}
+              className="bg-zinc-900 border border-zinc-700 text-zinc-300 text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:border-zinc-500 cursor-pointer"
+            >
+              {archetypes.map((a) => (
+                <option key={a.key} value={a.key}>
+                  {a.label}
+                </option>
+              ))}
+            </select>
+          )}
+          <span className="text-sm text-zinc-500">Sales Agent</span>
+        </div>
       </header>
 
       {/* Main Content — all tabs stay mounted to preserve state */}
@@ -143,14 +168,18 @@ export default function App() {
           intentScore={intentScore}
           phase={phase}
           handoffLead={handoffLead}
+          handoffPerson={activeArchetype?.handoff_person}
         />
       </main>
       <div className={`flex-1 flex flex-col min-h-0 ${activeTab !== "pipeline" ? "hidden" : ""}`}>
         <PipelineView
           leads={leads}
           onMove={moveLead}
+          onDelete={deleteLead}
+          onUpdate={updateLead}
           onCreateCampaign={handleCreateCampaignFromPipeline}
           campaignLeadIds={campaignLeadIds}
+          prospectNoun={activeArchetype?.prospect_noun}
         />
       </div>
       <div className={`flex-1 flex flex-col min-h-0 ${activeTab !== "content" ? "hidden" : ""}`}>

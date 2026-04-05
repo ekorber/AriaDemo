@@ -5,7 +5,8 @@ export async function streamMessage(
   onChunk: (text: string) => void,
   onScoreUpdate: (update: ScoreUpdate) => void,
   onHandoff: (lead: Lead) => void,
-  leadId?: string | null
+  leadId?: string | null,
+  archetype?: string | null
 ): Promise<void> {
   try {
     const response = await fetch("/api/chat/", {
@@ -17,6 +18,7 @@ export async function streamMessage(
           content: m.content,
         })),
         lead_id: leadId ?? undefined,
+        archetype: archetype ?? undefined,
       }),
     });
 

@@ -3,6 +3,7 @@ import { Lead } from "../types";
 
 interface HandoffCardProps {
   lead: Lead;
+  handoffPerson?: string;
 }
 
 const budgetColors: Record<string, string> = {
@@ -11,7 +12,7 @@ const budgetColors: Record<string, string> = {
   high: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
 };
 
-export function HandoffCard({ lead }: HandoffCardProps) {
+export function HandoffCard({ lead, handoffPerson = "Marcus" }: HandoffCardProps) {
   const [revealed, setRevealed] = useState(false);
 
   useEffect(() => {
@@ -24,7 +25,7 @@ export function HandoffCard({ lead }: HandoffCardProps) {
       <div className="flex flex-col items-center justify-center py-8 space-y-3">
         <div className="w-6 h-6 border-2 border-zinc-500 border-t-emerald-400 rounded-full animate-spin" />
         <p className="text-sm text-zinc-400 animate-pulse">
-          Connecting you with Marcus...
+          Connecting you with {handoffPerson}...
         </p>
       </div>
     );

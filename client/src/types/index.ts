@@ -54,6 +54,15 @@ export interface ContentOutput {
   socialPosts: SocialPost[];
 }
 
+export interface Archetype {
+  key: string;
+  label: string;
+  greeting: string;
+  handoff_person: string;
+  handoff_title: string;
+  prospect_noun: string;
+}
+
 export interface ScoreUpdate {
   score: number;
   phase: IntentPhase;
