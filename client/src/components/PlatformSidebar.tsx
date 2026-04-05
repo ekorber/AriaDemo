@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { SocialPost, SocialPlatform } from "../types";
 import { PLATFORM_LABELS, ALL_PLATFORMS } from "../constants/platforms.ts";
 import { PlatformIcon } from "./PlatformIcon";
@@ -9,6 +9,14 @@ interface PlatformSidebarProps {
   selectedPostId: string | null;
   onSelectPost: (postId: string) => void;
   onAssignPlatform: (platform: SocialPlatform) => void;
+}
+
+function formatTime(t: string) {
+  const [hStr, mStr] = t.split(":");
+  const h24 = parseInt(hStr, 10);
+  const isPm = h24 >= 12;
+  const h12 = h24 === 0 ? 12 : h24 > 12 ? h24 - 12 : h24;
+  return `${h12}:${mStr}${isPm ? "pm" : "am"}`;
 }
 
 export function PlatformSidebar({
@@ -24,16 +32,25 @@ export function PlatformSidebar({
 
   const [showAddMenu, setShowAddMenu] = useState(false);
 
+  // Sort posts: untimed first, then timed by scheduled time
+  const sortedPosts = useMemo(() => {
+    const untimed = posts.filter((p) => !p.scheduledTime);
+    const timed = posts
+      .filter((p) => p.scheduledTime)
+      .sort((a, b) => a.scheduledTime!.localeCompare(b.scheduledTime!));
+    return [...untimed, ...timed];
+  }, [posts]);
+
   return (
     <div className="w-[350px] min-w-[350px] border-l border-zinc-800 p-4 bg-zinc-950 overflow-y-auto">
       <div className="text-xs uppercase tracking-widest text-zinc-500 mb-3">{dateLabel}</div>
 
-      {/* Platform cards for this date */}
-      {posts.length === 0 ? (
+      {/* Post list ordered by time */}
+      {sortedPosts.length === 0 ? (
         <div className="text-sm text-zinc-600 mb-3">No posts yet</div>
       ) : (
         <div className="space-y-1.5 mb-3">
-          {posts.map((post) => {
+          {sortedPosts.map((post) => {
             const isSelected = post.id === selectedPostId;
             const firstLine = post.caption ? post.caption.split('\n')[0] : "";
             const title = firstLine
@@ -52,10 +69,16 @@ export function PlatformSidebar({
                 <span className="flex-shrink-0 mt-0.5">
                   <PlatformIcon platform={post.platform} size={14} />
                 </span>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="text-sm text-zinc-200 leading-snug line-clamp-2">{title}</div>
-                  <div className={`text-xs mt-0.5 ${post.approved ? "text-emerald-400" : post.reviewReady ? "text-amber-400" : "text-zinc-600"}`}>
-                    {post.approved ? "approved" : post.reviewReady ? "ready for review" : "draft"}
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className={`text-xs ${post.approved ? "text-emerald-400" : post.reviewReady ? "text-amber-400" : "text-zinc-600"}`}>
+                      {post.approved ? "approved" : post.reviewReady ? "ready for review" : "draft"}
+                    </span>
+                    <span className="text-zinc-700">·</span>
+                    <span className={`text-xs ${post.scheduledTime ? "text-blue-400" : "text-zinc-600 italic"}`}>
+                      {post.scheduledTime ? formatTime(post.scheduledTime) : "no time set"}
+                    </span>
                   </div>
                 </div>
               </button>
