@@ -7,11 +7,12 @@ import { ChatPanel } from "./components/ChatPanel";
 import { IntentPanel } from "./components/IntentPanel";
 import { PipelineView } from "./components/PipelineView";
 import { ContentView } from "./components/ContentView";
+import { HomeView } from "./components/HomeView";
 
-type Tab = "chat" | "pipeline" | "content";
+type Tab = "home" | "chat" | "pipeline" | "content";
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<Tab>("chat");
+  const [activeTab, setActiveTab] = useState<Tab>("home");
   const { archetypes, active: activeArchetype, activeKey: archetypeKey, setActiveKey } = useArchetypes();
   const { leads, startChat, updateLead, promoteToHandoff, moveLead, deleteLead } = useLeads();
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
@@ -94,6 +95,16 @@ export default function App() {
         </span>
         <nav className="flex gap-6 ml-8">
           <button
+            onClick={() => setActiveTab("home")}
+            className={`text-sm pb-0.5 border-b transition-colors ${
+              activeTab === "home"
+                ? "text-white border-white"
+                : "text-zinc-500 border-transparent hover:text-zinc-300"
+            }`}
+          >
+            Home
+          </button>
+          <button
             onClick={() => { setActiveTab("chat"); reloadMessages(); }}
             className={`text-sm pb-0.5 border-b transition-colors ${
               activeTab === "chat"
@@ -145,6 +156,9 @@ export default function App() {
       </header>
 
       {/* Main Content — all tabs stay mounted to preserve state */}
+      <div className={`flex-1 flex flex-col min-h-0 ${activeTab !== "home" ? "hidden" : ""}`}>
+        <HomeView />
+      </div>
       <main className={`flex flex-1 overflow-hidden ${activeTab !== "chat" ? "hidden" : ""}`}>
         <div className="flex-1 border-r border-zinc-800">
           <ChatPanel

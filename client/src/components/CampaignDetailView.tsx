@@ -163,8 +163,6 @@ export function CampaignDetailView({
           posts={campaign.socialPosts}
           selectedDate={selectedDate}
           onSelectDate={handleSelectDate}
-          selectedPostId={selectedPost?.id ?? null}
-          onSelectPost={handleSelectPost}
         />
 
         {selectedPost ? (

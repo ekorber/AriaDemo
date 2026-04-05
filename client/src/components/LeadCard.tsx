@@ -43,7 +43,7 @@ export function LeadCard({ lead, selected, onClick, onDelete, prospectNoun = "co
       }`}
     >
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-sm font-medium text-zinc-100">
+        <span className="text-sm font-medium text-zinc-100 mr-3 min-w-[5rem]">
           {lead.name || `Unknown ${prospectNoun}`}
         </span>
         <div className="flex items-center gap-2">
