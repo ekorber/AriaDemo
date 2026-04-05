@@ -38,16 +38,21 @@ export function PostEditor({
   const autoResize = useCallback(() => {
     const el = textareaRef.current;
     if (!el || window.innerWidth >= 768) return;
+    el.style.minHeight = "0px";
     el.style.height = "auto";
-    el.style.height = el.scrollHeight + "px";
+    el.style.height = (el.scrollHeight + 2) + "px";
   }, []);
 
   useEffect(() => {
     setCaption(post.caption);
     setConfirmDelete(false);
-    // re-trigger auto-resize when post content changes
     requestAnimationFrame(autoResize);
   }, [post.id, post.caption, autoResize]);
+
+  // Run autoResize on mount
+  useEffect(() => {
+    requestAnimationFrame(autoResize);
+  }, [autoResize]);
 
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showGenDropdown, setShowGenDropdown] = useState(false);
@@ -271,12 +276,12 @@ export function PostEditor({
               )}
             </div>
             {/* Generate Image button */}
-            <div className="relative">
-              <div className="flex">
+            <div className="relative inline-flex flex-col max-md:w-full">
+              <div className="flex max-md:w-full">
                 <button
                   onClick={() => onGenerateImage("single")}
                   disabled={generateDisabled || isGeneratingImage}
-                  className="text-sm bg-zinc-100 text-zinc-900 hover:bg-white px-4 py-1.5 rounded-l font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="max-md:flex-1 text-sm bg-zinc-100 text-zinc-900 hover:bg-white px-4 py-1.5 rounded-l font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {isGeneratingImage ? "Generating..." : post.imageUrl ? "Regenerate Image" : "Generate Image"}
                 </button>
@@ -291,7 +296,7 @@ export function PostEditor({
               {showGenImageDropdown && (
                 <>
                   <div className="fixed inset-0 z-10" onClick={() => setShowGenImageDropdown(false)} />
-                  <div className="absolute left-0 top-full mt-1 bg-zinc-100 rounded shadow-xl z-20 min-w-[200px] py-1">
+                  <div className="absolute left-0 top-full mt-1 bg-zinc-100 rounded shadow-xl z-20 max-md:w-full py-1">
                     {([
                       { scope: "date" as const, label: "All images on this date" },
                       { scope: "platform" as const, label: `All ${label} images` },
@@ -338,12 +343,12 @@ export function PostEditor({
               />
           </div>
           {/* Generate Caption button */}
-          <div className="relative">
-            <div className="flex">
+          <div className="relative inline-flex flex-col max-md:w-full">
+            <div className="flex max-md:w-full">
               <button
                 onClick={() => onGenerate("single")}
                 disabled={generateDisabled}
-                className="text-sm bg-zinc-100 text-zinc-900 hover:bg-white px-4 py-1.5 rounded-l font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="max-md:flex-1 text-sm bg-zinc-100 text-zinc-900 hover:bg-white px-4 py-1.5 rounded-l font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {isGenerating ? "Generating..." : post.caption ? "Regenerate Caption" : "Generate Caption"}
               </button>
@@ -358,7 +363,7 @@ export function PostEditor({
             {showGenDropdown && (
               <>
               <div className="fixed inset-0 z-10" onClick={() => setShowGenDropdown(false)} />
-              <div className="absolute left-0 top-full mt-1 bg-zinc-100 rounded shadow-xl z-20 min-w-[200px] py-1">
+              <div className="absolute left-0 top-full mt-1 bg-zinc-100 rounded shadow-xl z-20 max-md:w-full py-1">
                 {([
                   { scope: "date" as const, label: "All captions on this date" },
                   { scope: "platform" as const, label: `All ${label} captions` },
