@@ -15,3 +15,12 @@ node_modules/
 
 # Claude
 .claude/
+
+# Superpowers
+.superpowers/
+
+# Generated images
+static/generated_images/
+
+/prompts
+TODO.md

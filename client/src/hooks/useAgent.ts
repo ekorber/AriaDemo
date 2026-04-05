@@ -11,7 +11,8 @@ interface AgentCallbacks {
 
 export function useAgent(
   leadId: string | null,
-  callbacks?: AgentCallbacks
+  callbacks?: AgentCallbacks,
+  archetype?: { key: string; greeting: string } | null
 ) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [intentScore, setIntentScore] = useState(0);
@@ -35,8 +36,10 @@ export function useAgent(
     });
   }, [leadId]);
 
-  const GREETING = "Hey there! Great to connect with you today. I'm Aria from the studio.\n\nWhat kind of music are you working on right now?";
+  const GREETING = archetype?.greeting ?? "Hey there! Great to connect with you today. I'm Aria.\n\nHow can I help you?";
+  const archetypeKey = archetype?.key ?? "";
 
+  // Show greeting on first mount
   useEffect(() => {
     if (initRan.current) return;
     initRan.current = true;
@@ -48,6 +51,25 @@ export function useAgent(
       createdAt: new Date(),
     }]);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Reset chat when archetype changes (skip the initial empty-string value)
+  const prevArchetype = useRef(archetypeKey);
+  useEffect(() => {
+    if (!archetypeKey || archetypeKey === prevArchetype.current) return;
+    prevArchetype.current = archetypeKey;
+
+    setMessages([{
+      id: crypto.randomUUID(),
+      role: "assistant",
+      content: GREETING,
+      createdAt: new Date(),
+    }]);
+    setIntentScore(0);
+    setPhase("open");
+    setHandoffLead(null);
+    setChatStarted(false);
+    isNewSession.current = false;
+  }, [archetypeKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const sendMessage = useCallback(
     async (content: string) => {
@@ -109,7 +131,7 @@ export function useAgent(
         callbacks?.onHandoff?.(lead);
       };
 
-      await streamMessage(updatedMessages, onChunk, onScoreUpdate, onHandoff, effectiveLeadId);
+      await streamMessage(updatedMessages, onChunk, onScoreUpdate, onHandoff, effectiveLeadId, archetype?.key);
       setIsStreaming(false);
     },
     [messages, isStreaming, phase, leadId]

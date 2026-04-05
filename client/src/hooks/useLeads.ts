@@ -44,5 +44,10 @@ export function useLeads() {
     setLeads((prev) => prev.map((l) => (l.id === id ? updated : l)));
   }, []);
 
-  return { leads, startChat, updateLead, promoteToHandoff, moveLead };
+  const deleteLead = useCallback(async (id: string) => {
+    await api.deleteLead(id);
+    setLeads((prev) => prev.filter((l) => l.id !== id));
+  }, []);
+
+  return { leads, startChat, updateLead, promoteToHandoff, moveLead, deleteLead };
 }

@@ -23,6 +23,46 @@ export interface Lead {
 
 export type IntentPhase = "open" | "qualify" | "build" | "handoff" | "disqualified";
 
+export type SocialPlatform = "instagram" | "x" | "facebook" | "threads" | "linkedin";
+
+export type CampaignTone = string;
+
+export interface SocialPost {
+  id: string;
+  platform: SocialPlatform;
+  caption: string;
+  imageUrl: string | null;
+  reviewReady: boolean;
+  approved: boolean;
+  scheduledDate: string | null;
+  scheduledTime: string | null;  // "15:00" format or null
+}
+
+export interface Campaign {
+  id: string;
+  leadId: string;
+  clientName: string;
+  projectType: string;
+  brief: string;
+  tone: CampaignTone;
+  socialPosts: SocialPost[];
+  createdAt: Date;
+}
+
+export interface ContentOutput {
+  campaignId?: string;
+  socialPosts: SocialPost[];
+}
+
+export interface Archetype {
+  key: string;
+  label: string;
+  greeting: string;
+  handoff_person: string;
+  handoff_title: string;
+  prospect_noun: string;
+}
+
 export interface ScoreUpdate {
   score: number;
   phase: IntentPhase;

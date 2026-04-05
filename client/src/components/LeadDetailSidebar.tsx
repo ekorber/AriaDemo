@@ -3,6 +3,26 @@ import { Lead, Message } from "../types";
 import { fetchMessages } from "../services/api";
 import { parseMessageParts } from "../utils/parseMessage";
 
+function PencilIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="12"
+      height="12"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="shrink-0 ml-1 text-zinc-600 opacity-0 group-hover/edit:opacity-100 transition-opacity"
+    >
+      <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+      <path d="m15 5 4 4" />
+    </svg>
+  );
+}
+
 const BUDGET_COLORS: Record<string, string> = {
   high: "text-emerald-400",
   medium: "text-amber-400",
@@ -25,9 +45,102 @@ interface LeadDetailSidebarProps {
   lead: Lead;
   closing?: boolean;
   onClose: () => void;
+  onUpdate?: (id: string, fields: Partial<Lead>) => void;
+  prospectNoun?: string;
 }
 
-export function LeadDetailSidebar({ lead, closing, onClose }: LeadDetailSidebarProps) {
+function EditableField({
+  value,
+  placeholder,
+  onSave,
+  className = "",
+  multiline = false,
+}: {
+  value: string;
+  placeholder?: string;
+  onSave: (val: string) => void;
+  className?: string;
+  multiline?: boolean;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+
+  useEffect(() => { setDraft(value); }, [value]);
+  useEffect(() => { if (editing) inputRef.current?.focus(); }, [editing]);
+
+  if (!editing) {
+    return (
+      <span
+        onClick={(e) => { e.stopPropagation(); setEditing(true); }}
+        className={`group/edit inline-flex items-center gap-1 cursor-pointer hover:bg-zinc-800 rounded px-1 -mx-1 transition-colors ${className}`}
+      >
+        {value || placeholder || "—"}
+        <PencilIcon />
+      </span>
+    );
+  }
+
+  const commit = () => {
+    setEditing(false);
+    if (draft !== value) onSave(draft);
+  };
+
+  if (multiline) {
+    return (
+      <textarea
+        ref={inputRef as React.RefObject<HTMLTextAreaElement>}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => { if (e.key === "Escape") { setDraft(value); setEditing(false); } }}
+        onClick={(e) => e.stopPropagation()}
+        rows={3}
+        className={`w-full bg-zinc-800 border border-zinc-600 rounded px-1.5 py-1 text-sm text-zinc-200 focus:outline-none focus:border-zinc-500 resize-none ${className}`}
+      />
+    );
+  }
+
+  return (
+    <input
+      ref={inputRef as React.RefObject<HTMLInputElement>}
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") commit();
+        if (e.key === "Escape") { setDraft(value); setEditing(false); }
+      }}
+      onClick={(e) => e.stopPropagation()}
+      className={`bg-zinc-800 border border-zinc-600 rounded px-1.5 py-0.5 text-sm text-zinc-200 focus:outline-none focus:border-zinc-500 w-full ${className}`}
+    />
+  );
+}
+
+function BudgetSelect({
+  value,
+  onSave,
+}: {
+  value: "low" | "medium" | "high";
+  onSave: (val: "low" | "medium" | "high") => void;
+}) {
+  return (
+    <span className="inline-flex items-center gap-1">
+      <select
+        value={value}
+        onChange={(e) => onSave(e.target.value as "low" | "medium" | "high")}
+        onClick={(e) => e.stopPropagation()}
+        className={`bg-transparent border-none text-sm capitalize cursor-pointer focus:outline-none ${BUDGET_COLORS[value]}`}
+      >
+        <option value="low" className="bg-zinc-900">low</option>
+        <option value="medium" className="bg-zinc-900">medium</option>
+        <option value="high" className="bg-zinc-900">high</option>
+      </select>
+    </span>
+  );
+}
+
+export function LeadDetailSidebar({ lead, closing, onClose, onUpdate, prospectNoun = "contact" }: LeadDetailSidebarProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
@@ -59,7 +172,15 @@ export function LeadDetailSidebar({ lead, closing, onClose }: LeadDetailSidebarP
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-800">
         <h2 className="text-sm font-semibold text-zinc-100">
-          {lead.name || "Unknown artist"}
+          {onUpdate ? (
+            <EditableField
+              value={lead.name || ""}
+              placeholder={`Unknown ${prospectNoun}`}
+              onSave={(val) => onUpdate(lead.id, { name: val || null })}
+            />
+          ) : (
+            lead.name || `Unknown ${prospectNoun}`
+          )}
         </h2>
         <button
           onClick={onClose}
@@ -101,30 +222,73 @@ export function LeadDetailSidebar({ lead, closing, onClose }: LeadDetailSidebarP
           <div className="grid grid-cols-2 gap-3">
             <div>
               <span className="text-xs text-zinc-500 block mb-0.5">Project</span>
-              <span className="text-sm text-zinc-200">{lead.project_type || "—"}</span>
+              {onUpdate ? (
+                <EditableField
+                  value={lead.project_type}
+                  placeholder="—"
+                  onSave={(val) => onUpdate(lead.id, { project_type: val })}
+                  className="text-sm text-zinc-200"
+                />
+              ) : (
+                <span className="text-sm text-zinc-200">{lead.project_type || "—"}</span>
+              )}
             </div>
             <div>
               <span className="text-xs text-zinc-500 block mb-0.5">Timeline</span>
-              <span className="text-sm text-zinc-200">{lead.timeline || "—"}</span>
+              {onUpdate ? (
+                <EditableField
+                  value={lead.timeline}
+                  placeholder="—"
+                  onSave={(val) => onUpdate(lead.id, { timeline: val })}
+                  className="text-sm text-zinc-200"
+                />
+              ) : (
+                <span className="text-sm text-zinc-200">{lead.timeline || "—"}</span>
+              )}
             </div>
             <div>
               <span className="text-xs text-zinc-500 block mb-0.5">Budget</span>
-              <span className={`text-sm capitalize ${BUDGET_COLORS[lead.budget_signal]}`}>
-                {lead.budget_signal}
-              </span>
+              {onUpdate ? (
+                <BudgetSelect
+                  value={lead.budget_signal}
+                  onSave={(val) => onUpdate(lead.id, { budget_signal: val })}
+                />
+              ) : (
+                <span className={`text-sm capitalize ${BUDGET_COLORS[lead.budget_signal]}`}>
+                  {lead.budget_signal}
+                </span>
+              )}
             </div>
             <div>
               <span className="text-xs text-zinc-500 block mb-0.5">Decision</span>
-              <span className="text-sm text-zinc-200">{lead.decision_authority || "—"}</span>
+              {onUpdate ? (
+                <EditableField
+                  value={lead.decision_authority}
+                  placeholder="—"
+                  onSave={(val) => onUpdate(lead.id, { decision_authority: val })}
+                  className="text-sm text-zinc-200"
+                />
+              ) : (
+                <span className="text-sm text-zinc-200">{lead.decision_authority || "—"}</span>
+              )}
             </div>
           </div>
 
           {/* Summary */}
           <div>
             <span className="text-xs text-zinc-500 block mb-1">Summary</span>
-            <p className="text-sm text-zinc-300 leading-relaxed">
-              {lead.conversation_summary}
-            </p>
+            {onUpdate ? (
+              <EditableField
+                value={lead.conversation_summary}
+                onSave={(val) => onUpdate(lead.id, { conversation_summary: val })}
+                className="text-sm text-zinc-300 leading-relaxed"
+                multiline
+              />
+            ) : (
+              <p className="text-sm text-zinc-300 leading-relaxed">
+                {lead.conversation_summary}
+              </p>
+            )}
           </div>
 
           {/* Hot signals */}

@@ -5,6 +5,7 @@ interface IntentPanelProps {
   intentScore: number;
   phase: IntentPhase;
   handoffLead: Lead | null;
+  handoffPerson?: string;
 }
 
 const phaseLabels: Record<IntentPhase, string> = {
@@ -21,7 +22,7 @@ function getScoreColor(score: number): string {
   return "#34d399"; // emerald-400
 }
 
-export function IntentPanel({ intentScore, phase, handoffLead }: IntentPanelProps) {
+export function IntentPanel({ intentScore, phase, handoffLead, handoffPerson }: IntentPanelProps) {
   const radius = 54;
   const circumference = 2 * Math.PI * radius;
   const progress = (intentScore / 100) * circumference;
@@ -75,7 +76,7 @@ export function IntentPanel({ intentScore, phase, handoffLead }: IntentPanelProp
       {/* Bottom Section */}
       <div className="w-full flex-1">
         {phase === "handoff" && handoffLead ? (
-          <HandoffCard lead={handoffLead} />
+          <HandoffCard lead={handoffLead} handoffPerson={handoffPerson} />
         ) : (
           <div className="flex items-center justify-center py-8">
             <p className="text-xs text-zinc-600 italic">Aria is listening...</p>

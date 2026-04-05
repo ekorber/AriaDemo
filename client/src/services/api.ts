@@ -1,4 +1,4 @@
-import { Lead, Message } from "../types";
+import { Archetype, Lead, Message } from "../types";
 
 const BASE = "/api";
 
@@ -19,7 +19,7 @@ interface LeadResponse {
 function toLead(r: LeadResponse): Lead {
   return {
     id: r.id,
-    name: r.name,
+    name: r.name?.startsWith("Unknown ") ? null : r.name,
     project_type: r.project_type,
     timeline: r.timeline,
     budget_signal: r.budget_signal,
@@ -47,6 +47,11 @@ function toMessage(r: MessageResponse): Message {
     content: r.content,
     createdAt: new Date(r.created_at),
   };
+}
+
+export async function fetchArchetypes(): Promise<{ archetypes: Archetype[]; default: string }> {
+  const res = await fetch(`${BASE}/archetypes/`);
+  return res.json();
 }
 
 export async function fetchLeads(): Promise<Lead[]> {
