@@ -1,7 +1,7 @@
 export function HomeView() {
   return (
     <div className="flex-1 overflow-y-auto">
-      <div className="max-w-6xl mx-auto px-10 py-10 space-y-10">
+      <div className="max-w-6xl mx-auto px-4 sm:px-10 py-6 sm:py-10 space-y-8 sm:space-y-10">
         {/* Hero */}
         <div>
           <h1 className="text-2xl font-bold text-zinc-100 tracking-tight">
@@ -19,7 +19,7 @@ export function HomeView() {
           <h2 className="text-xs font-semibold tracking-widest text-zinc-500 uppercase">
             Features
           </h2>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <FeatureCard
               title="Conversational Lead Qualification"
               description="An AI sales agent chats with prospects, scores intent in real time across four dimensions (project clarity, timeline, budget signals, decision authority), and hands off qualified leads automatically."
@@ -40,9 +40,9 @@ export function HomeView() {
         </section>
 
         {/* Architecture & Next Steps side by side */}
-        <div className="grid grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           {/* Architecture — 2 cols */}
-          <section className="col-span-2 space-y-4">
+          <section className="lg:col-span-2 space-y-4">
             <h2 className="text-xs font-semibold tracking-widest text-zinc-500 uppercase">
               Architecture
             </h2>
@@ -67,11 +67,11 @@ export function HomeView() {
           </section>
 
           {/* Next Steps — 3 cols */}
-          <section className="col-span-3 space-y-4">
+          <section className="lg:col-span-3 space-y-4">
             <h2 className="text-xs font-semibold tracking-widest text-zinc-500 uppercase">
               Sensible Next Steps
             </h2>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <NextStep
                 label="Email / SMS Sequences"
                 description="Auto-generate follow-up drip campaigns for leads at each pipeline stage."

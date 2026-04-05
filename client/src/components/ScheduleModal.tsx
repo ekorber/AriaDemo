@@ -94,7 +94,7 @@ export function ScheduleModal({ currentDate, currentTime, isDraft = true, onSave
       >
         <h3 className="text-base font-medium text-zinc-100 mb-4">Schedule Post</h3>
 
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-4">
           {/* Left: Calendar */}
           <div className="flex-1">
             <div className="text-xs uppercase tracking-widest text-zinc-500 mb-2">Date</div>
@@ -164,7 +164,7 @@ export function ScheduleModal({ currentDate, currentTime, isDraft = true, onSave
           </div>
 
           {/* Right: Time scroll wheels */}
-          <div className="w-[160px]">
+          <div className="w-full sm:w-[160px]">
             <div className="text-xs uppercase tracking-widest text-zinc-500 mb-2">Time</div>
             <div className="bg-zinc-800 rounded-lg p-3c min-h-[105px] flex flex-col items-center justify-center">
               {!hasTime ? (
