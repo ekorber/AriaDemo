@@ -19,18 +19,6 @@ services:
       - ./AriaDemo:/app/AriaDemo
       - ./static:/app/static
 
-  frontend:
-    build: ./client
-    ports:
-      - "5173:5173"
-    depends_on:
-      - backend
-    environment:
-      - VITE_API_TARGET=http://backend:8000
-    volumes:
-      - ./client/src:/app/src
-      - ./client/index.html:/app/index.html
-      - ./client/tailwind.config.js:/app/tailwind.config.js
 
 volumes:
   mongo_data:
