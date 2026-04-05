@@ -21,16 +21,6 @@ export default function App() {
   const [initialCampaignId, setInitialCampaignId] = useState<string | null>(null);
   const [initialLeadId, setInitialLeadId] = useState<string | null>(null);
 
-  const campaignLeadIds = useMemo(
-    () => new Set(campaignHook.campaigns.map((c) => c.leadId)),
-    [campaignHook.campaigns]
-  );
-
-  const handleCreateCampaignFromPipeline = useCallback((leadId: string) => {
-    setInitialLeadId(leadId);
-    setInitialCampaignId(null);
-    setActiveTab("content");
-  }, []);
 
   const consumeInitial = useCallback(() => {
     setInitialCampaignId(null);
@@ -134,22 +124,24 @@ export default function App() {
             Content
           </button>
         </nav>
-        <div className="ml-auto flex items-center gap-3">
-          {archetypes.length > 0 && (
-            <select
-              value={archetypeKey}
-              onChange={(e) => handleArchetypeChange(e.target.value)}
-              className="bg-zinc-900 border border-zinc-700 text-zinc-300 text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:border-zinc-500 cursor-pointer"
-            >
-              {archetypes.map((a) => (
-                <option key={a.key} value={a.key}>
-                  {a.label}
-                </option>
-              ))}
-            </select>
-          )}
-          <span className="text-sm text-zinc-500">Sales Agent</span>
-        </div>
+        {activeTab === "chat" && (
+          <div className="ml-auto flex items-center gap-3">
+            {archetypes.length > 0 && (
+              <select
+                value={archetypeKey}
+                onChange={(e) => handleArchetypeChange(e.target.value)}
+                className="bg-zinc-900 border border-zinc-700 text-zinc-300 text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:border-zinc-500 cursor-pointer"
+              >
+                {archetypes.map((a) => (
+                  <option key={a.key} value={a.key}>
+                    {a.label}
+                  </option>
+                ))}
+              </select>
+            )}
+            <span className="text-sm text-zinc-500">Sales Agent</span>
+          </div>
+        )}
       </header>
 
       {/* Main Content — all tabs stay mounted to preserve state */}
@@ -177,8 +169,6 @@ export default function App() {
           onMove={moveLead}
           onDelete={deleteLead}
           onUpdate={updateLead}
-          onCreateCampaign={handleCreateCampaignFromPipeline}
-          campaignLeadIds={campaignLeadIds}
           prospectNoun={activeArchetype?.prospect_noun}
         />
       </div>

@@ -16,12 +16,10 @@ interface PipelineViewProps {
   onMove: (id: string, status: LeadStatus) => void;
   onDelete: (id: string) => void;
   onUpdate: (id: string, fields: Partial<Lead>) => void;
-  onCreateCampaign?: (leadId: string) => void;
-  campaignLeadIds?: Set<string>;
   prospectNoun?: string;
 }
 
-export function PipelineView({ leads, onMove, onDelete, onUpdate, onCreateCampaign, campaignLeadIds, prospectNoun }: PipelineViewProps) {
+export function PipelineView({ leads, onMove, onDelete, onUpdate, prospectNoun }: PipelineViewProps) {
   const [dragOver, setDragOver] = useState<LeadStatus | null>(null);
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [closing, setClosing] = useState(false);
@@ -80,7 +78,6 @@ export function PipelineView({ leads, onMove, onDelete, onUpdate, onCreateCampai
       {COLUMNS.map((col, i) => {
         const columnLeads = leads.filter((l) => l.status === col.status);
         const isOver = dragOver === col.status;
-        const showCampaignAction = col.status === "handed_off" || col.status === "closed";
         return (
           <div
             key={col.status}
@@ -106,7 +103,6 @@ export function PipelineView({ leads, onMove, onDelete, onUpdate, onCreateCampai
                   lead={lead}
                   selected={lead.id === selectedLeadId}
                   onClick={() => handleCardClick(lead.id)}
-                  onCreateCampaign={showCampaignAction && onCreateCampaign && !campaignLeadIds?.has(lead.id) ? () => onCreateCampaign(lead.id) : undefined}
                   onDelete={() => setDeleteConfirmId(lead.id)}
                   prospectNoun={prospectNoun}
                 />

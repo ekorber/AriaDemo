@@ -22,12 +22,11 @@ interface LeadCardProps {
   lead: Lead;
   selected?: boolean;
   onClick?: () => void;
-  onCreateCampaign?: () => void;
   onDelete?: () => void;
   prospectNoun?: string;
 }
 
-export function LeadCard({ lead, selected, onClick, onCreateCampaign, onDelete, prospectNoun = "contact" }: LeadCardProps) {
+export function LeadCard({ lead, selected, onClick, onDelete, prospectNoun = "contact" }: LeadCardProps) {
   const level = scoreLevel(lead.intent_score);
 
   return (
@@ -105,17 +104,6 @@ export function LeadCard({ lead, selected, onClick, onCreateCampaign, onDelete, 
         </div>
       )}
 
-      {onCreateCampaign && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onCreateCampaign();
-          }}
-          className="w-full mt-2 text-[10px] text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800/50 rounded px-2 py-1 transition-colors text-left"
-        >
-          + Create Campaign
-        </button>
-      )}
     </div>
   );
 }
