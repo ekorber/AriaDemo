@@ -78,6 +78,7 @@ export default function App() {
   const { messages, intentScore, phase, handoffLead, isStreaming, sendMessage, reloadMessages } =
     useAgent(activeChatId, { onChatStart, onScoreUpdate, onHandoff }, archetypeConfig);
   const [chatInput, setChatInput] = useState("");
+  const [showIntentDrawer, setShowIntentDrawer] = useState(false);
 
   const handleArchetypeChange = useCallback((key: string) => {
     setActiveKey(key);
@@ -89,14 +90,14 @@ export default function App() {
   return (
     <div className="h-screen flex flex-col bg-zinc-950 text-zinc-100">
       {/* Top Bar */}
-      <header className="flex items-center px-6 py-3 border-b border-zinc-800">
+      <header className="flex items-center px-3 sm:px-6 py-3 border-b border-zinc-800">
         <span className="text-sm font-semibold tracking-widest text-zinc-400">
           ARIA
         </span>
-        <nav className="flex gap-6 ml-8">
+        <nav className="flex gap-3 sm:gap-6 ml-4 sm:ml-8 overflow-x-auto">
           <button
             onClick={() => setActiveTab("home")}
-            className={`text-sm pb-0.5 border-b transition-colors ${
+            className={`text-sm pb-0.5 border-b transition-colors whitespace-nowrap ${
               activeTab === "home"
                 ? "text-white border-white"
                 : "text-zinc-500 border-transparent hover:text-zinc-300"
@@ -106,7 +107,7 @@ export default function App() {
           </button>
           <button
             onClick={() => { setActiveTab("chat"); reloadMessages(); }}
-            className={`text-sm pb-0.5 border-b transition-colors ${
+            className={`text-sm pb-0.5 border-b transition-colors whitespace-nowrap ${
               activeTab === "chat"
                 ? "text-white border-white"
                 : "text-zinc-500 border-transparent hover:text-zinc-300"
@@ -116,7 +117,7 @@ export default function App() {
           </button>
           <button
             onClick={() => setActiveTab("pipeline")}
-            className={`text-sm pb-0.5 border-b transition-colors ${
+            className={`text-sm pb-0.5 border-b transition-colors whitespace-nowrap ${
               activeTab === "pipeline"
                 ? "text-white border-white"
                 : "text-zinc-500 border-transparent hover:text-zinc-300"
@@ -126,7 +127,7 @@ export default function App() {
           </button>
           <button
             onClick={() => setActiveTab("content")}
-            className={`text-sm pb-0.5 border-b transition-colors ${
+            className={`text-sm pb-0.5 border-b transition-colors whitespace-nowrap ${
               activeTab === "content"
                 ? "text-white border-white"
                 : "text-zinc-500 border-transparent hover:text-zinc-300"
@@ -135,8 +136,16 @@ export default function App() {
             Content
           </button>
         </nav>
-        {activeTab === "chat" && (
-          <div className="ml-auto flex items-center gap-3">
+      </header>
+
+      {/* Main Content — all tabs stay mounted to preserve state */}
+      <div className={`flex-1 flex flex-col min-h-0 ${activeTab !== "home" ? "hidden" : ""}`}>
+        <HomeView />
+      </div>
+      <main className={`flex flex-1 overflow-hidden ${activeTab !== "chat" ? "hidden" : ""}`}>
+        <div className="flex-1 min-h-0 md:border-r border-zinc-800 flex flex-col">
+          {/* Chat toolbar: archetype selector + intent score */}
+          <div className="flex items-center gap-3 px-3 sm:px-4 py-2 border-b border-zinc-800 shrink-0">
             {archetypes.length > 0 && (
               <select
                 value={archetypeKey}
@@ -150,17 +159,23 @@ export default function App() {
                 ))}
               </select>
             )}
-            <span className="text-sm text-zinc-500">Sales Agent</span>
+            <button
+              onClick={() => setShowIntentDrawer(true)}
+              className="md:hidden ml-auto flex items-center gap-2 text-xs border border-zinc-700 rounded-lg px-2.5 py-1.5 transition-colors hover:border-zinc-500"
+              style={{ color: intentScore <= 40 ? "#71717a" : intentScore <= 70 ? "#fbbf24" : "#34d399" }}
+            >
+              <svg width="16" height="16" viewBox="0 0 128 128" className="shrink-0">
+                <circle cx="64" cy="64" r="54" fill="none" stroke="#27272a" strokeWidth="10" />
+                <circle cx="64" cy="64" r="54" fill="none" stroke="currentColor" strokeWidth="10"
+                  strokeLinecap="round"
+                  strokeDasharray={2 * Math.PI * 54}
+                  strokeDashoffset={2 * Math.PI * 54 - (intentScore / 100) * 2 * Math.PI * 54}
+                  transform="rotate(-90 64 64)"
+                />
+              </svg>
+              {intentScore}
+            </button>
           </div>
-        )}
-      </header>
-
-      {/* Main Content — all tabs stay mounted to preserve state */}
-      <div className={`flex-1 flex flex-col min-h-0 ${activeTab !== "home" ? "hidden" : ""}`}>
-        <HomeView />
-      </div>
-      <main className={`flex flex-1 overflow-hidden ${activeTab !== "chat" ? "hidden" : ""}`}>
-        <div className="flex-1 border-r border-zinc-800">
           <ChatPanel
             messages={messages}
             isStreaming={isStreaming}
@@ -175,6 +190,8 @@ export default function App() {
           phase={phase}
           handoffLead={handoffLead}
           handoffPerson={activeArchetype?.handoff_person}
+          open={showIntentDrawer}
+          onClose={() => setShowIntentDrawer(false)}
         />
       </main>
       <div className={`flex-1 flex flex-col min-h-0 ${activeTab !== "pipeline" ? "hidden" : ""}`}>
