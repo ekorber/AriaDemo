@@ -104,12 +104,6 @@ export function ContentView({
         onUpdatePost={updatePost}
         onApprovePost={approvePost}
         onDeletePost={deletePost}
-        onDelete={(id) => { deleteCampaign(id); setSelectedId(null); }}
-        onDuplicate={async (id) => {
-          const newId = await duplicateCampaign(id);
-          if (newId) setSelectedId(newId);
-          return newId;
-        }}
         onGenerate={generateContent}
         onGenerateImage={generateImage}
         isGenerating={isGenerating}

@@ -12,8 +12,6 @@ interface CampaignDetailViewProps {
   onUpdatePost: (campaignId: string, postId: string, fields: { caption?: string; reviewReady?: boolean }) => void;
   onApprovePost: (campaignId: string, postId: string) => void;
   onDeletePost: (campaignId: string, postId: string) => void;
-  onDelete: (campaignId: string) => void;
-  onDuplicate: (campaignId: string) => Promise<string | null>;
   onGenerate: (campaignId: string, scope: string, selectedPostId?: string, selectedDate?: string | null) => Promise<void>;
   onGenerateImage: (campaignId: string, scope: string, selectedPostId?: string, selectedDate?: string | null) => Promise<void>;
   onAssignPlatform: (campaignId: string, platform: SocialPlatform, date: string | null, postId?: string) => void;
@@ -30,8 +28,6 @@ export function CampaignDetailView({
   onUpdatePost,
   onApprovePost,
   onDeletePost,
-  onDelete,
-  onDuplicate,
   onGenerate,
   onGenerateImage,
   onAssignPlatform,
@@ -51,7 +47,6 @@ export function CampaignDetailView({
     return null;
   });
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState(false);
   const [showEditFields, setShowEditFields] = useState(false);
 
   // Posts for the selected date
@@ -101,7 +96,6 @@ export function CampaignDetailView({
     await onGenerateImage(campaign.id, scope, selectedPost?.id, selectedDate);
   }, [campaign.id, selectedPost?.id, selectedDate, onGenerateImage]);
 
-  const totalCount = campaign.socialPosts.length;
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
@@ -132,23 +126,6 @@ export function CampaignDetailView({
                   ? <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
                   : <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />}
               </svg>
-            </button>
-            {totalCount > 0 && (
-              <button
-                onClick={async () => {
-                  await onDuplicate(campaign.id);
-                  // Parent handles navigation to the new campaign
-                }}
-                className="text-sm text-zinc-500 hover:text-zinc-300 px-2 py-1 transition-colors"
-              >
-                Duplicate Campaign
-              </button>
-            )}
-            <button
-              onClick={() => setConfirmDelete(true)}
-              className="text-sm text-red-500/60 hover:text-red-400 px-2 py-1 transition-colors"
-            >
-              Delete Campaign
             </button>
           </div>
         </div>
@@ -222,31 +199,6 @@ export function CampaignDetailView({
         />
       </div>
 
-      {/* Delete confirmation modal */}
-      {confirmDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-6 max-w-sm w-full mx-4 space-y-4">
-            <h3 className="text-base font-medium text-zinc-100">Delete campaign?</h3>
-            <p className="text-sm text-zinc-400">
-              This will permanently delete the <span className="text-zinc-200">{campaign.clientName}</span> campaign and all its posts. This action cannot be undone.
-            </p>
-            <div className="flex gap-2 justify-end">
-              <button
-                onClick={() => setConfirmDelete(false)}
-                className="text-sm text-zinc-500 hover:text-zinc-300 px-3 py-1.5 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => { onDelete(campaign.id); setConfirmDelete(false); }}
-                className="text-sm bg-red-600 hover:bg-red-500 text-white px-4 py-1.5 rounded font-medium transition-colors"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
