@@ -116,18 +116,6 @@ export function CampaignDetailView({
           </div>
           <div className="flex items-center gap-1 sm:gap-2">
             <button
-              onClick={() => setShowCalendarDrawer(true)}
-              className="lg:hidden text-xs text-zinc-500 hover:text-zinc-300 border border-zinc-700 rounded-lg px-2 py-1.5 transition-colors"
-            >
-              Calendar
-            </button>
-            <button
-              onClick={() => setShowPlatformDrawer(true)}
-              className="lg:hidden text-xs text-zinc-500 hover:text-zinc-300 border border-zinc-700 rounded-lg px-2 py-1.5 transition-colors"
-            >
-              Posts
-            </button>
-            <button
               onClick={() => setShowEditFields(!showEditFields)}
               className={`px-2 py-1 transition-colors ${
                 showEditFields
@@ -146,6 +134,8 @@ export function CampaignDetailView({
 
         {/* Editable brief & tone (collapsible overlay) */}
         {showEditFields && (
+          <>
+          <div className="fixed inset-0 z-[-1]" onClick={() => setShowEditFields(false)} />
           <div className="absolute left-0 right-0 top-full bg-zinc-950 border-b border-zinc-800 px-3 sm:px-5 py-3 space-y-2 shadow-lg">
             <div>
               <label className="text-xs text-zinc-500 block mb-1">Brief</label>
@@ -168,7 +158,24 @@ export function CampaignDetailView({
               />
             </div>
           </div>
+          </>
         )}
+      </div>
+
+      {/* Mobile-only sidebar toggle bar */}
+      <div className="lg:hidden flex items-center gap-2 px-3 py-2 border-b border-zinc-800 shrink-0">
+        <button
+          onClick={() => setShowCalendarDrawer(true)}
+          className="text-xs text-zinc-500 hover:text-zinc-300 border border-zinc-700 rounded-lg px-2 py-1.5 transition-colors"
+        >
+          Calendar
+        </button>
+        <button
+          onClick={() => setShowPlatformDrawer(true)}
+          className="text-xs text-zinc-500 hover:text-zinc-300 border border-zinc-700 rounded-lg px-2 py-1.5 transition-colors"
+        >
+          Posts
+        </button>
       </div>
 
       {/* Three-panel layout */}

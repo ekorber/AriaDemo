@@ -247,6 +247,47 @@ export function PostEditor({
         {supportsImages && (
           <div className="flex-1 min-w-0">
             <label className="text-xs uppercase tracking-widest text-zinc-500 block mb-1.5">Image</label>
+            {/* Generate Image button — mobile only (above content) */}
+            <div className="md:hidden mb-2">
+              <div className="relative inline-flex flex-col w-full">
+                <div className="flex w-full">
+                  <button
+                    onClick={() => onGenerateImage("single")}
+                    disabled={generateDisabled || isGeneratingImage}
+                    className="flex-1 text-sm bg-zinc-100 text-zinc-900 hover:bg-white px-4 py-1.5 rounded-l font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {isGeneratingImage ? "Generating..." : post.imageUrl ? "Regenerate Image" : "Generate Image"}
+                  </button>
+                  <button
+                    onClick={() => setShowGenImageDropdown((v) => !v)}
+                    disabled={generateDisabled || isGeneratingImage}
+                    className="text-sm bg-zinc-100 text-zinc-900 hover:bg-white px-1.5 py-1.5 rounded-r border-l border-zinc-300 font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                  </button>
+                </div>
+                {showGenImageDropdown && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setShowGenImageDropdown(false)} />
+                    <div className="absolute left-0 top-full mt-1 bg-zinc-100 rounded shadow-xl z-20 w-full py-1">
+                      {([
+                        { scope: "date" as const, label: "All images on this date" },
+                        { scope: "platform" as const, label: `All ${label} images` },
+                        { scope: "all" as const, label: "Every image in campaign" },
+                      ]).map((item) => (
+                        <button
+                          key={item.scope}
+                          onClick={() => { setShowGenImageDropdown(false); onGenerateImage(item.scope); }}
+                          className="w-full text-left text-sm px-3 py-1.5 text-zinc-900 font-medium hover:bg-white transition-colors"
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
             <div className="relative mb-3 rounded-lg overflow-hidden border border-zinc-800">
               {isGeneratingImage && isDraft && (
                 <div className="absolute inset-0 z-10 bg-zinc-950/60 rounded-lg flex items-center justify-center">
@@ -275,13 +316,13 @@ export function PostEditor({
                 </div>
               )}
             </div>
-            {/* Generate Image button */}
-            <div className="relative inline-flex flex-col max-md:w-full">
-              <div className="flex max-md:w-full">
+            {/* Generate Image button — desktop only */}
+            <div className="hidden md:inline-flex relative flex-col">
+              <div className="flex">
                 <button
                   onClick={() => onGenerateImage("single")}
                   disabled={generateDisabled || isGeneratingImage}
-                  className="max-md:flex-1 text-sm bg-zinc-100 text-zinc-900 hover:bg-white px-4 py-1.5 rounded-l font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="text-sm bg-zinc-100 text-zinc-900 hover:bg-white px-4 py-1.5 rounded-l font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {isGeneratingImage ? "Generating..." : post.imageUrl ? "Regenerate Image" : "Generate Image"}
                 </button>
@@ -296,7 +337,7 @@ export function PostEditor({
               {showGenImageDropdown && (
                 <>
                   <div className="fixed inset-0 z-10" onClick={() => setShowGenImageDropdown(false)} />
-                  <div className="absolute left-0 top-full mt-1 bg-zinc-100 rounded shadow-xl z-20 max-md:w-full py-1">
+                  <div className="absolute left-0 top-full mt-1 bg-zinc-100 rounded shadow-xl z-20 py-1">
                     {([
                       { scope: "date" as const, label: "All images on this date" },
                       { scope: "platform" as const, label: `All ${label} images` },
@@ -320,6 +361,47 @@ export function PostEditor({
         {/* Caption panel */}
         <div className="flex-1 min-w-0">
           <label className="text-xs uppercase tracking-widest text-zinc-500 block mb-1.5">Caption</label>
+          {/* Generate Caption button — mobile only (above content) */}
+          <div className="md:hidden mb-2">
+            <div className="relative inline-flex flex-col w-full">
+              <div className="flex w-full">
+                <button
+                  onClick={() => onGenerate("single")}
+                  disabled={generateDisabled}
+                  className="flex-1 text-sm bg-zinc-100 text-zinc-900 hover:bg-white px-4 py-1.5 rounded-l font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {isGenerating ? "Generating..." : post.caption ? "Regenerate Caption" : "Generate Caption"}
+                </button>
+                <button
+                  onClick={() => setShowGenDropdown((v) => !v)}
+                  disabled={generateDisabled}
+                  className="text-sm bg-zinc-100 text-zinc-900 hover:bg-white px-1.5 py-1.5 rounded-r border-l border-zinc-300 font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                </button>
+              </div>
+              {showGenDropdown && (
+                <>
+                <div className="fixed inset-0 z-10" onClick={() => setShowGenDropdown(false)} />
+                <div className="absolute left-0 top-full mt-1 bg-zinc-100 rounded shadow-xl z-20 w-full py-1">
+                  {([
+                    { scope: "date" as const, label: "All captions on this date" },
+                    { scope: "platform" as const, label: `All ${label} captions` },
+                    { scope: "all" as const, label: "Every caption in campaign" },
+                  ]).map((item) => (
+                    <button
+                      key={item.scope}
+                      onClick={() => { setShowGenDropdown(false); onGenerate(item.scope); }}
+                      className="w-full text-left text-sm px-3 py-1.5 text-zinc-900 font-medium hover:bg-white transition-colors"
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+                </>
+              )}
+            </div>
+          </div>
           <div className="relative mb-1">
             {isGenerating && isDraft && (
               <div className="absolute inset-0 z-10 bg-zinc-950/60 rounded-lg flex items-center justify-center">
@@ -342,13 +424,13 @@ export function PostEditor({
                 placeholder="Write your post..."
               />
           </div>
-          {/* Generate Caption button */}
-          <div className="relative inline-flex flex-col max-md:w-full">
-            <div className="flex max-md:w-full">
+          {/* Generate Caption button — desktop only */}
+          <div className="hidden md:inline-flex relative flex-col">
+            <div className="flex">
               <button
                 onClick={() => onGenerate("single")}
                 disabled={generateDisabled}
-                className="max-md:flex-1 text-sm bg-zinc-100 text-zinc-900 hover:bg-white px-4 py-1.5 rounded-l font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="text-sm bg-zinc-100 text-zinc-900 hover:bg-white px-4 py-1.5 rounded-l font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {isGenerating ? "Generating..." : post.caption ? "Regenerate Caption" : "Generate Caption"}
               </button>
@@ -363,7 +445,7 @@ export function PostEditor({
             {showGenDropdown && (
               <>
               <div className="fixed inset-0 z-10" onClick={() => setShowGenDropdown(false)} />
-              <div className="absolute left-0 top-full mt-1 bg-zinc-100 rounded shadow-xl z-20 max-md:w-full py-1">
+              <div className="absolute left-0 top-full mt-1 bg-zinc-100 rounded shadow-xl z-20 py-1">
                 {([
                   { scope: "date" as const, label: "All captions on this date" },
                   { scope: "platform" as const, label: `All ${label} captions` },
