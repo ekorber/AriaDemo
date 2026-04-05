@@ -230,6 +230,15 @@ export function ContentView({
                       Edit
                     </button>
                     <button
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        await duplicateCampaign(c.id);
+                      }}
+                      className="text-xs text-zinc-500 hover:text-zinc-200 px-2 py-0.5 rounded hover:bg-zinc-800 transition-colors"
+                    >
+                      Duplicate
+                    </button>
+                    <button
                       onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(c.id); }}
                       className="text-xs text-red-500/60 hover:text-red-400 px-2 py-0.5 rounded hover:bg-zinc-800 transition-colors"
                     >

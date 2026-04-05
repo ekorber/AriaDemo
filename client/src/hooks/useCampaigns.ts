@@ -24,7 +24,7 @@ export function useCampaigns(leads: Lead[]) {
   }, []);
 
   const campaignList = Array.from(campaigns.values()).sort(
-    (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+    (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
   );
 
   const createCampaign = useCallback(
