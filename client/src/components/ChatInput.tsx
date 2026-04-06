@@ -60,9 +60,10 @@ export function ChatInput({ value, onChange, onSend, disabled }: ChatInputProps)
           className={`flex-1 resize-none bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-zinc-500 ${ended ? "opacity-40 cursor-not-allowed" : ""}`}
         />
         <button
+          onPointerDown={(e) => e.preventDefault()}
           onClick={handleSubmit}
           disabled={ended || !value.trim()}
-          className="px-4 py-2.5 bg-zinc-700 hover:bg-zinc-600 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl text-sm text-zinc-100 transition-colors"
+          className="px-4 py-2.5 bg-zinc-700 hover:bg-zinc-600 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl text-sm text-zinc-100 transition-colors select-none"
         >
           Send
         </button>
