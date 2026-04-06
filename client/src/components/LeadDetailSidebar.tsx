@@ -15,7 +15,7 @@ function PencilIcon() {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="shrink-0 ml-1 text-zinc-600 opacity-0 group-hover/edit:opacity-100 transition-opacity"
+      className="shrink-0 ml-1 text-zinc-600 opacity-100 sm:opacity-0 sm:group-hover/edit:opacity-100 transition-opacity"
     >
       <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
       <path d="m15 5 4 4" />
@@ -166,12 +166,12 @@ export function LeadDetailSidebar({ lead, closing, onClose, onUpdate, prospectNo
   return (
     <div
       data-sidebar
-      className="w-[420px] absolute right-0 top-0 bottom-0 z-10 border-l border-zinc-800 bg-zinc-950 flex flex-col overflow-hidden shadow-2xl transition-transform duration-200 ease-out"
+      className="w-full sm:w-[420px] absolute right-0 top-0 bottom-0 z-10 border-l border-zinc-800 bg-zinc-950 flex flex-col overflow-hidden shadow-2xl transition-transform duration-200 ease-out"
       style={{ transform: !mounted || closing ? "translateX(100%)" : "translateX(0)" }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-800">
-        <h2 className="text-sm font-semibold text-zinc-100">
+      <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-zinc-800">
+        <h2 className="text-sm font-semibold text-zinc-100 min-w-0 truncate">
           {onUpdate ? (
             <EditableField
               value={lead.name || ""}
@@ -184,7 +184,7 @@ export function LeadDetailSidebar({ lead, closing, onClose, onUpdate, prospectNo
         </h2>
         <button
           onClick={onClose}
-          className="text-zinc-500 hover:text-zinc-300 transition-colors text-lg leading-none"
+          className="text-zinc-500 hover:text-zinc-300 transition-colors text-lg leading-none ml-3 shrink-0 p-1"
         >
           &times;
         </button>
@@ -193,8 +193,8 @@ export function LeadDetailSidebar({ lead, closing, onClose, onUpdate, prospectNo
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto">
         {/* Lead details */}
-        <div className="px-5 py-4 space-y-4 border-b border-zinc-800">
-          {/* Status badge */}
+        <div className="px-4 sm:px-5 py-3 sm:py-4 space-y-4 border-b border-zinc-800">
+          {/* Status badge + date */}
           <div className="flex items-center gap-2">
             <span className="text-xs font-medium bg-zinc-800 text-zinc-300 px-2 py-0.5 rounded capitalize">
               {lead.status.replace("_", " ")}
@@ -218,8 +218,8 @@ export function LeadDetailSidebar({ lead, closing, onClose, onUpdate, prospectNo
             </div>
           </div>
 
-          {/* Detail grid */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Detail grid — stacks to 1-col on very small screens */}
+          <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-3">
             <div>
               <span className="text-xs text-zinc-500 block mb-0.5">Project</span>
               {onUpdate ? (
@@ -310,7 +310,7 @@ export function LeadDetailSidebar({ lead, closing, onClose, onUpdate, prospectNo
         </div>
 
         {/* Chat history */}
-        <div className="px-5 py-4">
+        <div className="px-4 sm:px-5 py-3 sm:py-4">
           <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider block mb-3">
             Chat History
           </span>

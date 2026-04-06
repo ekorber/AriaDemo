@@ -28,7 +28,7 @@ export function ChatInput({ value, onChange, onSend, disabled }: ChatInputProps)
   const ended = disabled && value === "";
 
   return (
-    <div className="border-t border-zinc-800 px-4 py-3">
+    <div className="border-t border-zinc-800 px-3 sm:px-4 py-3">
       <div className="flex items-end gap-2">
         <textarea
           ref={textareaRef}

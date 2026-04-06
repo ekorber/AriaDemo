@@ -116,7 +116,7 @@ export function ContentView({
 
   // ─── Campaign List View ───────────────────────────────────
   return (
-    <div className="flex-1 overflow-y-auto p-6">
+    <div className="flex-1 overflow-y-auto p-4 sm:p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-lg font-semibold text-zinc-100">Campaigns</h1>
@@ -209,11 +209,11 @@ export function ContentView({
                 onClick={() => setSelectedId(c.id)}
                 className="w-full text-left border border-zinc-800 rounded-lg bg-zinc-900/50 hover:bg-zinc-900 p-4 transition-colors cursor-pointer"
               >
-                <div className="flex items-center justify-between mb-1.5">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-zinc-200">{c.clientName}</span>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 sm:gap-3">
                     {total > 0 && (
                       <span className="text-xs text-zinc-500">{approved}/{total} approved</span>
                     )}
@@ -228,7 +228,7 @@ export function ContentView({
                         e.stopPropagation();
                         await duplicateCampaign(c.id);
                       }}
-                      className="text-xs text-zinc-500 hover:text-zinc-200 px-2 py-0.5 rounded hover:bg-zinc-800 transition-colors"
+                      className="text-xs text-zinc-500 hover:text-zinc-200 px-2 py-0.5 rounded hover:bg-zinc-800 transition-colors hidden sm:inline"
                     >
                       Duplicate
                     </button>

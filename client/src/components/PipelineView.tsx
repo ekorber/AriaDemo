@@ -24,6 +24,7 @@ export function PipelineView({ leads, onMove, onDelete, onUpdate, prospectNoun }
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [closing, setClosing] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [mobileCol, setMobileCol] = useState<LeadStatus>("active");
 
   const selectedLead = selectedLeadId
     ? leads.find((l) => l.id === selectedLeadId) ?? null
@@ -65,9 +66,12 @@ export function PipelineView({ leads, onMove, onDelete, onUpdate, prospectNoun }
     }
   };
 
+  const mobileColumnLeads = leads.filter((l) => l.status === mobileCol);
+  const mobileColLabel = COLUMNS.find((c) => c.status === mobileCol)?.label ?? "";
+
   return (
     <div
-      className="flex-1 flex overflow-hidden bg-zinc-950 relative"
+      className="flex-1 flex flex-col sm:flex-row overflow-hidden bg-zinc-950 relative"
       onClick={(e) => {
         if (selectedLeadId && (e.target as HTMLElement).closest("[data-lead-card]") === null &&
             (e.target as HTMLElement).closest("[data-sidebar]") === null) {
@@ -75,51 +79,102 @@ export function PipelineView({ leads, onMove, onDelete, onUpdate, prospectNoun }
         }
       }}
     >
-      {COLUMNS.map((col, i) => {
-        const columnLeads = leads.filter((l) => l.status === col.status);
-        const isOver = dragOver === col.status;
-        return (
-          <div
-            key={col.status}
-            onDragOver={(e) => handleDragOver(e, col.status)}
-            onDragLeave={handleDragLeave}
-            onDrop={(e) => handleDrop(e, col.status)}
-            className={`flex-1 flex flex-col overflow-hidden transition-colors ${
-              i < COLUMNS.length - 1 ? "border-r border-zinc-800" : ""
-            } ${isOver ? "bg-zinc-900/50" : ""}`}
-          >
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800">
-              <span className="text-sm font-medium text-zinc-300">
+      {/* Mobile: tab-based column selector */}
+      <div className="sm:hidden flex flex-col flex-1 min-h-0">
+        <div className="flex overflow-x-auto border-b border-zinc-800 shrink-0 px-1">
+          {COLUMNS.map((col) => {
+            const count = leads.filter((l) => l.status === col.status).length;
+            return (
+              <button
+                key={col.status}
+                onClick={() => setMobileCol(col.status)}
+                className={`flex items-center gap-1.5 px-3 py-2.5 text-xs whitespace-nowrap border-b-2 transition-colors ${
+                  mobileCol === col.status
+                    ? "text-white border-white"
+                    : "text-zinc-500 border-transparent"
+                }`}
+              >
                 {col.label}
-              </span>
-              <span className="bg-zinc-800 text-zinc-400 text-xs rounded-full px-2 py-0.5">
-                {columnLeads.length}
-              </span>
+                <span className="bg-zinc-800 text-zinc-400 text-[10px] rounded-full px-1.5 py-0.5">
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex-1 overflow-y-auto p-3">
+          {mobileColumnLeads.length === 0 ? (
+            <div className="text-xs text-zinc-600 text-center py-8">No leads in {mobileColLabel}</div>
+          ) : (
+            mobileColumnLeads.map((lead) => (
+              <LeadCard
+                key={lead.id}
+                lead={lead}
+                selected={lead.id === selectedLeadId}
+                onClick={() => handleCardClick(lead.id)}
+                onDelete={() => setDeleteConfirmId(lead.id)}
+                onMove={onMove}
+                prospectNoun={prospectNoun}
+              />
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Desktop: horizontal kanban columns */}
+      <div className="hidden sm:flex flex-1 overflow-hidden">
+        {COLUMNS.map((col, i) => {
+          const columnLeads = leads.filter((l) => l.status === col.status);
+          const isOver = dragOver === col.status;
+          return (
+            <div
+              key={col.status}
+              onDragOver={(e) => handleDragOver(e, col.status)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, col.status)}
+              className={`flex-1 flex flex-col overflow-hidden transition-colors ${
+                i < COLUMNS.length - 1 ? "border-r border-zinc-800" : ""
+              } ${isOver ? "bg-zinc-900/50" : ""}`}
+            >
+              <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800">
+                <span className="text-sm font-medium text-zinc-300">
+                  {col.label}
+                </span>
+                <span className="bg-zinc-800 text-zinc-400 text-xs rounded-full px-2 py-0.5">
+                  {columnLeads.length}
+                </span>
+              </div>
+              <div className={`flex-1 overflow-y-auto p-3 transition-colors ${isOver ? "bg-zinc-800/20" : ""}`}>
+                {columnLeads.map((lead) => (
+                  <LeadCard
+                    key={lead.id}
+                    lead={lead}
+                    selected={lead.id === selectedLeadId}
+                    onClick={() => handleCardClick(lead.id)}
+                    onDelete={() => setDeleteConfirmId(lead.id)}
+                    prospectNoun={prospectNoun}
+                  />
+                ))}
+              </div>
             </div>
-            <div className={`flex-1 overflow-y-auto p-3 transition-colors ${isOver ? "bg-zinc-800/20" : ""}`}>
-              {columnLeads.map((lead) => (
-                <LeadCard
-                  key={lead.id}
-                  lead={lead}
-                  selected={lead.id === selectedLeadId}
-                  onClick={() => handleCardClick(lead.id)}
-                  onDelete={() => setDeleteConfirmId(lead.id)}
-                  prospectNoun={prospectNoun}
-                />
-              ))}
-            </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
 
       {selectedLead && (
-        <LeadDetailSidebar
-          lead={selectedLead}
-          closing={closing}
-          onClose={closeSidebar}
-          onUpdate={onUpdate}
-          prospectNoun={prospectNoun}
-        />
+        <>
+          {/* Mobile backdrop */}
+          <div
+            className="fixed inset-0 z-[9] bg-black/60 sm:hidden"
+          />
+          <LeadDetailSidebar
+            lead={selectedLead}
+            closing={closing}
+            onClose={closeSidebar}
+            onUpdate={onUpdate}
+            prospectNoun={prospectNoun}
+          />
+        </>
       )}
 
       {deleteConfirmId && (

@@ -31,6 +31,7 @@ export function PlatformSidebar({
     : "Undecided";
 
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   // Sort posts: untimed first, then timed by scheduled time
   const sortedPosts = useMemo(() => {
@@ -42,14 +43,94 @@ export function PlatformSidebar({
   }, [posts]);
 
   return (
-    <div className="w-[350px] min-w-[350px] border-l border-zinc-800 p-4 bg-zinc-950 overflow-y-auto">
+    <div className="w-full lg:w-[350px] lg:min-w-[350px] border-l border-zinc-800 p-4 bg-zinc-950 overflow-y-auto shrink-0 h-full">
       <div className="text-xs uppercase tracking-widest text-zinc-500 mb-3">{dateLabel}</div>
+
+      {/* Add Post — top of sidebar */}
+      <div className="mb-3">
+        {/* Desktop: inline expand with click-outside */}
+        <div className="hidden lg:block relative">
+          {showAddMenu && <div className="fixed inset-0 z-10" onClick={() => setShowAddMenu(false)} />}
+          {showAddMenu ? (
+            <div className="relative z-20">
+              <div className="text-xs uppercase tracking-wider text-zinc-600 mb-2">Select platform</div>
+              <div className="space-y-1">
+                {ALL_PLATFORMS.map((platform) => (
+                    <button
+                      key={platform}
+                      onClick={() => {
+                        onAssignPlatform(platform);
+                        setShowAddMenu(false);
+                      }}
+                      className="w-full text-left rounded-md px-2.5 py-1.5 flex items-center gap-2 bg-zinc-900 border border-zinc-800 hover:border-zinc-600 transition-colors"
+                    >
+                      <PlatformIcon platform={platform} size={14} />
+                      <span className="text-sm text-zinc-400">{PLATFORM_LABELS[platform]}</span>
+                    </button>
+                ))}
+                <button
+                  onClick={() => setShowAddMenu(false)}
+                  className="w-full text-xs text-zinc-600 hover:text-zinc-400 mt-1 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowAddMenu(true)}
+              className="w-full text-left rounded-md px-2.5 py-2 flex items-center gap-2 border border-dashed border-zinc-700 hover:border-zinc-500 transition-colors"
+            >
+              <span className="text-zinc-500 text-base leading-none">+</span>
+              <span className="text-sm text-zinc-500">Add Post</span>
+            </button>
+          )}
+        </div>
+
+        {/* Mobile: button opens modal */}
+        <div className="lg:hidden">
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="w-full text-left rounded-md px-2.5 py-2 flex items-center gap-2 border border-dashed border-zinc-700 hover:border-zinc-500 transition-colors"
+          >
+            <span className="text-zinc-500 text-base leading-none">+</span>
+            <span className="text-sm text-zinc-500">Add Post</span>
+          </button>
+        </div>
+
+        {/* Mobile platform picker modal */}
+        {showAddModal && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 lg:hidden" onClick={() => setShowAddModal(false)}>
+            <div className="bg-zinc-900 border border-zinc-700 rounded-t-xl sm:rounded-xl w-full sm:max-w-sm p-5 space-y-3" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-sm font-medium text-zinc-100">Select platform</h3>
+                <button onClick={() => setShowAddModal(false)} className="text-zinc-500 hover:text-zinc-300 text-lg leading-none">&times;</button>
+              </div>
+              <div className="space-y-1.5">
+                {ALL_PLATFORMS.map((platform) => (
+                  <button
+                    key={platform}
+                    onClick={() => {
+                      onAssignPlatform(platform);
+                      setShowAddModal(false);
+                    }}
+                    className="w-full text-left rounded-lg px-3 py-2.5 flex items-center gap-3 bg-zinc-800 border border-zinc-700 hover:border-zinc-500 active:bg-zinc-700 transition-colors"
+                  >
+                    <PlatformIcon platform={platform} size={18} />
+                    <span className="text-sm text-zinc-200">{PLATFORM_LABELS[platform]}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Post list ordered by time */}
       {sortedPosts.length === 0 ? (
         <div className="text-sm text-zinc-600 mb-3">No posts yet</div>
       ) : (
-        <div className="space-y-1.5 mb-3">
+        <div className="space-y-1.5">
           {sortedPosts.map((post) => {
             const isSelected = post.id === selectedPostId;
             const firstLine = post.caption ? post.caption.split('\n')[0] : "";
@@ -86,44 +167,6 @@ export function PlatformSidebar({
           })}
         </div>
       )}
-
-      {/* Add Post */}
-      <div className="border-t border-zinc-800 pt-3 mt-3">
-        {showAddMenu ? (
-          <>
-            <div className="text-xs uppercase tracking-wider text-zinc-600 mb-2">Select platform</div>
-            <div className="space-y-1">
-              {ALL_PLATFORMS.map((platform) => (
-                  <button
-                    key={platform}
-                    onClick={() => {
-                      onAssignPlatform(platform);
-                      setShowAddMenu(false);
-                    }}
-                    className="w-full text-left rounded-md px-2.5 py-1.5 flex items-center gap-2 bg-zinc-900 border border-zinc-800 hover:border-zinc-600 transition-colors"
-                  >
-                    <PlatformIcon platform={platform} size={14} />
-                    <span className="text-sm text-zinc-400">{PLATFORM_LABELS[platform]}</span>
-                  </button>
-              ))}
-              <button
-                onClick={() => setShowAddMenu(false)}
-                className="w-full text-xs text-zinc-600 hover:text-zinc-400 mt-1 transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-          </>
-        ) : (
-          <button
-            onClick={() => setShowAddMenu(true)}
-            className="w-full text-left rounded-md px-2.5 py-2 flex items-center gap-2 border border-dashed border-zinc-700 hover:border-zinc-500 transition-colors"
-          >
-            <span className="text-zinc-500 text-base leading-none">+</span>
-            <span className="text-sm text-zinc-500">Add Post</span>
-          </button>
-        )}
-      </div>
     </div>
   );
 }
