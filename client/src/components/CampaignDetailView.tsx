@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef } from "react";
 import { Campaign, CampaignTone, SocialPlatform } from "../types";
 import { CampaignCalendar } from "./CampaignCalendar";
 import { PostEditor } from "./PostEditor";
@@ -48,8 +48,15 @@ export function CampaignDetailView({
   });
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [showEditFields, setShowEditFields] = useState(false);
-  const [showCalendarDrawer, setShowCalendarDrawer] = useState(false);
-  const [showPlatformDrawer, setShowPlatformDrawer] = useState(false);
+  const [calendarDrawer, setCalendarDrawer] = useState<'open' | 'closing' | null>(null);
+  const [platformDrawer, setPlatformDrawer] = useState<'open' | 'closing' | null>(null);
+  const calendarTimer = useRef<ReturnType<typeof setTimeout>>();
+  const platformTimer = useRef<ReturnType<typeof setTimeout>>();
+
+  const openCalendarDrawer = () => { clearTimeout(calendarTimer.current); setCalendarDrawer('open'); };
+  const closeCalendarDrawer = () => { setCalendarDrawer('closing'); calendarTimer.current = setTimeout(() => setCalendarDrawer(null), 200); };
+  const openPlatformDrawer = () => { clearTimeout(platformTimer.current); setPlatformDrawer('open'); };
+  const closePlatformDrawer = () => { setPlatformDrawer('closing'); platformTimer.current = setTimeout(() => setPlatformDrawer(null), 200); };
 
   // Posts for the selected date
   const datePosts = useMemo(() => {
@@ -165,14 +172,14 @@ export function CampaignDetailView({
       {/* Mobile-only sidebar toggle bar */}
       <div className="lg:hidden flex items-center gap-2 px-3 py-2 border-b border-zinc-800 shrink-0">
         <button
-          onClick={() => setShowCalendarDrawer(true)}
-          className="text-xs text-zinc-500 hover:text-zinc-300 border border-zinc-700 rounded-lg px-2 py-1.5 transition-colors"
+          onClick={openCalendarDrawer}
+          className="flex-1 text-xs text-zinc-500 hover:text-zinc-300 border border-zinc-700 rounded-lg px-2 py-1.5 transition-colors"
         >
           Calendar
         </button>
         <button
-          onClick={() => setShowPlatformDrawer(true)}
-          className="text-xs text-zinc-500 hover:text-zinc-300 border border-zinc-700 rounded-lg px-2 py-1.5 transition-colors"
+          onClick={openPlatformDrawer}
+          className="flex-1 text-xs text-zinc-500 hover:text-zinc-300 border border-zinc-700 rounded-lg px-2 py-1.5 transition-colors"
         >
           Posts
         </button>
@@ -188,13 +195,16 @@ export function CampaignDetailView({
             onSelectDate={handleSelectDate}
           />
         </div>
-        {showCalendarDrawer && (
+        {calendarDrawer && (
           <div className="fixed inset-0 z-40 lg:hidden">
-            <div className="absolute inset-0 bg-black/60" />
-            <div className="absolute left-0 top-0 bottom-0 w-full sm:w-[300px] sm:max-w-[85vw] bg-zinc-950 border-r border-zinc-800 shadow-2xl animate-slide-in-left overflow-y-auto">
+            <div className="absolute inset-0 bg-black/60" onClick={closeCalendarDrawer} />
+            <div
+              className="absolute left-0 top-0 bottom-0 w-full sm:w-[300px] sm:max-w-[85vw] bg-zinc-950 border-r border-zinc-800 shadow-2xl overflow-y-auto"
+              style={{ animation: calendarDrawer === 'closing' ? 'slide-out-left 0.2s ease-in forwards' : 'slide-in-left 0.2s ease-out' }}
+            >
               <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
                 <span className="text-xs font-semibold tracking-widest text-zinc-400 uppercase">Schedule</span>
-                <button onClick={() => setShowCalendarDrawer(false)} className="text-zinc-500 hover:text-zinc-300 text-lg leading-none">&times;</button>
+                <button onClick={closeCalendarDrawer} className="text-zinc-500 hover:text-zinc-300 text-lg leading-none">&times;</button>
               </div>
               <CampaignCalendar
                 posts={campaign.socialPosts}
@@ -239,13 +249,17 @@ export function CampaignDetailView({
             onAssignPlatform={handleAssignPlatform}
           />
         </div>
-        {showPlatformDrawer && (
+        {platformDrawer && (
           <div className="fixed inset-0 z-40 lg:hidden">
-            <div className="absolute inset-0 bg-black/60" />
-            <div className="absolute right-0 top-0 bottom-0 w-full sm:w-[350px] sm:max-w-[85vw] bg-zinc-950 border-l border-zinc-800 shadow-2xl animate-slide-in flex flex-col overflow-hidden">
+            <div className="absolute inset-0 bg-black/60" onClick={closePlatformDrawer} />
+            <div
+              className={`absolute right-0 top-0 bottom-0 w-full sm:w-[350px] sm:max-w-[85vw] bg-zinc-950 border-l border-zinc-800 shadow-2xl flex flex-col overflow-hidden ${
+                platformDrawer === 'closing' ? 'animate-slide-out' : 'animate-slide-in'
+              }`}
+            >
               <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 shrink-0">
                 <span className="text-xs font-semibold tracking-widest text-zinc-400 uppercase">Posts</span>
-                <button onClick={() => setShowPlatformDrawer(false)} className="text-zinc-500 hover:text-zinc-300 text-lg leading-none">&times;</button>
+                <button onClick={closePlatformDrawer} className="text-zinc-500 hover:text-zinc-300 text-lg leading-none">&times;</button>
               </div>
               <div className="flex-1 min-h-0 overflow-y-auto">
               <PlatformSidebar

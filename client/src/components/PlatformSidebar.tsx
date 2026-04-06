@@ -46,54 +46,13 @@ export function PlatformSidebar({
     <div className="w-full lg:w-[350px] lg:min-w-[350px] border-l border-zinc-800 p-4 bg-zinc-950 overflow-y-auto shrink-0 h-full">
       <div className="text-xs uppercase tracking-widest text-zinc-500 mb-3">{dateLabel}</div>
 
-      {/* Post list ordered by time */}
-      {sortedPosts.length === 0 ? (
-        <div className="text-sm text-zinc-600 mb-3">No posts yet</div>
-      ) : (
-        <div className="space-y-1.5 mb-3">
-          {sortedPosts.map((post) => {
-            const isSelected = post.id === selectedPostId;
-            const firstLine = post.caption ? post.caption.split('\n')[0] : "";
-            const title = firstLine
-              ? firstLine.length > 40 ? firstLine.slice(0, 40) + "…" : firstLine
-              : PLATFORM_LABELS[post.platform];
-            return (
-              <button
-                key={post.id}
-                onClick={() => onSelectPost(post.id)}
-                className={`w-full text-left rounded-md px-2.5 py-2 flex items-start gap-2 transition-colors ${
-                  isSelected
-                    ? "bg-blue-950 border border-blue-500"
-                    : "bg-zinc-900 border border-zinc-800 hover:border-zinc-700"
-                }`}
-              >
-                <span className="flex-shrink-0 mt-0.5">
-                  <PlatformIcon platform={post.platform} size={14} />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <div className="text-sm text-zinc-200 leading-snug line-clamp-2">{title}</div>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className={`text-xs ${post.approved ? "text-emerald-400" : post.reviewReady ? "text-amber-400" : "text-zinc-600"}`}>
-                      {post.approved ? "approved" : post.reviewReady ? "ready for review" : "draft"}
-                    </span>
-                    <span className="text-zinc-700">·</span>
-                    <span className={`text-xs ${post.scheduledTime ? "text-blue-400" : "text-zinc-600 italic"}`}>
-                      {post.scheduledTime ? formatTime(post.scheduledTime) : "no time set"}
-                    </span>
-                  </div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Add Post */}
-      <div className="border-t border-zinc-800 pt-3 mt-3">
-        {/* Desktop: inline expand */}
-        <div className="hidden lg:block">
+      {/* Add Post — top of sidebar */}
+      <div className="mb-3">
+        {/* Desktop: inline expand with click-outside */}
+        <div className="hidden lg:block relative">
+          {showAddMenu && <div className="fixed inset-0 z-10" onClick={() => setShowAddMenu(false)} />}
           {showAddMenu ? (
-            <>
+            <div className="relative z-20">
               <div className="text-xs uppercase tracking-wider text-zinc-600 mb-2">Select platform</div>
               <div className="space-y-1">
                 {ALL_PLATFORMS.map((platform) => (
@@ -116,7 +75,7 @@ export function PlatformSidebar({
                   Cancel
                 </button>
               </div>
-            </>
+            </div>
           ) : (
             <button
               onClick={() => setShowAddMenu(true)}
@@ -166,6 +125,48 @@ export function PlatformSidebar({
           </div>
         )}
       </div>
+
+      {/* Post list ordered by time */}
+      {sortedPosts.length === 0 ? (
+        <div className="text-sm text-zinc-600 mb-3">No posts yet</div>
+      ) : (
+        <div className="space-y-1.5">
+          {sortedPosts.map((post) => {
+            const isSelected = post.id === selectedPostId;
+            const firstLine = post.caption ? post.caption.split('\n')[0] : "";
+            const title = firstLine
+              ? firstLine.length > 40 ? firstLine.slice(0, 40) + "…" : firstLine
+              : PLATFORM_LABELS[post.platform];
+            return (
+              <button
+                key={post.id}
+                onClick={() => onSelectPost(post.id)}
+                className={`w-full text-left rounded-md px-2.5 py-2 flex items-start gap-2 transition-colors ${
+                  isSelected
+                    ? "bg-blue-950 border border-blue-500"
+                    : "bg-zinc-900 border border-zinc-800 hover:border-zinc-700"
+                }`}
+              >
+                <span className="flex-shrink-0 mt-0.5">
+                  <PlatformIcon platform={post.platform} size={14} />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm text-zinc-200 leading-snug line-clamp-2">{title}</div>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className={`text-xs ${post.approved ? "text-emerald-400" : post.reviewReady ? "text-amber-400" : "text-zinc-600"}`}>
+                      {post.approved ? "approved" : post.reviewReady ? "ready for review" : "draft"}
+                    </span>
+                    <span className="text-zinc-700">·</span>
+                    <span className={`text-xs ${post.scheduledTime ? "text-blue-400" : "text-zinc-600 italic"}`}>
+                      {post.scheduledTime ? formatTime(post.scheduledTime) : "no time set"}
+                    </span>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
