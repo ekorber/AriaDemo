@@ -140,7 +140,7 @@ export default function App() {
 
       {/* Main Content — all tabs stay mounted to preserve state */}
       <div className={`flex-1 flex flex-col min-h-0 ${activeTab !== "home" ? "hidden" : ""}`}>
-        <HomeView />
+        <HomeView onNavigate={(tab) => { setActiveTab(tab as Tab); if (tab === "chat") reloadMessages(); }} />
       </div>
       <main className={`flex flex-1 overflow-hidden ${activeTab !== "chat" ? "hidden" : ""}`}>
         <div className="flex-1 min-h-0 md:border-r border-zinc-800 flex flex-col">
