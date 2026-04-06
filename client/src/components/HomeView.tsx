@@ -202,6 +202,10 @@ export function HomeView({ onNavigate }: { onNavigate: (tab: string) => void }) 
                 label="Content Calendar & Publishing"
                 description="Publish approved posts directly via social platform APIs with a unified calendar."
               />
+              <NextStep
+                label="Video Platform Support"
+                description="Generate and edit video posts, along with TikTok and Youtube as added platforms to post to."
+              />
             </div>
           </section>
         </div>
