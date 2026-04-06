@@ -22,9 +22,11 @@ export function ChatInput({ value, onChange, onSend, disabled }: ChatInputProps)
     return () => vv.removeEventListener("resize", handler);
   }, []);
 
+  const ended = disabled && value === "";
+
   const handleSubmit = useCallback(() => {
     const trimmed = value.trim();
-    if (!trimmed || disabled) return;
+    if (!trimmed || ended) return;
     // Keep reference to textarea before async operations
     const textarea = textareaRef.current;
     onSend(trimmed);
@@ -32,7 +34,7 @@ export function ChatInput({ value, onChange, onSend, disabled }: ChatInputProps)
     // Re-focus immediately and after React re-render to keep mobile keyboard open
     textarea?.focus();
     requestAnimationFrame(() => textarea?.focus());
-  }, [value, disabled, onSend, onChange]);
+  }, [value, ended, onSend, onChange]);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -40,8 +42,6 @@ export function ChatInput({ value, onChange, onSend, disabled }: ChatInputProps)
       handleSubmit();
     }
   };
-
-  const ended = disabled && value === "";
 
   return (
     <div className="shrink-0 border-t border-zinc-800 px-3 sm:px-4 py-3" style={{ paddingBottom: `max(0.75rem, env(safe-area-inset-bottom))` }}>
@@ -51,8 +51,8 @@ export function ChatInput({ value, onChange, onSend, disabled }: ChatInputProps)
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
-          readOnly={disabled}
-          placeholder={ended ? "Conversation ended" : disabled ? "Waiting for response..." : "Message Aria..."}
+          readOnly={ended}
+          placeholder={ended ? "Conversation ended" : "Message Aria..."}
           rows={1}
           inputMode="text"
           enterKeyHint="send"
@@ -61,7 +61,7 @@ export function ChatInput({ value, onChange, onSend, disabled }: ChatInputProps)
         />
         <button
           onClick={handleSubmit}
-          disabled={disabled || !value.trim()}
+          disabled={ended || !value.trim()}
           className="px-4 py-2.5 bg-zinc-700 hover:bg-zinc-600 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl text-sm text-zinc-100 transition-colors"
         >
           Send
