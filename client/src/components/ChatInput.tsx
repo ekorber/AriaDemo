@@ -17,10 +17,17 @@ export function ChatInput({ value, onChange, onSend, disabled, sendDisabled }: C
     const vv = window.visualViewport;
     const handler = () => {
       document.documentElement.style.setProperty("--vvh", `${vv.height}px`);
+      // On iOS Safari, the page scrolls when the keyboard opens instead of resizing.
+      // Pin the fixed container to the visual viewport's offset.
+      document.documentElement.style.setProperty("--vv-offset-top", `${vv.offsetTop}px`);
     };
     handler();
     vv.addEventListener("resize", handler);
-    return () => vv.removeEventListener("resize", handler);
+    vv.addEventListener("scroll", handler);
+    return () => {
+      vv.removeEventListener("resize", handler);
+      vv.removeEventListener("scroll", handler);
+    };
   }, []);
 
   const ended = disabled && value === "";

@@ -4,6 +4,7 @@
 
 :root {
   --vvh: 100dvh;
+  --vv-offset-top: 0px;
 }
 
 body {
