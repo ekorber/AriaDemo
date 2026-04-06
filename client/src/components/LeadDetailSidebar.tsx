@@ -15,7 +15,7 @@ function PencilIcon() {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="shrink-0 ml-1 text-zinc-600 opacity-0 group-hover/edit:opacity-100 transition-opacity"
+      className="shrink-0 ml-1 text-zinc-600 opacity-100 sm:opacity-0 sm:group-hover/edit:opacity-100 transition-opacity"
     >
       <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
       <path d="m15 5 4 4" />

@@ -113,6 +113,7 @@ export function PipelineView({ leads, onMove, onDelete, onUpdate, prospectNoun }
                 selected={lead.id === selectedLeadId}
                 onClick={() => handleCardClick(lead.id)}
                 onDelete={() => setDeleteConfirmId(lead.id)}
+                onMove={onMove}
                 prospectNoun={prospectNoun}
               />
             ))

@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useAgent } from "./hooks/useAgent";
 import { useArchetypes } from "./hooks/useArchetypes";
 import { useLeads } from "./hooks/useLeads";
@@ -79,6 +79,14 @@ export default function App() {
     useAgent(activeChatId, { onChatStart, onScoreUpdate, onHandoff }, archetypeConfig);
   const [chatInput, setChatInput] = useState("");
   const [showIntentDrawer, setShowIntentDrawer] = useState(false);
+
+  // Auto-open intent drawer on mobile when handoff triggers
+  useEffect(() => {
+    if (phase === "handoff" && window.innerWidth < 768) {
+      const timer = setTimeout(() => setShowIntentDrawer(true), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [phase]);
 
   const handleArchetypeChange = useCallback((key: string) => {
     setActiveKey(key);

@@ -1,4 +1,4 @@
-import { Lead } from "../types";
+import { Lead, LeadStatus } from "../types";
 
 const BUDGET_COLORS: Record<string, string> = {
   high: "bg-emerald-400",
@@ -18,15 +18,24 @@ function scoreLevel(score: number) {
   return "low";
 }
 
+const STATUS_OPTIONS: { value: LeadStatus; label: string }[] = [
+  { value: "active", label: "Current Chats" },
+  { value: "qualified", label: "Qualified" },
+  { value: "unqualified", label: "Unqualified" },
+  { value: "handed_off", label: "Handed Off" },
+  { value: "closed", label: "Closed" },
+];
+
 interface LeadCardProps {
   lead: Lead;
   selected?: boolean;
   onClick?: () => void;
   onDelete?: () => void;
+  onMove?: (id: string, status: LeadStatus) => void;
   prospectNoun?: string;
 }
 
-export function LeadCard({ lead, selected, onClick, onDelete, prospectNoun = "contact" }: LeadCardProps) {
+export function LeadCard({ lead, selected, onClick, onDelete, onMove, prospectNoun = "contact" }: LeadCardProps) {
   const level = scoreLevel(lead.intent_score);
 
   return (
@@ -101,6 +110,24 @@ export function LeadCard({ lead, selected, onClick, onDelete, prospectNoun = "co
               {signal}
             </span>
           ))}
+        </div>
+      )}
+
+      {/* Mobile: pipeline stage selector */}
+      {onMove && (
+        <div className="sm:hidden mt-2 pt-2 border-t border-zinc-800">
+          <select
+            value={lead.status}
+            onChange={(e) => { e.stopPropagation(); onMove(lead.id, e.target.value as LeadStatus); }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full bg-zinc-800 border border-zinc-700 text-zinc-300 text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:border-zinc-500 cursor-pointer"
+          >
+            {STATUS_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value} className="bg-zinc-900">
+                {opt.label}
+              </option>
+            ))}
+          </select>
         </div>
       )}
 
