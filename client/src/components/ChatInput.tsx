@@ -5,9 +5,10 @@ interface ChatInputProps {
   onChange: (value: string) => void;
   onSend: (content: string) => void;
   disabled: boolean;
+  sendDisabled?: boolean;
 }
 
-export function ChatInput({ value, onChange, onSend, disabled }: ChatInputProps) {
+export function ChatInput({ value, onChange, onSend, disabled, sendDisabled }: ChatInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // On mobile, resize the viewport when the virtual keyboard appears/disappears
@@ -26,7 +27,7 @@ export function ChatInput({ value, onChange, onSend, disabled }: ChatInputProps)
 
   const handleSubmit = useCallback(() => {
     const trimmed = value.trim();
-    if (!trimmed || ended) return;
+    if (!trimmed || ended || sendDisabled) return;
     // Keep reference to textarea before async operations
     const textarea = textareaRef.current;
     onSend(trimmed);
@@ -34,7 +35,7 @@ export function ChatInput({ value, onChange, onSend, disabled }: ChatInputProps)
     // Re-focus immediately and after React re-render to keep mobile keyboard open
     textarea?.focus();
     requestAnimationFrame(() => textarea?.focus());
-  }, [value, ended, onSend, onChange]);
+  }, [value, ended, sendDisabled, onSend, onChange]);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -62,7 +63,7 @@ export function ChatInput({ value, onChange, onSend, disabled }: ChatInputProps)
         <button
           onPointerDown={(e) => e.preventDefault()}
           onClick={handleSubmit}
-          disabled={ended || !value.trim()}
+          disabled={ended || sendDisabled || !value.trim()}
           className="px-4 py-2.5 bg-zinc-700 hover:bg-zinc-600 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl text-sm text-zinc-100 transition-colors select-none"
         >
           Send

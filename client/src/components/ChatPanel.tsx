@@ -20,6 +20,7 @@ export function ChatPanel({ messages, isStreaming, phase, sendMessage, inputValu
         onChange={onInputChange}
         onSend={sendMessage}
         disabled={phase === "handoff"}
+        sendDisabled={isStreaming}
       />
     </div>
   );
