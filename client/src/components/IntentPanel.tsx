@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from "react";
 import { IntentPhase, Lead } from "../types";
 import { HandoffCard } from "./HandoffCard";
 
@@ -25,6 +26,24 @@ function getScoreColor(score: number): string {
 }
 
 export function IntentPanel({ intentScore, phase, handoffLead, handoffPerson, open, onClose }: IntentPanelProps) {
+  const [drawerState, setDrawerState] = useState<'open' | 'closing' | null>(null);
+  const timer = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => {
+    if (open) {
+      clearTimeout(timer.current);
+      setDrawerState('open');
+    } else if (drawerState === 'open') {
+      setDrawerState('closing');
+      timer.current = setTimeout(() => setDrawerState(null), 200);
+    }
+  }, [open]);
+
+  const handleClose = () => {
+    setDrawerState('closing');
+    timer.current = setTimeout(() => { setDrawerState(null); onClose?.(); }, 200);
+  };
+
   const radius = 54;
   const circumference = 2 * Math.PI * radius;
   const progress = (intentScore / 100) * circumference;
@@ -73,14 +92,21 @@ export function IntentPanel({ intentScore, phase, handoffLead, handoffPerson, op
         {content}
       </div>
 
-      {/* Mobile: slide-out drawer */}
-      {open && (
+      {/* Mobile: full-width slide-out drawer */}
+      {drawerState && (
         <div className="fixed inset-0 z-40 md:hidden">
-          <div className="absolute inset-0 bg-black/60" />
-          <div className="absolute right-0 top-0 bottom-0 w-[280px] bg-zinc-950 border-l border-zinc-800 shadow-2xl animate-slide-in overflow-y-auto">
+          <div className="absolute inset-0 bg-black/40" onClick={handleClose} />
+          <div
+            className="absolute right-0 top-0 bottom-0 w-full bg-zinc-950 shadow-2xl overflow-y-auto"
+            style={{
+              animation: drawerState === 'closing'
+                ? 'slide-out-right 0.2s ease-in forwards'
+                : 'slide-in-right 0.2s ease-out',
+            }}
+          >
             <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
-              <span className="text-xs font-semibold tracking-widest text-zinc-400 uppercase">Intent</span>
-              <button onClick={onClose} className="text-zinc-500 hover:text-zinc-300 text-lg leading-none">&times;</button>
+              <span className="text-xs font-semibold tracking-widest text-zinc-400 uppercase">Intent Score</span>
+              <button onClick={handleClose} className="text-zinc-500 hover:text-zinc-300 text-lg leading-none">&times;</button>
             </div>
             {content}
           </div>

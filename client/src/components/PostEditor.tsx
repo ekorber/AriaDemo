@@ -38,6 +38,11 @@ export function PostEditor({
   const autoResize = useCallback(() => {
     const el = textareaRef.current;
     if (!el || window.innerWidth >= 768) return;
+    if (!el.value.trim()) {
+      el.style.height = "5em";
+      el.style.minHeight = "5em";
+      return;
+    }
     el.style.minHeight = "0px";
     el.style.height = "auto";
     el.style.height = (el.scrollHeight + 2) + "px";
@@ -49,10 +54,10 @@ export function PostEditor({
     requestAnimationFrame(autoResize);
   }, [post.id, post.caption, autoResize]);
 
-  // Run autoResize on mount
+  // Run autoResize whenever caption changes
   useEffect(() => {
     requestAnimationFrame(autoResize);
-  }, [autoResize]);
+  }, [caption, autoResize]);
 
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showGenDropdown, setShowGenDropdown] = useState(false);
@@ -101,127 +106,225 @@ export function PostEditor({
 
   return (
     <div className="flex-1 p-3 sm:p-5 overflow-y-auto relative">
-      {/* Row 1: Platform identity + schedule */}
-      <div className="flex items-center gap-2 sm:gap-3 mb-3">
-        <span
-          className="w-2.5 h-2.5 rounded-full shrink-0"
-          style={{
-            backgroundColor: color.hex,
-            border: color.border ? "1px solid #888" : undefined,
-            boxSizing: "border-box",
-          }}
-        />
-        <span className="text-base font-medium text-zinc-100">{label}</span>
-        <span className={`text-xs px-2 py-0.5 rounded-full ${post.approved ? "bg-emerald-950 text-emerald-400" : post.reviewReady ? "bg-amber-950 text-amber-400" : "bg-zinc-800 text-zinc-500"}`}>
-          {post.approved ? "approved" : post.reviewReady ? "ready for review" : "draft"}
-        </span>
+      {/* ===== Mobile header (< md) ===== */}
+      <div className="md:hidden">
+        {/* Row 1: Platform identity + schedule */}
+        <div className="flex items-center gap-2 mb-3">
+          <span
+            className="w-2.5 h-2.5 rounded-full shrink-0"
+            style={{
+              backgroundColor: color.hex,
+              border: color.border ? "1px solid #888" : undefined,
+              boxSizing: "border-box",
+            }}
+          />
+          <span className="text-base font-medium text-zinc-100">{label}</span>
+          <span className={`text-xs px-2 py-0.5 rounded-full ${post.approved ? "bg-emerald-950 text-emerald-400" : post.reviewReady ? "bg-amber-950 text-amber-400" : "bg-zinc-800 text-zinc-500"}`}>
+            {post.approved ? "approved" : post.reviewReady ? "ready for review" : "draft"}
+          </span>
+          <div
+            onClick={() => setShowScheduleModal(true)}
+            className="ml-auto flex items-center gap-2 px-2.5 py-1.5 bg-zinc-900 border border-zinc-800 rounded-lg cursor-pointer hover:border-zinc-600 transition-colors"
+          >
+            <span className="text-xs text-zinc-500">📅</span>
+            <span className="text-xs text-zinc-300 whitespace-nowrap">{scheduleLabel}</span>
+          </div>
+        </div>
 
-        <div
-          onClick={() => setShowScheduleModal(true)}
-          className="ml-auto flex items-center gap-2 px-2.5 py-1.5 bg-zinc-900 border border-zinc-800 rounded-lg cursor-pointer hover:border-zinc-600 transition-colors"
-        >
-          <span className="text-xs text-zinc-500">📅</span>
-          <span className="text-xs sm:text-sm text-zinc-300 whitespace-nowrap">{scheduleLabel}</span>
-          {!post.approved && <span className="text-xs text-blue-400 hidden sm:inline">Edit</span>}
+        {/* Row 2: Actions + saving */}
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          {post.approved ? (
+            <button
+              onClick={() => { onApprovePost(campaignId, post.id); flashSaving(); }}
+              className="text-xs px-2.5 py-1.5 rounded transition-colors border border-zinc-700 text-zinc-400 hover:text-zinc-200"
+            >
+              Unapprove
+            </button>
+          ) : post.reviewReady ? (
+            <>
+              <button
+                onClick={() => { onApprovePost(campaignId, post.id); flashSaving(); }}
+                disabled={!hasSchedule}
+                className="text-xs px-2.5 py-1.5 rounded transition-colors border border-zinc-700 text-zinc-400 hover:text-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Approve
+              </button>
+              <button
+                onClick={() => { onUpdatePost(campaignId, post.id, { reviewReady: false }); flashSaving(); }}
+                className="text-xs px-2.5 py-1.5 rounded transition-colors border border-zinc-700 text-zinc-500 hover:text-zinc-200"
+              >
+                Return to draft
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => { onUpdatePost(campaignId, post.id, { reviewReady: true }); flashSaving(); }}
+              disabled={!caption.trim() || !hasSchedule || (post.platform === "instagram" && !post.imageUrl)}
+              className="text-xs px-2.5 py-1.5 rounded transition-colors border border-zinc-700 text-zinc-400 hover:text-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Mark for review
+            </button>
+          )}
+          {confirmDelete ? (
+            <span className="flex items-center gap-1.5">
+              <span className="text-xs text-zinc-500">Delete?</span>
+              <button onClick={() => onDeletePost(campaignId, post.id)} className="text-xs px-2.5 py-1.5 rounded transition-colors border border-red-800 text-red-400 hover:bg-red-950/50">Yes</button>
+              <button onClick={() => setConfirmDelete(false)} className="text-xs px-2.5 py-1.5 rounded transition-colors border border-zinc-700 text-zinc-400 hover:text-zinc-200">No</button>
+            </span>
+          ) : (
+            <button
+              onClick={() => setConfirmDelete(true)}
+              className="text-xs px-2.5 py-1.5 rounded transition-colors border border-red-900 text-red-400 hover:text-red-300 hover:border-red-700"
+            >
+              Delete
+            </button>
+          )}
+          {saving && (
+            <div className="flex items-center gap-1.5 ml-auto text-xs text-zinc-500">
+              <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="50 20" />
+              </svg>
+              Saving
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Row 2: Actions + saving indicator */}
-      <div className="flex flex-wrap items-center gap-2 mb-4">
-        {post.approved ? (
-          <button
-            onClick={() => { onApprovePost(campaignId, post.id); flashSaving(); }}
-            className="text-xs sm:text-sm px-2.5 sm:px-3 py-1.5 rounded transition-colors border border-zinc-700 text-zinc-400 hover:text-zinc-200"
-          >
-            Unapprove
-          </button>
-        ) : post.reviewReady ? (
-          <>
-            <button
-              onClick={() => { onApprovePost(campaignId, post.id); flashSaving(); }}
-              disabled={!hasSchedule}
-              className="text-xs sm:text-sm px-2.5 sm:px-3 py-1.5 rounded transition-colors border border-zinc-700 text-zinc-400 hover:text-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              Approve
-            </button>
-            <button
-              onClick={() => { onUpdatePost(campaignId, post.id, { reviewReady: false }); flashSaving(); }}
-              className="text-xs sm:text-sm px-2.5 sm:px-3 py-1.5 rounded transition-colors border border-zinc-700 text-zinc-500 hover:text-zinc-200"
-            >
-              Return to draft
-            </button>
-          </>
-        ) : (
-          <button
-            onClick={() => { onUpdatePost(campaignId, post.id, { reviewReady: true }); flashSaving(); }}
-            disabled={!caption.trim() || !hasSchedule || (post.platform === "instagram" && !post.imageUrl)}
-            className="text-xs sm:text-sm px-2.5 sm:px-3 py-1.5 rounded transition-colors border border-zinc-700 text-zinc-400 hover:text-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            Mark for review
-          </button>
-        )}
-        {confirmDelete ? (
-          <span className="flex items-center gap-1.5">
-            <span className="text-xs text-zinc-500">Delete?</span>
-            <button
-              onClick={() => onDeletePost(campaignId, post.id)}
-              className="text-xs sm:text-sm px-2.5 py-1.5 rounded transition-colors border border-red-800 text-red-400 hover:bg-red-950/50"
-            >
-              Yes
-            </button>
-            <button
-              onClick={() => setConfirmDelete(false)}
-              className="text-xs sm:text-sm px-2.5 py-1.5 rounded transition-colors border border-zinc-700 text-zinc-400 hover:text-zinc-200"
-            >
-              No
-            </button>
-          </span>
-        ) : (
-          <button
-            onClick={() => setConfirmDelete(true)}
-            className="text-xs sm:text-sm px-2.5 sm:px-3 py-1.5 rounded transition-colors border border-red-900 text-red-400 hover:text-red-300 hover:border-red-700"
-          >
-            Delete
-          </button>
-        )}
+      {/* ===== Desktop header (md+) — original layout ===== */}
+      <div className="hidden md:block mb-5">
+        <div className="flex items-start">
+          <div className="mb-5">
+            <div className="flex items-center gap-2 mt-1">
+              <span
+                className="w-2.5 h-2.5 rounded-full"
+                style={{
+                  backgroundColor: color.hex,
+                  border: color.border ? "1px solid #888" : undefined,
+                  boxSizing: "border-box",
+                }}
+              />
+              <span className="text-base font-medium text-zinc-100">{label}</span>
+              <span className={`text-xs px-2 py-0.5 rounded-full ${post.approved ? "bg-emerald-950 text-emerald-400" : post.reviewReady ? "bg-amber-950 text-amber-400" : "bg-zinc-800 text-zinc-500"}`}>
+                {post.approved ? "approved" : post.reviewReady ? "ready for review" : "draft"}
+              </span>
+            </div>
+          </div>
 
-        {saving && (
-          <div className="flex items-center gap-1.5 ml-auto text-xs text-zinc-500">
-            <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="50 20" />
-            </svg>
-            Saving
+          <div
+            onClick={() => setShowScheduleModal(true)}
+            className="ml-3 -mt-1 mb-4 flex items-center gap-3 px-3 py-2.5 bg-zinc-900 border border-zinc-800 rounded-lg cursor-pointer hover:border-zinc-600 transition-colors"
+          >
+            <span className="text-sm text-zinc-500">📅</span>
+            <span className="text-sm text-zinc-300">{scheduleLabel}</span>
+            {!post.approved && <span className="ml-auto text-xs text-blue-400">Edit</span>}
+          </div>
+
+          <div className="flex items-center gap-2 ml-auto">
+            {post.approved ? (
+              <button
+                onClick={() => { onApprovePost(campaignId, post.id); flashSaving(); }}
+                className="text-sm px-3 py-1.5 rounded transition-colors border border-zinc-700 text-zinc-400 hover:text-zinc-200"
+              >
+                Unapprove
+              </button>
+            ) : post.reviewReady ? (
+              <>
+                <button
+                  onClick={() => { onApprovePost(campaignId, post.id); flashSaving(); }}
+                  disabled={!hasSchedule}
+                  className="text-sm px-3 py-1.5 rounded transition-colors border border-zinc-700 text-zinc-400 hover:text-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Approve
+                </button>
+                <button
+                  onClick={() => { onUpdatePost(campaignId, post.id, { reviewReady: false }); flashSaving(); }}
+                  className="text-sm px-3 py-1.5 rounded transition-colors border border-zinc-700 text-zinc-500 hover:text-zinc-200"
+                >
+                  Return to draft
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => { onUpdatePost(campaignId, post.id, { reviewReady: true }); flashSaving(); }}
+                disabled={!caption.trim() || !hasSchedule || (post.platform === "instagram" && !post.imageUrl)}
+                className="text-sm px-3 py-1.5 rounded transition-colors border border-zinc-700 text-zinc-400 hover:text-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Mark for review
+              </button>
+            )}
+            {confirmDelete ? (
+              <span className="flex items-center gap-1.5">
+                <span className="text-xs text-zinc-500">Delete?</span>
+                <button onClick={() => onDeletePost(campaignId, post.id)} className="text-sm px-2.5 py-1.5 rounded transition-colors border border-red-800 text-red-400 hover:bg-red-950/50">Yes</button>
+                <button onClick={() => setConfirmDelete(false)} className="text-sm px-2.5 py-1.5 rounded transition-colors border border-zinc-700 text-zinc-400 hover:text-zinc-200">No</button>
+              </span>
+            ) : (
+              <button
+                onClick={() => setConfirmDelete(true)}
+                className="text-sm px-3 py-1.5 rounded transition-colors border border-red-900 text-red-400 hover:text-red-300 hover:border-red-700"
+              >
+                Delete
+              </button>
+            )}
+          </div>
+        </div>
+
+        {(isDraft || saving) && (
+          <div className="flex items-center gap-4 mb-4 text-xs text-zinc-500">
+            {isDraft && (
+              <>
+                <span className="uppercase tracking-widest text-zinc-600">Needed for review</span>
+                <span className="flex items-center gap-1.5">
+                  {caption.trim() ? <span className="text-emerald-500">✓</span> : <span className="text-zinc-600">○</span>}
+                  <span className={caption.trim() ? "text-zinc-500 line-through" : "text-zinc-400"}>Post content</span>
+                </span>
+                <span className="flex items-center gap-1.5">
+                  {post.scheduledDate ? <span className="text-emerald-500">✓</span> : <span className="text-zinc-600">○</span>}
+                  <span className={post.scheduledDate ? "text-zinc-500 line-through" : "text-zinc-400"}>Scheduled date</span>
+                </span>
+                <span className="flex items-center gap-1.5">
+                  {post.scheduledTime ? <span className="text-emerald-500">✓</span> : <span className="text-zinc-600">○</span>}
+                  <span className={post.scheduledTime ? "text-zinc-500 line-through" : "text-zinc-400"}>Scheduled time</span>
+                </span>
+                {post.platform === "instagram" && (
+                  <span className="flex items-center gap-1.5">
+                    {post.imageUrl ? <span className="text-emerald-500">✓</span> : <span className="text-zinc-600">○</span>}
+                    <span className={post.imageUrl ? "text-zinc-500 line-through" : "text-zinc-400"}>Generated image</span>
+                  </span>
+                )}
+              </>
+            )}
+            {saving && (
+              <div className="flex items-center gap-1.5 -mt-2 ml-auto">
+                <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="50 20" />
+                </svg>
+                Saving
+              </div>
+            )}
           </div>
         )}
       </div>
 
-      {/* Row 3: Review checklist */}
+      {/* Review checklist — mobile only (desktop version is inside the desktop header block) */}
       {isDraft && (
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-4 text-xs text-zinc-500">
+        <div className="md:hidden flex flex-wrap items-center gap-2 mb-4 text-xs text-zinc-500">
           <span className="uppercase tracking-widest text-zinc-600">Needed</span>
           <span className="flex items-center gap-1">
-            {caption.trim()
-              ? <span className="text-emerald-500">✓</span>
-              : <span className="text-zinc-600">○</span>}
+            {caption.trim() ? <span className="text-emerald-500">✓</span> : <span className="text-zinc-600">○</span>}
             <span className={caption.trim() ? "text-zinc-500 line-through" : "text-zinc-400"}>Content</span>
           </span>
           <span className="flex items-center gap-1">
-            {post.scheduledDate
-              ? <span className="text-emerald-500">✓</span>
-              : <span className="text-zinc-600">○</span>}
+            {post.scheduledDate ? <span className="text-emerald-500">✓</span> : <span className="text-zinc-600">○</span>}
             <span className={post.scheduledDate ? "text-zinc-500 line-through" : "text-zinc-400"}>Date</span>
           </span>
           <span className="flex items-center gap-1">
-            {post.scheduledTime
-              ? <span className="text-emerald-500">✓</span>
-              : <span className="text-zinc-600">○</span>}
+            {post.scheduledTime ? <span className="text-emerald-500">✓</span> : <span className="text-zinc-600">○</span>}
             <span className={post.scheduledTime ? "text-zinc-500 line-through" : "text-zinc-400"}>Time</span>
           </span>
           {post.platform === "instagram" && (
             <span className="flex items-center gap-1">
-              {post.imageUrl
-                ? <span className="text-emerald-500">✓</span>
-                : <span className="text-zinc-600">○</span>}
+              {post.imageUrl ? <span className="text-emerald-500">✓</span> : <span className="text-zinc-600">○</span>}
               <span className={post.imageUrl ? "text-zinc-500 line-through" : "text-zinc-400"}>Image</span>
             </span>
           )}
@@ -419,7 +522,7 @@ export function PostEditor({
                 onChange={(e) => { setCaption(e.target.value); autoResize(); }}
                 onBlur={handleCaptionBlur}
                 disabled={isGenerating && isDraft}
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-base text-zinc-200 resize-none focus:outline-none focus:border-zinc-600 leading-relaxed md:!h-[clamp(200px,50vh,614px)]"
+                className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-base text-zinc-200 resize-none focus:outline-none focus:border-zinc-600 leading-relaxed md:!h-[614px]"
                 style={{ minHeight: "120px" }}
                 placeholder="Write your post..."
               />

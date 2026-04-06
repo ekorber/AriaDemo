@@ -110,10 +110,13 @@ export function CampaignDetailView({
     <div className="flex-1 flex flex-col overflow-hidden">
       {/* Top bar: back, campaign info, actions */}
       <div className="px-3 sm:px-5 py-3 border-b border-zinc-800 flex-shrink-0 relative z-20">
-        <div className="flex items-center justify-between flex-wrap gap-2">
+        <div
+          className="flex items-center justify-between flex-wrap gap-2 cursor-pointer"
+          onClick={() => setShowEditFields(!showEditFields)}
+        >
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <button
-              onClick={onBack}
+              onClick={(e) => { e.stopPropagation(); onBack(); }}
               className="text-sm text-zinc-500 hover:text-zinc-300 flex items-center gap-1 transition-colors shrink-0"
             >
               <span>&larr;</span> Back
@@ -122,12 +125,11 @@ export function CampaignDetailView({
             <span className="text-sm text-zinc-500 hidden sm:inline">{campaign.projectType}</span>
           </div>
           <div className="flex items-center gap-1 sm:gap-2">
-            <button
-              onClick={() => setShowEditFields(!showEditFields)}
+            <span
               className={`px-2 py-1 transition-colors ${
                 showEditFields
-                  ? "text-blue-400 hover:text-blue-300"
-                  : "text-zinc-500 hover:text-zinc-300"
+                  ? "text-blue-400"
+                  : "text-zinc-500"
               }`}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -135,7 +137,7 @@ export function CampaignDetailView({
                   ? <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
                   : <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />}
               </svg>
-            </button>
+            </span>
           </div>
         </div>
 
@@ -150,7 +152,7 @@ export function CampaignDetailView({
                 value={campaign.brief}
                 onChange={(e) => onUpdateBrief(campaign.id, e.target.value)}
                 className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 text-sm text-zinc-400 resize-none focus:outline-none focus:border-zinc-600"
-                rows={2}
+                rows={typeof window !== "undefined" && window.innerWidth < 768 ? 5 : 2}
                 placeholder="Describe the campaign angle — what's the news, what are we promoting, who's the audience?"
               />
             </div>

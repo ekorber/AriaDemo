@@ -20,6 +20,16 @@ body {
   to { transform: translateX(-100%); }
 }
 
+@keyframes slide-in-right {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slide-out-right {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
 @keyframes slide-in-from-bottom-2 {
   from {
     opacity: 0;
