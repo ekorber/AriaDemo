@@ -2,12 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --vvh: 100dvh;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Prevent iOS bounce-scroll that shifts the whole viewport */
+  overscroll-behavior: none;
 }
 
 @keyframes slide-in-left {

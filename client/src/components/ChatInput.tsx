@@ -1,4 +1,4 @@
-import { useRef, KeyboardEvent } from "react";
+import { useRef, useEffect, useCallback, KeyboardEvent } from "react";
 
 interface ChatInputProps {
   value: string;
@@ -10,13 +10,29 @@ interface ChatInputProps {
 export function ChatInput({ value, onChange, onSend, disabled }: ChatInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleSubmit = () => {
+  // On mobile, resize the viewport when the virtual keyboard appears/disappears
+  useEffect(() => {
+    if (!window.visualViewport) return;
+    const vv = window.visualViewport;
+    const handler = () => {
+      document.documentElement.style.setProperty("--vvh", `${vv.height}px`);
+    };
+    handler();
+    vv.addEventListener("resize", handler);
+    return () => vv.removeEventListener("resize", handler);
+  }, []);
+
+  const handleSubmit = useCallback(() => {
     const trimmed = value.trim();
     if (!trimmed || disabled) return;
+    // Keep reference to textarea before async operations
+    const textarea = textareaRef.current;
     onSend(trimmed);
     onChange("");
-    requestAnimationFrame(() => textareaRef.current?.focus());
-  };
+    // Re-focus immediately and after React re-render to keep mobile keyboard open
+    textarea?.focus();
+    requestAnimationFrame(() => textarea?.focus());
+  }, [value, disabled, onSend, onChange]);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -28,7 +44,7 @@ export function ChatInput({ value, onChange, onSend, disabled }: ChatInputProps)
   const ended = disabled && value === "";
 
   return (
-    <div className="border-t border-zinc-800 px-3 sm:px-4 py-3">
+    <div className="shrink-0 border-t border-zinc-800 px-3 sm:px-4 py-3" style={{ paddingBottom: `max(0.75rem, env(safe-area-inset-bottom))` }}>
       <div className="flex items-end gap-2">
         <textarea
           ref={textareaRef}
@@ -38,6 +54,9 @@ export function ChatInput({ value, onChange, onSend, disabled }: ChatInputProps)
           readOnly={disabled}
           placeholder={ended ? "Conversation ended" : disabled ? "Waiting for response..." : "Message Aria..."}
           rows={1}
+          inputMode="text"
+          enterKeyHint="send"
+          autoComplete="off"
           className={`flex-1 resize-none bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-zinc-500 ${ended ? "opacity-40 cursor-not-allowed" : ""}`}
         />
         <button
