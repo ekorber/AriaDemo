@@ -13,13 +13,14 @@ interface ChatPanelProps {
 
 export function ChatPanel({ messages, isStreaming, phase, sendMessage, inputValue, onInputChange }: ChatPanelProps) {
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col flex-1 min-h-0">
       <MessageList messages={messages} />
       <ChatInput
         value={inputValue}
         onChange={onInputChange}
         onSend={sendMessage}
-        disabled={phase === "handoff" || isStreaming}
+        disabled={phase === "handoff"}
+        sendDisabled={isStreaming}
       />
     </div>
   );

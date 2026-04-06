@@ -96,10 +96,10 @@ export default function App() {
   }, [setActiveKey]);
 
   return (
-    <div className="h-screen flex flex-col bg-zinc-950 text-zinc-100">
+    <div className="fixed inset-x-0 flex flex-col bg-zinc-950 text-zinc-100 overflow-hidden" style={{ top: "var(--vv-offset-top, 0px)", height: "var(--vvh, 100dvh)" }}>
       {/* Top Bar */}
       <header className="flex items-center px-3 sm:px-6 py-3 border-b border-zinc-800">
-        <span className="text-sm font-semibold tracking-widest text-zinc-400">
+        <span className="text-sm font-semibold tracking-widest text-zinc-400 cursor-pointer" onClick={() => setActiveTab("home")}>
           ARIA
         </span>
         <nav className="flex gap-3 sm:gap-6 ml-4 sm:ml-8 overflow-x-auto">

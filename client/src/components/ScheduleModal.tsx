@@ -246,26 +246,31 @@ export function ScheduleModal({ currentDate, currentTime, isDraft = true, onSave
         </div>
 
         {/* Bottom actions */}
-        <div className="flex items-center justify-between mt-4 pt-4 border-t border-zinc-800">
-          <div className="flex gap-3">
-            {isDraft && selectedDate && (
-              <button
-                onClick={() => setSelectedDate(null)}
-                className="text-xs text-amber-500 hover:text-amber-400 transition-colors"
-              >
-                Set Date as Undecided
-              </button>
-            )}
-            {isDraft && hasTime && (
-              <button
-                onClick={() => setHasTime(false)}
-                className="text-xs text-zinc-500 hover:text-zinc-400 transition-colors"
-              >
-                Clear time
-              </button>
-            )}
-          </div>
-          <div className="flex gap-2">
+        <div className="flex flex-col gap-3 mt-4 pt-4 border-t border-zinc-800">
+          {isDraft && (selectedDate || hasTime) && (
+            <>
+              <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
+                {selectedDate && (
+                  <button
+                    onClick={() => setSelectedDate(null)}
+                    className="text-xs text-amber-500 hover:text-amber-400 transition-colors"
+                  >
+                    Set Date as Undecided
+                  </button>
+                )}
+                {hasTime && (
+                  <button
+                    onClick={() => setHasTime(false)}
+                    className="text-xs text-zinc-500 hover:text-zinc-400 transition-colors"
+                  >
+                    Clear time
+                  </button>
+                )}
+              </div>
+              <div className="border-t border-zinc-800" />
+            </>
+          )}
+          <div className="flex gap-2 justify-center">
             <button
               onClick={onClose}
               className="text-sm text-zinc-500 hover:text-zinc-300 px-3 py-1.5 transition-colors"
