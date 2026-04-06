@@ -19,6 +19,13 @@ html, body {
   overflow: hidden;
 }
 
+/* Prevent iOS auto-zoom on focus — requires font-size >= 16px */
+@supports (-webkit-touch-callout: none) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+}
+
 @keyframes slide-in-left {
   from { transform: translateX(-100%); }
   to { transform: translateX(0); }
